@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/tt_background"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+        <ImageButton
+            android:id="@+id/buttonBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_media_previous"
+            android:tint="@color/tt_text_primary" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textLessonTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/tt_text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/textLessonSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/tt_text_secondary"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipSentenceCounter"
+            style="@style/Widget.Material3.Chip.Assist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/tt_primary"
+            app:chipBackgroundColor="@color/tt_primary_tint" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipStatus"
+            style="@style/Widget.Material3.Chip.Assist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/progressLesson"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:indicatorColor="@color/tt_primary"
+        app:trackColor="@color/tt_border" />
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/tt_surface"
+        app:tabIndicatorColor="@color/tt_primary"
+        app:tabSelectedTextColor="@color/tt_primary"
+        app:tabTextColor="@color/tt_text_secondary" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:id="@+id/dictationContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardBackgroundColor="@color/tt_surface"
+                    app:cardCornerRadius="@dimen/card_radius"
+                    app:strokeColor="@color/tt_border"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <ImageButton
+                                android:id="@+id/buttonPlay"
+                                android:layout_width="52dp"
+                                android:layout_height="52dp"
+                                android:backgroundTint="@color/tt_primary"
+                                android:src="@android:drawable/ic_media_play"
+                                android:tint="@color/white" />
+
+                            <TextView
+                                android:id="@+id/textPlaybackTime"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:layout_weight="1"
+                                android:textColor="@color/tt_text_secondary"
+                                android:textStyle="bold" />
+
+                            <ImageButton
+                                android:id="@+id/buttonReplay"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:src="@android:drawable/ic_menu_revert"
+                                android:tint="@color/tt_text_secondary" />
+                        </LinearLayout>
+
+                        <com.google.android.material.progressindicator.LinearProgressIndicator
+                            android:id="@+id/progressPlayback"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            app:indicatorColor="@color/tt_primary"
+                            app:trackColor="@color/tt_border" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:id="@+id/textHint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@color/tt_primary_tint"
+                    android:padding="14dp"
+                    android:textColor="@color/tt_primary"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:hint="Type what you hear"
+                    app:boxBackgroundColor="@color/tt_surface"
+                    app:endIconDrawable="@android:drawable/ic_btn_speak_now"
+                    app:endIconMode="custom">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/inputDictation"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textMultiLine|textCapSentences"
+                        android:minLines="4" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonCheck"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/lesson_check"
+                        android:textAllCaps="false"
+                        app:backgroundTint="@color/tt_primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonSkip"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:text="@string/lesson_skip"
+                        android:textAllCaps="false"
+                        android:textColor="@color/tt_primary"
+                        app:strokeColor="@color/tt_primary" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonNext"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/lesson_next"
+                    android:textAllCaps="false"
+                    android:visibility="gone"
+                    app:backgroundTint="@color/tt_success" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardFeedback"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:visibility="gone"
+                    app:cardBackgroundColor="@color/tt_surface"
+                    app:strokeColor="@color/tt_warning">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <TextView android:id="@+id/textFeedbackTitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:textStyle="bold" />
+                        <TextView android:id="@+id/textCorrectWords" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:textColor="@color/tt_primary" android:textStyle="bold" />
+                        <TextView android:id="@+id/textNewHint" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:textColor="@color/tt_success" android:textStyle="bold" />
+                        <TextView android:id="@+id/textMaskedWords" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:textColor="@color/tt_error" android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/transcriptContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView android:id="@+id/textTranscriptSentence" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/tt_text_primary" android:textSize="18sp" android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageButton android:id="@+id/buttonTranscriptPrev" android:layout_width="40dp" android:layout_height="40dp" android:background="?attr/selectableItemBackgroundBorderless" android:src="@android:drawable/ic_media_previous" />
+                    <ImageButton android:id="@+id/buttonTranscriptPlay" android:layout_width="52dp" android:layout_height="52dp" android:layout_marginStart="8dp" android:backgroundTint="@color/tt_primary" android:src="@android:drawable/ic_media_play" android:tint="@color/white" />
+                    <ImageButton android:id="@+id/buttonTranscriptNext" android:layout_width="40dp" android:layout_height="40dp" android:layout_marginStart="8dp" android:background="?attr/selectableItemBackgroundBorderless" android:src="@android:drawable/ic_media_next" />
+                    <TextView android:id="@+id/textTranscriptPlaybackTime" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:layout_weight="1" android:textColor="@color/tt_text_secondary" android:textStyle="bold" />
+                </LinearLayout>
+
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/progressTranscript"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:indicatorColor="@color/tt_primary"
+                    app:trackColor="@color/tt_border" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerTranscript"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:nestedScrollingEnabled="false" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/speakingContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView android:id="@+id/textSpeakingReference" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/tt_text_primary" android:textSize="20sp" android:textStyle="bold" />
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/buttonRecord"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="20dp"
+                    android:src="@android:drawable/ic_btn_speak_now"
+                    app:backgroundTint="@color/tt_primary"
+                    app:fabCustomSize="88dp" />
+
+                <TextView android:id="@+id/textRecordingState" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_horizontal" android:layout_marginTop="12dp" android:textColor="@color/tt_text_secondary" />
+                <TextView android:id="@+id/textBestScore" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:textColor="@color/tt_warning" android:textStyle="bold" />
+                <TextView android:id="@+id/textBestTranscript" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/tt_text_secondary" />
+                <TextView android:id="@+id/textCurrentScore" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:textColor="@color/tt_info" android:textStyle="bold" />
+                <TextView android:id="@+id/textCurrentTranscript" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/tt_text_secondary" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonTryAgain"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/lesson_try_again"
+                        android:textAllCaps="false"
+                        android:textColor="@color/tt_primary"
+                        app:strokeColor="@color/tt_primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonSpeakingNext"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:text="@string/lesson_next"
+                        android:textAllCaps="false"
+                        app:backgroundTint="@color/tt_success" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/commentsCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                app:cardBackgroundColor="@color/tt_surface"
+                app:cardCornerRadius="@dimen/card_radius"
+                app:strokeColor="@color/tt_border"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/label_comments" android:textColor="@color/tt_text_primary" android:textSize="18sp" android:textStyle="bold" />
+                    <com.google.android.material.button.MaterialButton android:id="@+id/buttonWriteComment" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="@string/label_write_comment" android:textAllCaps="false" android:textColor="@color/tt_primary" app:strokeColor="@color/tt_primary" />
+                    <androidx.recyclerview.widget.RecyclerView android:id="@+id/recyclerComments" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:nestedScrollingEnabled="false" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>

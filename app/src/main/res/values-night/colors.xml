@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="tt_primary">#E67300</color>
+    <color name="tt_primary_pressed">#CC6600</color>
+    <color name="tt_primary_tint">#3B2717</color>
+    <color name="tt_success">#10B981</color>
+    <color name="tt_warning">#F59E0B</color>
+    <color name="tt_error">#DC2626</color>
+    <color name="tt_info">#60A5FA</color>
+    <color name="tt_background">#0F172A</color>
+    <color name="tt_surface">#1E293B</color>
+    <color name="tt_surface_alt">#243244</color>
+    <color name="tt_text_primary">#F1F5F9</color>
+    <color name="tt_text_secondary">#94A3B8</color>
+    <color name="tt_text_muted">#64748B</color>
+    <color name="tt_border">#334155</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

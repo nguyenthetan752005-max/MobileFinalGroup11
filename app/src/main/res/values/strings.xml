@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">TungTung</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_explore">Explore</string>
+    <string name="nav_leaderboard">Leaderboard</string>
+    <string name="nav_profile">Profile</string>
+    <string name="home_greeting">Good morning, Tan</string>
+    <string name="home_subtitle">Keep your streak going.</string>
+    <string name="button_continue">Continue</string>
+    <string name="button_continue_guest">Continue as Guest</string>
+    <string name="button_google">Sign in with Google</string>
+    <string name="button_facebook">Sign in with Facebook</string>
+    <string name="lesson_dictation">Dictation</string>
+    <string name="lesson_transcript">Transcript</string>
+    <string name="lesson_speaking">Speaking</string>
+    <string name="lesson_check">Check</string>
+    <string name="lesson_skip">Skip</string>
+    <string name="lesson_next">Next</string>
+    <string name="lesson_try_again">Try Again</string>
+    <string name="label_comments">Comments</string>
+    <string name="label_write_comment">Write a comment...</string>
+    <string name="label_leaderboard_week">This Week</string>
+    <string name="label_leaderboard_month">This Month</string>
+    <string name="placeholder_coming_soon">Feature queued after the core flow.</string>
+</resources>
