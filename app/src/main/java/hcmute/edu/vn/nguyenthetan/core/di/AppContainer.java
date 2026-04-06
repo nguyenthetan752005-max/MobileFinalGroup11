@@ -49,7 +49,6 @@ public class AppContainer {
     private final CheckDictationAnswerUseCase checkDictationAnswerUseCase;
     private final SaveSentenceStatusUseCase saveSentenceStatusUseCase;
     private final SaveSpeakingAttemptUseCase saveSpeakingAttemptUseCase;
-    private final ExecutorService ioExecutor;
     private final MutableLiveData<Boolean> isSyncing = new MutableLiveData<>(true);
 
     public AppContainer(Context context) {
@@ -58,12 +57,12 @@ public class AppContainer {
                         TungTungDatabase.class,
                         "tungtung.db"
                 )
-                .fallbackToDestructiveMigration(false)
+                .fallbackToDestructiveMigration()
                 .allowMainThreadQueries()
                 .build();
 
         new DatabaseSeeder(database).seedIfNeeded();
-        ioExecutor = Executors.newSingleThreadExecutor();
+        ExecutorService ioExecutor = Executors.newSingleThreadExecutor();
 
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
