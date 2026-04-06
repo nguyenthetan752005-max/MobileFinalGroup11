@@ -4,9 +4,7 @@ plugins {
 
 android {
     namespace = "hcmute.edu.vn.nguyenthetan"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "hcmute.edu.vn.nguyenthetan"
