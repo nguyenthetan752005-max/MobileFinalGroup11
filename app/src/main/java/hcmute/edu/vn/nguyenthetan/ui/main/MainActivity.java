@@ -1,4 +1,4 @@
-package hcmute.edu.vn.nguyenthetan;
+package hcmute.edu.vn.nguyenthetan.ui.main;
 
 import android.os.Bundle;
 
@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment;
 
 import android.view.View;
 
+import hcmute.edu.vn.nguyenthetan.R;
 import hcmute.edu.vn.nguyenthetan.TungTungApplication;
 import hcmute.edu.vn.nguyenthetan.core.AppDefaults;
 import hcmute.edu.vn.nguyenthetan.databinding.ActivityMainBinding;

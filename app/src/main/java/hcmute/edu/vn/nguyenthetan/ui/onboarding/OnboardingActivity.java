@@ -6,7 +6,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import hcmute.edu.vn.nguyenthetan.MainActivity;
+import hcmute.edu.vn.nguyenthetan.ui.main.MainActivity;
 import hcmute.edu.vn.nguyenthetan.databinding.ActivityOnboardingBinding;
 
 public class OnboardingActivity extends AppCompatActivity {
