@@ -300,12 +300,21 @@ public final class RemoteEntityMapper {
         }
         try {
             Uri mediaUri = Uri.parse(rawUrl.trim());
+            if (mediaUri.getScheme() == null) {
+                Uri baseUri = Uri.parse(BuildConfig.TUNGTUNG_API_BASE_URL);
+                return baseUri.buildUpon()
+                        .encodedPath(rawUrl.startsWith("/") ? rawUrl : "/" + rawUrl)
+                        .build()
+                        .toString();
+            }
             String host = mediaUri.getHost();
             if (host == null) {
                 return rawUrl;
             }
             String normalizedHost = host.toLowerCase(Locale.US);
-            if (!"localhost".equals(normalizedHost) && !"127.0.0.1".equals(normalizedHost)) {
+            if (!"localhost".equals(normalizedHost)
+                    && !"127.0.0.1".equals(normalizedHost)
+                    && !"10.0.2.2".equals(normalizedHost)) {
                 return rawUrl;
             }
 

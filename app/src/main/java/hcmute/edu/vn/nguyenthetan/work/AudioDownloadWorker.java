@@ -20,8 +20,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
+import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
 import hcmute.edu.vn.nguyenthetan.data.local.dao.lesson.SentenceDao;
 import hcmute.edu.vn.nguyenthetan.data.local.db.TungTungDatabase;
 import hcmute.edu.vn.nguyenthetan.data.local.entity.lesson.SentenceEntity;
@@ -78,6 +80,8 @@ public class AudioDownloadWorker extends Worker {
             SentenceDao sentenceDao = database.sentenceDao();
             List<SentenceEntity> sentences = sentenceDao.getByLessonId(lessonId);
             OkHttpClient client = new OkHttpClient();
+            UserSessionStore userSessionStore = new UserSessionStore(getApplicationContext());
+            String token = userSessionStore.getToken();
             File cacheDir = new File(getApplicationContext().getFilesDir(), "audio_cache");
             if (!cacheDir.exists() && !cacheDir.mkdirs()) {
                 return Result.retry();
@@ -87,20 +91,25 @@ public class AudioDownloadWorker extends Worker {
                 if (sentence == null || sentence.audioUrl == null || sentence.audioUrl.trim().isEmpty()) {
                     continue;
                 }
-                File targetFile = new File(cacheDir, "audio_" + sentence.id + ".mp3");
-                if (targetFile.exists() && targetFile.isFile() && targetFile.length() > 0L) {
-                    sentenceDao.updateLocalAudioPath(sentence.id, targetFile.getAbsolutePath());
+                File existingFile = findExistingCachedAudio(cacheDir, sentence.id);
+                if (existingFile != null && existingFile.isFile() && existingFile.length() > 0L) {
+                    sentenceDao.updateLocalAudioPath(sentence.id, existingFile.getAbsolutePath());
                     continue;
                 }
 
                 Request request = new Request.Builder()
                         .url(sentence.audioUrl)
+                        .header(
+                                "Authorization",
+                                token == null || token.trim().isEmpty() ? "" : "Bearer " + token
+                        )
                         .get()
                         .build();
 
                 try (Response response = client.newCall(request).execute()) {
                     if (!response.isSuccessful()) {
                         Log.w(TAG, "Audio download failed. HTTP " + response.code() + " for sentence " + sentence.id);
+                        sentenceDao.clearLocalAudioPath(sentence.id);
                         if (response.code() >= 500) {
                             return Result.retry();
                         }
@@ -109,8 +118,25 @@ public class AudioDownloadWorker extends Worker {
 
                     ResponseBody body = response.body();
                     if (body == null) {
+                        sentenceDao.clearLocalAudioPath(sentence.id);
                         continue;
                     }
+                    String contentType = body.contentType() == null ? "" : body.contentType().toString();
+                    if (!looksLikeAudioContentType(contentType)) {
+                        Log.w(
+                                TAG,
+                                "Audio download returned non-audio content type for sentence "
+                                        + sentence.id
+                                        + ": "
+                                        + contentType
+                        );
+                        sentenceDao.clearLocalAudioPath(sentence.id);
+                        continue;
+                    }
+                    File targetFile = new File(
+                            cacheDir,
+                            "audio_" + sentence.id + resolveFileExtension(contentType)
+                    );
 
                     try (InputStream inputStream = body.byteStream();
                          FileOutputStream outputStream = new FileOutputStream(targetFile)) {
@@ -124,6 +150,8 @@ public class AudioDownloadWorker extends Worker {
 
                     if (targetFile.length() > 0L) {
                         sentenceDao.updateLocalAudioPath(sentence.id, targetFile.getAbsolutePath());
+                    } else {
+                        sentenceDao.clearLocalAudioPath(sentence.id);
                     }
                 } catch (IOException exception) {
                     Log.w(TAG, "Audio download failed for sentence " + sentence.id + ": " + exception.getMessage());
@@ -139,5 +167,50 @@ public class AudioDownloadWorker extends Worker {
 
     private static String uniqueWorkName(long lessonId) {
         return "lesson-audio-download-" + lessonId;
+    }
+
+    private static boolean looksLikeAudioContentType(String contentType) {
+        if (contentType == null) {
+            return false;
+        }
+        String normalized = contentType.trim().toLowerCase(Locale.US);
+        return normalized.startsWith("audio/")
+                || "application/octet-stream".equals(normalized);
+    }
+
+    private static String resolveFileExtension(String contentType) {
+        if (contentType == null) {
+            return ".bin";
+        }
+        String normalized = contentType.trim().toLowerCase(Locale.US);
+        if (normalized.contains("mpeg") || normalized.contains("mp3")) {
+            return ".mp3";
+        }
+        if (normalized.contains("wav") || normalized.contains("wave")) {
+            return ".wav";
+        }
+        if (normalized.contains("ogg")) {
+            return ".ogg";
+        }
+        if (normalized.contains("aac")) {
+            return ".aac";
+        }
+        if (normalized.contains("mp4") || normalized.contains("m4a")) {
+            return ".m4a";
+        }
+        return ".bin";
+    }
+
+    private static File findExistingCachedAudio(File cacheDir, long sentenceId) {
+        File[] matches = cacheDir.listFiles((dir, name) -> name.startsWith("audio_" + sentenceId + "."));
+        if (matches == null || matches.length == 0) {
+            return null;
+        }
+        for (File match : matches) {
+            if (match != null && match.isFile() && match.length() > 0L) {
+                return match;
+            }
+        }
+        return null;
     }
 }

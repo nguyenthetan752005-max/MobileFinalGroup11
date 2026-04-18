@@ -9,7 +9,7 @@ public class SpeakingResultDto {
     @SerializedName("accuracy")
     public double accuracy;
 
-    @SerializedName(value = "recognizedText", alternate = {"recognized_text"})
+    @SerializedName(value = "recognizedText", alternate = {"recognized_text", "transcribedText"})
     public String recognizedText;
 
     @SerializedName("feedback")

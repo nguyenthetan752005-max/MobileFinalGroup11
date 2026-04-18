@@ -30,6 +30,9 @@ public interface SentenceDao {
     @Query("UPDATE sentence_local SET localAudioPath = :localAudioPath WHERE id = :sentenceId")
     void updateLocalAudioPath(long sentenceId, String localAudioPath);
 
+    @Query("UPDATE sentence_local SET localAudioPath = NULL WHERE id = :sentenceId")
+    void clearLocalAudioPath(long sentenceId);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(List<SentenceEntity> entities);
 }

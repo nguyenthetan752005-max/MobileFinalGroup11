@@ -30,6 +30,9 @@ import android.media.MediaPlayer;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.PlaybackException;
 import androidx.media3.common.Player;
+import androidx.media3.datasource.DataSource;
+import androidx.media3.datasource.DefaultDataSource;
+import androidx.media3.datasource.DefaultHttpDataSource;
 import androidx.media3.datasource.HttpDataSource;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -709,7 +712,10 @@ public class LessonActivity extends AppCompatActivity implements TranscriptAdapt
         }
 
         releaseAudioPlayer(false);
-        mediaPlayer = new ExoPlayer.Builder(this).build();
+        mediaPlayer = new ExoPlayer.Builder(this)
+                .setMediaSourceFactory(new androidx.media3.exoplayer.source.DefaultMediaSourceFactory(this)
+                        .setDataSourceFactory(buildAudioDataSourceFactory()))
+                .build();
         playingSentenceId = latestState.currentSentenceId;
         audioPrepared = false;
         audioPreparing = true;
@@ -1243,15 +1249,41 @@ public class LessonActivity extends AppCompatActivity implements TranscriptAdapt
         return MediaItem.fromUri(Uri.parse(source));
     }
 
+    private DataSource.Factory buildAudioDataSourceFactory() {
+        DefaultHttpDataSource.Factory httpFactory = new DefaultHttpDataSource.Factory();
+        String token = userSessionStore == null ? null : userSessionStore.getToken();
+        if (token != null && !token.trim().isEmpty()) {
+            httpFactory.setDefaultRequestProperties(java.util.Collections.singletonMap(
+                    "Authorization",
+                    "Bearer " + token
+            ));
+        }
+        return new DefaultDataSource.Factory(this, httpFactory);
+    }
+
     private String resolveAudioPlaybackSource() {
         if (latestState == null) {
             return "";
         }
-        File cachedFile = new File(new File(getFilesDir(), "audio_cache"), "audio_" + latestState.currentSentenceId + ".mp3");
+        File cachedFile = findCachedAudioFile(latestState.currentSentenceId);
         if (cachedFile.exists() && cachedFile.isFile() && cachedFile.length() > 0L) {
             return cachedFile.getAbsolutePath();
         }
         return latestState.currentAudioUrl == null ? "" : latestState.currentAudioUrl;
+    }
+
+    @NonNull
+    private File findCachedAudioFile(long sentenceId) {
+        File cacheDir = new File(getFilesDir(), "audio_cache");
+        File[] candidates = cacheDir.listFiles((dir, name) -> name.startsWith("audio_" + sentenceId + "."));
+        if (candidates != null) {
+            for (File candidate : candidates) {
+                if (candidate != null && candidate.isFile() && candidate.length() > 0L) {
+                    return candidate;
+                }
+            }
+        }
+        return new File(cacheDir, "audio_" + sentenceId + ".mp3");
     }
 
     private int resolveAudioErrorMessage(@NonNull PlaybackException error) {

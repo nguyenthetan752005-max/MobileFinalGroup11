@@ -74,14 +74,12 @@ public class OnboardingActivity extends AppCompatActivity {
         });
         binding.buttonSignIn.setOnClickListener(v -> {
             if (ensureNetworkAvailable()) {
-                checkServerAndRun(R.string.loading_checking_server,
-                        () -> startActivity(new Intent(this, LoginActivity.class)));
+                startActivity(new Intent(this, LoginActivity.class));
             }
         });
         binding.buttonCreateAccount.setOnClickListener(v -> {
             if (ensureNetworkAvailable()) {
-                checkServerAndRun(R.string.loading_checking_server,
-                        () -> startActivity(new Intent(this, RegisterActivity.class)));
+                startActivity(new Intent(this, RegisterActivity.class));
             }
         });
     }
