@@ -4,16 +4,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import hcmute.edu.vn.nguyenthetan.core.AppDefaults;
+import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
 import hcmute.edu.vn.nguyenthetan.data.local.dao.user.AppSettingsDao;
 import hcmute.edu.vn.nguyenthetan.data.local.dao.lesson.GuestProgressDao;
 import hcmute.edu.vn.nguyenthetan.data.local.dao.lesson.LessonDao;
+import hcmute.edu.vn.nguyenthetan.data.local.dao.catalog.CategoryDao;
 import hcmute.edu.vn.nguyenthetan.data.local.dao.user.ProfileDao;
 import hcmute.edu.vn.nguyenthetan.data.local.dao.catalog.RecommendationDao;
+import hcmute.edu.vn.nguyenthetan.data.local.dao.catalog.SectionDao;
 import hcmute.edu.vn.nguyenthetan.data.local.dao.user.StreakDayDao;
 import hcmute.edu.vn.nguyenthetan.data.local.entity.user.AppSettingsEntity;
+import hcmute.edu.vn.nguyenthetan.data.local.entity.catalog.CategoryEntity;
 import hcmute.edu.vn.nguyenthetan.data.local.entity.lesson.LessonEntity;
 import hcmute.edu.vn.nguyenthetan.data.local.entity.user.ProfileEntity;
 import hcmute.edu.vn.nguyenthetan.data.local.entity.catalog.RecommendationEntity;
+import hcmute.edu.vn.nguyenthetan.data.local.entity.catalog.SectionEntity;
 import hcmute.edu.vn.nguyenthetan.data.repository.support.RepositoryFormatters;
 import hcmute.edu.vn.nguyenthetan.domain.model.lesson.CurrentLesson;
 import hcmute.edu.vn.nguyenthetan.domain.model.home.HomeDashboard;
@@ -29,6 +34,9 @@ public class RoomHomeRepository implements HomeRepository {
     private final GuestProgressDao guestProgressDao;
     private final RecommendationDao recommendationDao;
     private final AppSettingsDao appSettingsDao;
+    private final SectionDao sectionDao;
+    private final CategoryDao categoryDao;
+    private final UserSessionStore userSessionStore;
 
     public RoomHomeRepository(
             ProfileDao profileDao,
@@ -36,7 +44,10 @@ public class RoomHomeRepository implements HomeRepository {
             LessonDao lessonDao,
             GuestProgressDao guestProgressDao,
             RecommendationDao recommendationDao,
-            AppSettingsDao appSettingsDao
+            AppSettingsDao appSettingsDao,
+            SectionDao sectionDao,
+            CategoryDao categoryDao,
+            UserSessionStore userSessionStore
     ) {
         this.profileDao = profileDao;
         this.streakDayDao = streakDayDao;
@@ -44,39 +55,72 @@ public class RoomHomeRepository implements HomeRepository {
         this.guestProgressDao = guestProgressDao;
         this.recommendationDao = recommendationDao;
         this.appSettingsDao = appSettingsDao;
+        this.sectionDao = sectionDao;
+        this.categoryDao = categoryDao;
+        this.userSessionStore = userSessionStore;
     }
 
     @Override
     public HomeDashboard getHomeDashboard() {
         ProfileEntity profile = profileDao.getProfile();
         AppSettingsEntity settings = appSettingsDao.getSettings();
+        if (profile == null) {
+            profile = new ProfileEntity(
+                    1L,
+                    "Guest",
+                    "guest@local",
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    false,
+                    true,
+                    "Calm",
+                    "",
+                    0,
+                    false
+            );
+        }
 
-        String firstName = profile.name.split(" ")[0];
+        boolean guestMode = userSessionStore == null || !userSessionStore.isLoggedIn();
+        String firstName = guestMode
+                ? "Guest"
+                : (profile.name == null || profile.name.trim().isEmpty()
+                ? "Guest"
+                : profile.name.split(" ")[0]);
         LessonEntity currentLessonEntity = resolveCurrentLesson(settings);
-        int completedSentences = guestProgressDao.getCompletedCountForLesson(currentLessonEntity.id);
+        CategoryEntity currentCategory = resolveCategoryForLesson(currentLessonEntity);
+        int completedSentences = guestMode ? 0 : guestProgressDao.getCompletedCountForLesson(currentLessonEntity.id);
         CurrentLesson currentLesson = new CurrentLesson(
                 currentLessonEntity.id,
                 currentLessonEntity.title,
                 completedSentences,
                 currentLessonEntity.totalSentences,
-                "Listening",
-                "Speaking"
+                RepositoryFormatters.formatPracticeType(currentCategory == null ? null : currentCategory.practiceType),
+                RepositoryFormatters.formatContentType(currentLessonEntity.contentType)
         );
 
         List<Recommendation> recommendations = new ArrayList<>();
         for (RecommendationEntity entity : recommendationDao.getAllOrdered()) {
-            recommendations.add(new Recommendation(entity.title, entity.level, entity.lessonCount, entity.practiceType));
+            recommendations.add(new Recommendation(
+                    entity.title,
+                    entity.level,
+                    entity.lessonCount,
+                    RepositoryFormatters.formatPracticeType(entity.practiceType)
+            ));
         }
 
         return new HomeDashboard(
-                "Good morning, " + firstName,
-                "Keep your streak going.",
-                RepositoryFormatters.buildStreakSummary(profile, streakDayDao.getAllOrdered()),
+                guestMode ? "Welcome, Guest" : "Good morning, " + firstName,
+                guestMode ? "Listen freely now. Create an account to save progress and join the community."
+                        : "Keep your streak going.",
+                RepositoryFormatters.buildStreakSummary(guestMode ? buildGuestProfile() : profile, streakDayDao.getAllOrdered()),
                 currentLesson,
                 new StudyStats(
-                        RepositoryFormatters.formatMinutes(profile.todayStudyMinutes),
-                        RepositoryFormatters.formatMinutes(profile.thisWeekStudyMinutes),
-                        profile.longestStreak
+                        RepositoryFormatters.formatMinutes(guestMode ? 0 : profile.todayStudyMinutes),
+                        RepositoryFormatters.formatMinutes(guestMode ? 0 : profile.thisWeekStudyMinutes),
+                        guestMode ? 0 : profile.longestStreak
                 ),
                 recommendations
         );
@@ -96,6 +140,67 @@ public class RoomHomeRepository implements HomeRepository {
         }
 
         List<LessonEntity> lessons = lessonDao.getAllOrdered();
-        return lessons.get(0);
+        if (!lessons.isEmpty()) {
+            return lessons.get(0);
+        }
+
+        return new LessonEntity(
+                AppDefaults.DEFAULT_LESSON_ID,
+                0L,
+                "Loading lesson...",
+                "Beginner",
+                "Listening",
+                "AUDIO",
+                0,
+                70,
+                null,
+                0
+        );
+    }
+
+    private CategoryEntity resolveCategoryForLesson(LessonEntity lesson) {
+        if (lesson == null) {
+            return null;
+        }
+        SectionEntity section = null;
+        for (CategoryEntity category : categoryDao.getAllOrdered()) {
+            for (SectionEntity item : sectionDao.getByCategoryId(category.id)) {
+                if (item.id == lesson.sectionId) {
+                    section = item;
+                    break;
+                }
+            }
+            if (section != null) {
+                break;
+            }
+        }
+        if (section == null) {
+            return null;
+        }
+        for (CategoryEntity category : categoryDao.getAllOrdered()) {
+            if (category.id == section.categoryId) {
+                return category;
+            }
+        }
+        return null;
+    }
+
+    private ProfileEntity buildGuestProfile() {
+        return new ProfileEntity(
+                1L,
+                "Guest",
+                "guest@local",
+                0,
+                0,
+                0,
+                0,
+                0,
+                false,
+                true,
+                "Guest mode",
+                "",
+                0,
+                false
+        );
     }
 }

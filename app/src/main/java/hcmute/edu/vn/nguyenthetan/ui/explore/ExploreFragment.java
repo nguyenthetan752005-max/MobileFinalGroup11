@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -56,6 +57,14 @@ public class ExploreFragment extends Fragment implements CategoryAdapter.Listene
         ExploreViewModelFactory factory = new ExploreViewModelFactory(application.getAppContainer().getExploreCatalogUseCase());
         ExploreViewModel viewModel = new ViewModelProvider(this, factory).get(ExploreViewModel.class);
         viewModel.getCategories().observe(getViewLifecycleOwner(), adapter::submitList);
+        viewModel.getLoadingState().observe(getViewLifecycleOwner(), loading ->
+                binding.progressExploreLoad.setVisibility(Boolean.TRUE.equals(loading) ? View.VISIBLE : View.GONE)
+        );
+        application.getAppContainer().getSyncErrorMessage().observe(getViewLifecycleOwner(), message -> {
+            if (message != null && !message.trim().isEmpty()) {
+                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+            }
+        });
         
         application.getAppContainer().getIsSyncing().observe(getViewLifecycleOwner(), syncing -> {
             if (!syncing) {

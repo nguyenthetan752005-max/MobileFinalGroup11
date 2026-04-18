@@ -26,6 +26,7 @@ public class SentenceEntity {
 
     public long lessonId;
     public String audioUrl;
+    public String localAudioPath;
     public String content;
     public String hintText;
     public long durationMillis;
@@ -37,6 +38,7 @@ public class SentenceEntity {
             long id,
             long lessonId,
             String audioUrl,
+            String localAudioPath,
             String content,
             String hintText,
             long durationMillis,
@@ -47,6 +49,7 @@ public class SentenceEntity {
         this.id = id;
         this.lessonId = lessonId;
         this.audioUrl = audioUrl;
+        this.localAudioPath = localAudioPath;
         this.content = content;
         this.hintText = hintText;
         this.durationMillis = durationMillis;

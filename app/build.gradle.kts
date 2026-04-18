@@ -13,8 +13,11 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        val apiBaseUrl = project.findProperty("tungTungApiBaseUrl") as String? ?: "http://10.0.2.2:8080/"
+        val apiBaseUrl = project.findProperty("tungTungApiBaseUrl") as String?
+            ?: error("Missing tungTungApiBaseUrl in gradle.properties. Edit that single property to change backend host/port.")
         buildConfigField("String", "TUNGTUNG_API_BASE_URL", "\"$apiBaseUrl\"")
+        val googleWebClientId = project.findProperty("tungTungGoogleWebClientId") as String? ?: ""
+        buildConfigField("String", "TUNGTUNG_GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -53,6 +56,11 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.okhttp.logging)
+    implementation(libs.android.youtube.player)
+    implementation(libs.media3.exoplayer)
+    implementation(libs.work.runtime)
+    implementation(libs.play.services.auth)
+    implementation(libs.androidx.webkit)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

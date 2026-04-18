@@ -5,8 +5,11 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.List;
 
-import hcmute.edu.vn.nguyenthetan.data.local.db.TungTungDatabase;
+import hcmute.edu.vn.nguyenthetan.core.RetryUtil;
 import hcmute.edu.vn.nguyenthetan.data.local.entity.catalog.CategoryEntity;
+import hcmute.edu.vn.nguyenthetan.data.local.entity.catalog.SectionEntity;
+import hcmute.edu.vn.nguyenthetan.data.local.entity.lesson.LessonEntity;
+import hcmute.edu.vn.nguyenthetan.data.local.db.TungTungDatabase;
 import hcmute.edu.vn.nguyenthetan.data.local.entity.system.SyncStateEntity;
 import hcmute.edu.vn.nguyenthetan.data.remote.api.MobileApiService;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileBootstrapDto;
@@ -25,46 +28,63 @@ public class RemoteCatalogSyncManager {
         this.database = database;
     }
 
-    public void sync() {
-        try {
-            Response<MobileBootstrapDto> response = mobileApiService.getBootstrap().execute();
-            if (!response.isSuccessful() || response.body() == null) {
-                Log.w(TAG, "Bootstrap sync skipped. HTTP " + response.code());
-                return;
-            }
-
-            MobileBootstrapDto bootstrap = response.body();
-            List<CategoryEntity> categories = RemoteEntityMapper.toCategoryEntities(bootstrap.categories);
-            if (categories.isEmpty()) {
-                Log.w(TAG, "Bootstrap sync skipped. Empty category payload.");
-                return;
-            }
-
-            SyncStateEntity currentState = database.syncStateDao().getByKey("catalog");
-            if (currentState != null && currentState.version != null && currentState.version.equals(bootstrap.version)) {
-                Log.d(TAG, "Bootstrap sync skipped. Catalog version is unchanged.");
-                return;
-            }
-
-            database.runInTransaction(() -> {
-                database.categoryDao().deleteAll();
-                database.categoryDao().insertAll(categories);
-                database.sectionDao().insertAll(RemoteEntityMapper.toSectionEntities(bootstrap.sections));
-                database.lessonDao().insertAll(RemoteEntityMapper.toLessonEntities(bootstrap.lessons));
-                database.sentenceDao().insertAll(RemoteEntityMapper.toSentenceEntities(bootstrap.sentences));
-                database.commentDao().insertAll(RemoteEntityMapper.toCommentEntities(bootstrap.comments));
-                database.leaderboardDao().deleteEntries();
-                database.leaderboardDao().deleteMeta();
-                database.leaderboardDao().insertEntries(RemoteEntityMapper.toLeaderboardEntries(bootstrap));
-                database.leaderboardDao().upsertMeta(RemoteEntityMapper.toLeaderboardMeta(bootstrap));
-                database.syncStateDao().upsert(new hcmute.edu.vn.nguyenthetan.data.local.entity.system.SyncStateEntity(
-                        "catalog",
-                        bootstrap.version,
-                        System.currentTimeMillis()
-                ));
-            });
-        } catch (IOException exception) {
-            Log.w(TAG, "Bootstrap sync failed: " + exception.getMessage());
+    public void sync() throws IOException {
+        Response<MobileBootstrapDto> response = RetryUtil.retryWithBackoff(
+                () -> mobileApiService.getBootstrapLite().execute(),
+                3,
+                700L,
+                2500L,
+                2.0
+        );
+        if (!response.isSuccessful() || response.body() == null) {
+            throw new IOException("Bootstrap lite failed with HTTP " + response.code());
         }
+
+        MobileBootstrapDto bootstrap = response.body();
+        String remoteVersion = resolveRemoteVersion(bootstrap);
+        SyncStateEntity currentState = database.syncStateDao().getByKey("catalog");
+        if (currentState != null
+                && currentState.version != null
+                && currentState.version.equals(remoteVersion)
+                && database.categoryDao().count() > 0) {
+            Log.d(TAG, "Catalog sync skipped. Remote version unchanged: " + remoteVersion);
+            return;
+        }
+
+        List<CategoryEntity> categories = RemoteEntityMapper.toCategoryEntities(bootstrap.categories);
+        List<SectionEntity> sections = RemoteEntityMapper.toSectionEntities(bootstrap.sections);
+        List<LessonEntity> lessons = RemoteEntityMapper.toLessonEntities(bootstrap.lessons, sections, categories);
+        if (categories.isEmpty()) {
+            throw new IOException("Bootstrap lite returned empty categories.");
+        }
+
+        database.runInTransaction(() -> {
+            database.sentenceDao().deleteAll();
+            database.lessonDao().deleteAll();
+            database.sectionDao().deleteAll();
+            database.categoryDao().deleteAll();
+
+            database.categoryDao().insertAll(categories);
+            database.sectionDao().insertAll(sections);
+            database.lessonDao().insertAll(lessons);
+            database.syncStateDao().upsert(new SyncStateEntity(
+                    "catalog",
+                    remoteVersion,
+                    System.currentTimeMillis()
+            ));
+        });
+    }
+
+    private String resolveRemoteVersion(MobileBootstrapDto bootstrap) {
+        if (bootstrap == null) {
+            return "unknown";
+        }
+        if (bootstrap.version != null && !bootstrap.version.trim().isEmpty()) {
+            return bootstrap.version.trim();
+        }
+        if (bootstrap.generatedAt != null && !bootstrap.generatedAt.trim().isEmpty()) {
+            return bootstrap.generatedAt.trim();
+        }
+        return "unknown";
     }
 }

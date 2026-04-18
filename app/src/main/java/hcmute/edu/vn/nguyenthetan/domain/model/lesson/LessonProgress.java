@@ -1,11 +1,8 @@
-package hcmute.edu.vn.nguyenthetan.domain.model;
+package hcmute.edu.vn.nguyenthetan.domain.model.lesson;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import hcmute.edu.vn.nguyenthetan.domain.model.lesson.SentenceStatus;
-import hcmute.edu.vn.nguyenthetan.domain.model.lesson.SpeakingAttempt;
-
 
 public class LessonProgress {
 

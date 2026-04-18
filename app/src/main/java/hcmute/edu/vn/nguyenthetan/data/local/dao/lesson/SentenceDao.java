@@ -18,6 +18,18 @@ public interface SentenceDao {
     @Query("SELECT * FROM sentence_local WHERE id = :sentenceId LIMIT 1")
     SentenceEntity getById(long sentenceId);
 
+    @Query("SELECT COUNT(*) FROM sentence_local WHERE lessonId = :lessonId")
+    int countByLessonId(long lessonId);
+
+    @Query("DELETE FROM sentence_local WHERE lessonId = :lessonId")
+    void deleteByLessonId(long lessonId);
+
+    @Query("DELETE FROM sentence_local")
+    void deleteAll();
+
+    @Query("UPDATE sentence_local SET localAudioPath = :localAudioPath WHERE id = :sentenceId")
+    void updateLocalAudioPath(long sentenceId, String localAudioPath);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(List<SentenceEntity> entities);
 }

@@ -49,7 +49,7 @@ import hcmute.edu.vn.nguyenthetan.data.local.entity.system.SyncStateEntity;
                 StreakDayEntity.class,
                 SyncStateEntity.class
         },
-        version = 1,
+        version = 4,
         exportSchema = false
 )
 @TypeConverters(RoomConverters.class)

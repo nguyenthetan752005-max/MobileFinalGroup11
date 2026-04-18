@@ -15,6 +15,15 @@ public interface SectionDao {
     @Query("SELECT * FROM section_local WHERE categoryId = :categoryId ORDER BY orderIndex, id")
     List<SectionEntity> getByCategoryId(long categoryId);
 
+    @Query("SELECT COUNT(*) FROM section_local WHERE categoryId = :categoryId")
+    int countByCategoryId(long categoryId);
+
+    @Query("DELETE FROM section_local WHERE categoryId = :categoryId")
+    void deleteByCategoryId(long categoryId);
+
+    @Query("DELETE FROM section_local")
+    void deleteAll();
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(List<SectionEntity> entities);
 }

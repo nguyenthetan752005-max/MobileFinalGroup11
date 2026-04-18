@@ -12,6 +12,9 @@ public class GetLessonSessionUseCase {
     }
 
     public LessonSession execute(long lessonId) {
+        if (!repository.hasLessonContent(lessonId)) {
+            repository.syncLessonContent(lessonId);
+        }
         return repository.getLessonSession(lessonId);
     }
 }

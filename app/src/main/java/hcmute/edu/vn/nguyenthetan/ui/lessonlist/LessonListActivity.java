@@ -3,6 +3,8 @@ package hcmute.edu.vn.nguyenthetan.ui.lessonlist;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import hcmute.edu.vn.nguyenthetan.TungTungApplication;
 import hcmute.edu.vn.nguyenthetan.databinding.ActivityLessonListBinding;
 import hcmute.edu.vn.nguyenthetan.domain.model.explore.LessonCollection;
+import hcmute.edu.vn.nguyenthetan.ui.auth.AccountLockUiHandler;
 import hcmute.edu.vn.nguyenthetan.ui.lesson.LessonActivity;
 
 public class LessonListActivity extends AppCompatActivity implements LessonSectionAdapter.Listener {
@@ -33,6 +36,7 @@ public class LessonListActivity extends AppCompatActivity implements LessonSecti
         super.onCreate(savedInstanceState);
         binding = ActivityLessonListBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        AccountLockUiHandler.attach(this);
 
         adapter = new LessonSectionAdapter(this);
         binding.recyclerSections.setLayoutManager(new LinearLayoutManager(this));
@@ -48,6 +52,14 @@ public class LessonListActivity extends AppCompatActivity implements LessonSecti
         );
         viewModel = new ViewModelProvider(this, factory).get(LessonListViewModel.class);
         viewModel.getCollectionState().observe(this, this::render);
+        viewModel.getLoadingState().observe(this, loading ->
+                binding.progressLoad.setVisibility(Boolean.TRUE.equals(loading) ? View.VISIBLE : View.GONE)
+        );
+        application.getAppContainer().getSyncErrorMessage().observe(this, message -> {
+            if (message != null && !message.trim().isEmpty()) {
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+            }
+        });
         viewModel.load();
     }
 

@@ -75,6 +75,14 @@
         app:tabSelectedTextColor="@color/tt_primary"
         app:tabTextColor="@color/tt_text_secondary" />
 
+    <ProgressBar
+        android:id="@+id/progressLessonLoad"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:visibility="gone" />
+
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -85,6 +93,24 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/videoPlayerCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone"
+                app:cardBackgroundColor="@color/tt_surface"
+                app:cardCornerRadius="@dimen/card_radius"
+                app:strokeColor="@color/tt_border"
+                app:strokeWidth="1dp">
+
+                <com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+                    android:id="@+id/youtubePlayerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="220dp"
+                    app:enableAutomaticInitialization="false" />
+            </com.google.android.material.card.MaterialCardView>
 
             <LinearLayout
                 android:id="@+id/dictationContainer"
@@ -145,6 +171,14 @@
                             android:layout_marginTop="14dp"
                             app:indicatorColor="@color/tt_primary"
                             app:trackColor="@color/tt_border" />
+
+                        <TextView
+                            android:id="@+id/textMediaSummary"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:textColor="@color/tt_text_secondary"
+                            android:textSize="13sp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -266,6 +300,14 @@
                     app:indicatorColor="@color/tt_primary"
                     app:trackColor="@color/tt_border" />
 
+                <TextView
+                    android:id="@+id/textTranscriptMediaSummary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:textColor="@color/tt_text_secondary"
+                    android:textSize="13sp" />
+
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recyclerTranscript"
                     android:layout_width="match_parent"
@@ -281,7 +323,18 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
-                <TextView android:id="@+id/textSpeakingReference" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/tt_text_primary" android:textSize="20sp" android:textStyle="bold" />
+                <TextView android:id="@+id/textSpeakingReference" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/tt_text_primary" android:textSize="20sp" android:textStyle="bold" android:gravity="center" />
+
+                <ImageButton
+                    android:id="@+id/buttonSpeakingPlay"
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="16dp"
+                    android:backgroundTint="@color/tt_info"
+                    android:src="@android:drawable/ic_media_play"
+                    android:contentDescription="@string/lesson_play_sample"
+                    android:tint="@color/white" />
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/buttonRecord"
@@ -294,9 +347,17 @@
                     app:fabCustomSize="88dp" />
 
                 <TextView android:id="@+id/textRecordingState" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_horizontal" android:layout_marginTop="12dp" android:textColor="@color/tt_text_secondary" />
-                <TextView android:id="@+id/textBestScore" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:textColor="@color/tt_warning" android:textStyle="bold" />
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="16dp" android:gravity="center_vertical">
+                    <TextView android:id="@+id/textBestScore" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="@color/tt_warning" android:textStyle="bold" />
+                    <ImageButton android:id="@+id/buttonPlayBestAudio" android:layout_width="32dp" android:layout_height="32dp" android:src="@android:drawable/ic_media_play" android:background="?attr/selectableItemBackgroundBorderless" android:visibility="gone" android:contentDescription="@string/lesson_play_best_audio" />
+                </LinearLayout>
                 <TextView android:id="@+id/textBestTranscript" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/tt_text_secondary" />
-                <TextView android:id="@+id/textCurrentScore" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:textColor="@color/tt_info" android:textStyle="bold" />
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="12dp" android:gravity="center_vertical">
+                    <TextView android:id="@+id/textCurrentScore" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="@color/tt_info" android:textStyle="bold" />
+                    <ImageButton android:id="@+id/buttonPlayCurrentAudio" android:layout_width="32dp" android:layout_height="32dp" android:src="@android:drawable/ic_media_play" android:background="?attr/selectableItemBackgroundBorderless" android:visibility="gone" android:contentDescription="@string/lesson_play_current_audio" />
+                </LinearLayout>
                 <TextView android:id="@+id/textCurrentTranscript" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/tt_text_secondary" />
 
                 <LinearLayout

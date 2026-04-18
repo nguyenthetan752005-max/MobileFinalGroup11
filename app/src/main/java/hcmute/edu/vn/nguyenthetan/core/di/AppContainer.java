@@ -1,6 +1,9 @@
 package hcmute.edu.vn.nguyenthetan.core.di;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -8,10 +11,13 @@ import androidx.room.Room;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import hcmute.edu.vn.nguyenthetan.BuildConfig;
+import hcmute.edu.vn.nguyenthetan.core.AccountLockInterceptor;
+import hcmute.edu.vn.nguyenthetan.core.RetryUtil;
+import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
 import hcmute.edu.vn.nguyenthetan.data.local.db.TungTungDatabase;
-import hcmute.edu.vn.nguyenthetan.data.local.seed.DatabaseSeeder;
 import hcmute.edu.vn.nguyenthetan.data.repository.RoomCatalogRepository;
 import hcmute.edu.vn.nguyenthetan.data.repository.RoomCommentRepository;
 import hcmute.edu.vn.nguyenthetan.data.repository.RoomHomeRepository;
@@ -19,7 +25,11 @@ import hcmute.edu.vn.nguyenthetan.data.repository.RoomLeaderboardRepository;
 import hcmute.edu.vn.nguyenthetan.data.repository.RoomLessonRepository;
 import hcmute.edu.vn.nguyenthetan.data.repository.RoomProfileRepository;
 import hcmute.edu.vn.nguyenthetan.data.remote.api.MobileApiService;
+import hcmute.edu.vn.nguyenthetan.data.remote.dto.HealthStatusDto;
+import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileBootstrapDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteCatalogSyncManager;
+import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteCategorySyncManager;
+import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteLessonSyncManager;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.CheckDictationAnswerUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.comment.GetCommentsUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.explore.GetExploreCatalogUseCase;
@@ -33,10 +43,18 @@ import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SaveSentenceStatusUseCas
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SaveSpeakingAttemptUseCase;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class AppContainer {
+
+    private static final String TAG = "AppContainer";
+    private static final String DEFAULT_SERVER_ERROR_MESSAGE = "Không thể kết nối đến server. Hãy kiểm tra backend và thử lại.";
+
+    public interface ServerCheckCallback {
+        void onResult(boolean available, String message);
+    }
 
     private final GetHomeDashboardUseCase getHomeDashboardUseCase;
     private final GetExploreCatalogUseCase getExploreCatalogUseCase;
@@ -50,9 +68,17 @@ public class AppContainer {
     private final SaveSentenceStatusUseCase saveSentenceStatusUseCase;
     private final SaveSpeakingAttemptUseCase saveSpeakingAttemptUseCase;
     private final MutableLiveData<Boolean> isSyncing = new MutableLiveData<>(true);
+    private final MutableLiveData<String> syncErrorMessage = new MutableLiveData<>();
+    private final RemoteCatalogSyncManager remoteCatalogSyncManager;
+    private final ExecutorService ioExecutor;
+    private final TungTungDatabase database;
+    private final MobileApiService mobileApiService;
+    private final UserSessionStore userSessionStore;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     public AppContainer(Context context) {
-        TungTungDatabase database = Room.databaseBuilder(
+        userSessionStore = new UserSessionStore(context);
+        database = Room.databaseBuilder(
                         context.getApplicationContext(),
                         TungTungDatabase.class,
                         "tungtung.db"
@@ -61,13 +87,27 @@ public class AppContainer {
                 .allowMainThreadQueries()
                 .build();
 
-        new DatabaseSeeder(database).seedIfNeeded();
-        ExecutorService ioExecutor = Executors.newSingleThreadExecutor();
+        ioExecutor = Executors.newSingleThreadExecutor();
 
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
 
         OkHttpClient httpClient = new OkHttpClient.Builder()
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .retryOnConnectionFailure(true)
+                .addInterceptor(chain -> {
+                    okhttp3.Request original = chain.request();
+                    String token = userSessionStore.getToken();
+                    if (token != null && !token.isEmpty()) {
+                        okhttp3.Request.Builder builder = original.newBuilder()
+                                .header("Authorization", "Bearer " + token);
+                        return chain.proceed(builder.build());
+                    }
+                    return chain.proceed(original);
+                })
+                .addInterceptor(new AccountLockInterceptor(userSessionStore))
                 .addInterceptor(loggingInterceptor)
                 .build();
 
@@ -77,22 +117,19 @@ public class AppContainer {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
-        MobileApiService mobileApiService = retrofit.create(MobileApiService.class);
-        RemoteCatalogSyncManager remoteCatalogSyncManager = new RemoteCatalogSyncManager(mobileApiService, database);
-        ioExecutor.execute(() -> {
-            isSyncing.postValue(true);
-            try {
-                remoteCatalogSyncManager.sync();
-            } finally {
-                isSyncing.postValue(false);
-            }
-        });
+        mobileApiService = retrofit.create(MobileApiService.class);
+        RemoteCategorySyncManager remoteCategorySyncManager = new RemoteCategorySyncManager(mobileApiService, database);
+        remoteCatalogSyncManager = new RemoteCatalogSyncManager(mobileApiService, database);
+        RemoteLessonSyncManager remoteLessonSyncManager = new RemoteLessonSyncManager(mobileApiService, database);
+
+        sync();
 
         RoomCatalogRepository catalogRepository = new RoomCatalogRepository(
                 database.categoryDao(),
                 database.sectionDao(),
                 database.lessonDao(),
-                database.guestProgressDao()
+                database.guestProgressDao(),
+                remoteCategorySyncManager
         );
         RoomLessonRepository lessonRepository = new RoomLessonRepository(
                 database.lessonDao(),
@@ -100,7 +137,9 @@ public class AppContainer {
                 database.guestProgressDao(),
                 database.appSettingsDao(),
                 database.sectionDao(),
-                database.categoryDao()
+                database.categoryDao(),
+                remoteLessonSyncManager,
+                userSessionStore
         );
         RoomHomeRepository homeRepository = new RoomHomeRepository(
                 database.profileDao(),
@@ -108,12 +147,16 @@ public class AppContainer {
                 database.lessonDao(),
                 database.guestProgressDao(),
                 database.recommendationDao(),
-                database.appSettingsDao()
+                database.appSettingsDao(),
+                database.sectionDao(),
+                database.categoryDao(),
+                userSessionStore
         );
         RoomProfileRepository profileRepository = new RoomProfileRepository(
                 database.profileDao(),
                 database.dailyActivityDao(),
-                database.streakDayDao()
+                database.streakDayDao(),
+                userSessionStore
         );
         RoomLeaderboardRepository leaderboardRepository = new RoomLeaderboardRepository(database.leaderboardDao());
         RoomCommentRepository commentRepository = new RoomCommentRepository(database.commentDao());
@@ -129,6 +172,26 @@ public class AppContainer {
         checkDictationAnswerUseCase = new CheckDictationAnswerUseCase();
         saveSentenceStatusUseCase = new SaveSentenceStatusUseCase(lessonRepository);
         saveSpeakingAttemptUseCase = new SaveSpeakingAttemptUseCase(lessonRepository);
+    }
+
+    public void sync() {
+        ioExecutor.execute(() -> {
+            syncErrorMessage.postValue(null);
+            isSyncing.postValue(true);
+            try {
+                Log.d(TAG, "Starting remote catalog sync.");
+                remoteCatalogSyncManager.sync();
+                Log.d(TAG, "Remote catalog sync finished.");
+                if (database.categoryDao().count() <= 0) {
+                    syncErrorMessage.postValue("Không thể tải dữ liệu từ server, hãy thử kiểm tra lại kết nối!");
+                }
+            } catch (Exception exception) {
+                Log.e(TAG, "Remote catalog sync failed.", exception);
+                syncErrorMessage.postValue("Không thể tải dữ liệu từ server, hãy thử kiểm tra lại kết nối!");
+            } finally {
+                isSyncing.postValue(false);
+            }
+        });
     }
 
     public GetHomeDashboardUseCase getHomeDashboardUseCase() {
@@ -177,5 +240,60 @@ public class AppContainer {
 
     public LiveData<Boolean> getIsSyncing() {
         return isSyncing;
+    }
+
+    public MobileApiService getMobileApiService() {
+        return mobileApiService;
+    }
+
+    public LiveData<String> getSyncErrorMessage() {
+        return syncErrorMessage;
+    }
+
+    public UserSessionStore getUserSessionStore() {
+        return userSessionStore;
+    }
+
+    public boolean hasCatalogData() {
+        return database.categoryDao().count() > 0;
+    }
+
+    public void checkServerAvailability(ServerCheckCallback callback) {
+        ioExecutor.execute(() -> {
+            boolean available = false;
+            String message = DEFAULT_SERVER_ERROR_MESSAGE;
+            try {
+                Response<HealthStatusDto> healthResponse = RetryUtil.retryWithBackoff(
+                        () -> mobileApiService.getHealth().execute(),
+                        3,
+                        500L,
+                        2000L,
+                        2.0
+                );
+                available = healthResponse.isSuccessful()
+                        && healthResponse.body() != null
+                        && "UP".equalsIgnoreCase(healthResponse.body().status);
+                if (!available) {
+                    Response<MobileBootstrapDto> fallbackResponse = mobileApiService.getBootstrapLite().execute();
+                    available = fallbackResponse.isSuccessful() && fallbackResponse.body() != null;
+                    if (!available) {
+                        message = "Server không phản hồi hợp lệ. HTTP health="
+                                + healthResponse.code()
+                                + ", bootstrap="
+                                + fallbackResponse.code()
+                                + ".";
+                    }
+                }
+            } catch (Exception exception) {
+                Log.e(TAG, "Server availability check failed.", exception);
+                String detail = exception.getMessage();
+                if (detail != null && !detail.trim().isEmpty()) {
+                    message = DEFAULT_SERVER_ERROR_MESSAGE + "\n" + detail;
+                }
+            }
+            boolean finalAvailable = available;
+            String finalMessage = message;
+            mainHandler.post(() -> callback.onResult(finalAvailable, finalMessage));
+        });
     }
 }

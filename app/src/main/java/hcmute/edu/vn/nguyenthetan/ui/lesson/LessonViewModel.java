@@ -1,7 +1,5 @@
 package hcmute.edu.vn.nguyenthetan.ui.lesson;
 
-import android.os.CountDownTimer;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -11,10 +9,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import hcmute.edu.vn.nguyenthetan.domain.model.comment.Comment;
 import hcmute.edu.vn.nguyenthetan.domain.model.lesson.DictationFeedback;
-import hcmute.edu.vn.nguyenthetan.domain.model.LessonProgress;
+import hcmute.edu.vn.nguyenthetan.domain.model.lesson.LessonProgress;
 import hcmute.edu.vn.nguyenthetan.domain.model.lesson.LessonSession;
 import hcmute.edu.vn.nguyenthetan.domain.model.lesson.Sentence;
 import hcmute.edu.vn.nguyenthetan.domain.model.lesson.SentenceStatus;
@@ -28,10 +28,15 @@ import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SaveSpeakingAttemptUseCa
 
 public class LessonViewModel extends ViewModel {
 
+    public static final int TAB_DICTATION = 0;
+    public static final int TAB_TRANSCRIPT = 1;
+    public static final int TAB_SPEAKING = 2;
+
     public static class UiState {
         public int selectedTab;
         public String title;
         public String subtitle;
+        public String mediaSummary;
         public String sentenceCounter;
         public SentenceStatus currentStatus;
         public int progressPercent;
@@ -46,15 +51,29 @@ public class LessonViewModel extends ViewModel {
         public String transcriptSentence;
         public List<TranscriptAdapter.Row> transcriptRows;
         public String playbackTime;
+        public String playbackLabel;
         public int playbackPercent;
         public boolean playing;
+        public boolean canPlayAudio;
+        public boolean videoLesson;
+        public boolean showDictationTab;
+        public boolean showTranscriptTab;
+        public boolean showSpeakingTab;
+        public String currentAudioUrl;
+        public String youtubeVideoId;
+        public Double startTime;
+        public Double endTime;
+        public long currentSentenceId;
         public String speakingReference;
         public boolean recording;
+        public boolean speakingBusy;
         public String recordingLabel;
         public String bestScore;
         public String bestTranscript;
+        public String bestAudioUrl;
         public String currentScore;
         public String currentTranscript;
+        public String currentUserAudioUrl;
         public boolean speakingNextEnabled;
         public List<Comment> comments;
     }
@@ -67,7 +86,9 @@ public class LessonViewModel extends ViewModel {
     private final SaveSpeakingAttemptUseCase saveSpeakingAttemptUseCase;
     private final long lessonId;
     private final MutableLiveData<UiState> uiState = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> loadingState = new MutableLiveData<>(false);
     private final Map<Long, SentenceStatus> sentenceStatuses = new LinkedHashMap<>();
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     private LessonSession lessonSession;
     private List<Comment> comments = new ArrayList<>();
@@ -76,10 +97,13 @@ public class LessonViewModel extends ViewModel {
     private String inputText = "";
     private DictationFeedback feedback;
     private SpeakingAttempt currentAttempt;
+    private SpeakingAttempt bestAttempt;
     private boolean recording;
     private boolean playing;
     private long playbackPosition;
-    private CountDownTimer timer;
+    private long playbackDuration;
+    private boolean speakingBusy;
+    private String speakingBusyLabel = "";
     private boolean loaded;
 
     public LessonViewModel(
@@ -104,23 +128,38 @@ public class LessonViewModel extends ViewModel {
         return uiState;
     }
 
+    public LiveData<Boolean> getLoadingState() {
+        return loadingState;
+    }
+
     public void load() {
         if (loaded) {
             return;
         }
-        lessonSession = getLessonSessionUseCase.execute(lessonId);
-        LessonProgress lessonProgress = getLessonProgressUseCase.execute(lessonId);
-        sentenceStatuses.clear();
-        sentenceStatuses.putAll(lessonProgress.getSentenceStatuses());
-        currentIndex = lessonProgress.getCurrentSentenceIndex();
-        currentAttempt = lessonProgress.getCurrentAttempt();
-        if (sentenceStatuses.get(getCurrentSentence().getId()) == SentenceStatus.NOT_STARTED) {
-            sentenceStatuses.put(getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
-            saveSentenceStatusUseCase.execute(lessonId, getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
-        }
-        comments = getCommentsUseCase.execute(getCurrentSentence().getId());
-        loaded = true;
-        publish();
+        loadingState.setValue(true);
+        executorService.execute(() -> {
+            lessonSession = getLessonSessionUseCase.execute(lessonId);
+            LessonProgress lessonProgress = getLessonProgressUseCase.execute(lessonId);
+            sentenceStatuses.clear();
+            sentenceStatuses.putAll(lessonProgress.getSentenceStatuses());
+            currentIndex = lessonProgress.getCurrentSentenceIndex();
+            currentAttempt = lessonProgress.getCurrentAttempt();
+            bestAttempt = lessonSession.getBestAttempt();
+            if (lessonSession == null || lessonSession.getSentences().isEmpty()) {
+                loaded = true;
+                uiState.postValue(new UiState());
+                loadingState.postValue(false);
+                return;
+            }
+            if (sentenceStatuses.get(getCurrentSentence().getId()) == SentenceStatus.NOT_STARTED) {
+                sentenceStatuses.put(getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
+                saveSentenceStatusUseCase.execute(lessonId, getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
+            }
+            comments = getCommentsUseCase.execute(getCurrentSentence().getId());
+            loaded = true;
+            publish();
+            loadingState.postValue(false);
+        });
     }
 
     public void selectTab(int tabIndex) {
@@ -133,44 +172,46 @@ public class LessonViewModel extends ViewModel {
     }
 
     public void togglePlayback() {
-        if (lessonSession == null) {
-            return;
+        playing = !playing;
+        if (playing && getCurrentSentence() != null && playbackPosition >= resolvePlaybackDuration(getCurrentSentence())) {
+            playbackPosition = 0L;
         }
-        if (playing) {
-            stopTimer();
-            publish();
-            return;
-        }
-        Sentence sentence = getCurrentSentence();
-        final long duration = sentence.getDurationMillis();
-        long remaining = Math.max(duration - playbackPosition, 0);
-        if (remaining == 0) {
-            playbackPosition = 0;
-            remaining = duration;
-        }
-        playing = true;
-        timer = new CountDownTimer(remaining, 200) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                playbackPosition = duration - millisUntilFinished;
-                publish();
-            }
-
-            @Override
-            public void onFinish() {
-                playing = false;
-                playbackPosition = duration;
-                publish();
-            }
-        };
-        timer.start();
         publish();
     }
 
     public void replay() {
-        playbackPosition = 0;
-        stopTimer();
-        togglePlayback();
+        playbackPosition = 0L;
+        playbackDuration = 0L;
+        playing = true;
+        publish();
+    }
+
+    public void pausePlayback() {
+        playing = false;
+        publish();
+    }
+
+    public void resetPlayback() {
+        playing = false;
+        playbackPosition = 0L;
+        playbackDuration = 0L;
+        publish();
+    }
+
+    public void updatePlaybackProgress(long positionMillis, long durationMillis, boolean isPlaying) {
+        playbackPosition = Math.max(positionMillis, 0L);
+        if (durationMillis > 0L) {
+            playbackDuration = durationMillis;
+        }
+        playing = isPlaying;
+        publish();
+    }
+
+    public void completePlayback(long durationMillis) {
+        playbackDuration = Math.max(durationMillis, playbackDuration);
+        playbackPosition = playbackDuration;
+        playing = false;
+        publish();
     }
 
     public void checkAnswer() {
@@ -208,11 +249,10 @@ public class LessonViewModel extends ViewModel {
         if (lessonSession == null || index < 0 || index >= lessonSession.getSentences().size()) {
             return;
         }
-        stopTimer();
+        resetPlaybackInternal();
         currentIndex = index;
         feedback = null;
         inputText = "";
-        playbackPosition = 0;
         if (sentenceStatuses.get(getCurrentSentence().getId()) == SentenceStatus.NOT_STARTED) {
             sentenceStatuses.put(getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
             saveSentenceStatusUseCase.execute(lessonId, getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
@@ -227,7 +267,10 @@ public class LessonViewModel extends ViewModel {
             int score = (currentIndex % 2 == 0) ? 78 : 65;
             currentAttempt = new SpeakingAttempt(score, getCurrentSentence().getContent(), score >= lessonSession.getPassThreshold()
                     ? "Clear enough to pass. Keep that rhythm."
-                    : "You are close. Focus on consonant endings.");
+                    : "You are close. Focus on consonant endings.", "");
+            if (bestAttempt == null || score > bestAttempt.getScore()) {
+                bestAttempt = currentAttempt;
+            }
             saveSpeakingAttemptUseCase.execute(lessonId, getCurrentSentence().getId(), currentAttempt, lessonSession.getPassThreshold());
             if (score >= lessonSession.getPassThreshold()) {
                 sentenceStatuses.put(getCurrentSentence().getId(), SentenceStatus.COMPLETED);
@@ -238,9 +281,85 @@ public class LessonViewModel extends ViewModel {
         publish();
     }
 
+    public void applyDictationFeedback(DictationFeedback result, boolean markCompleted, boolean markSkipped) {
+        feedback = result;
+        if (result != null && result.isCorrect() && markCompleted) {
+            sentenceStatuses.put(getCurrentSentence().getId(), SentenceStatus.COMPLETED);
+            saveSentenceStatusUseCase.execute(lessonId, getCurrentSentence().getId(), SentenceStatus.COMPLETED);
+            inputText = result.getFullAnswer();
+        } else if (markSkipped) {
+            sentenceStatuses.put(getCurrentSentence().getId(), SentenceStatus.SKIPPED);
+            saveSentenceStatusUseCase.execute(lessonId, getCurrentSentence().getId(), SentenceStatus.SKIPPED);
+        } else {
+            sentenceStatuses.put(getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
+            saveSentenceStatusUseCase.execute(lessonId, getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
+        }
+        publish();
+    }
+
+    public long getCurrentSentenceId() {
+        return lessonSession == null || lessonSession.getSentences().isEmpty() ? 0L : getCurrentSentence().getId();
+    }
+
+    public String getCurrentSentenceContent() {
+        return lessonSession == null || lessonSession.getSentences().isEmpty() ? "" : getCurrentSentence().getContent();
+    }
+
+    public String getCurrentHintText() {
+        return lessonSession == null || lessonSession.getSentences().isEmpty() ? "" : getCurrentSentence().getHintText();
+    }
+
+    public void setRecordingState(boolean active) {
+        recording = active;
+        if (active) {
+            speakingBusy = false;
+            speakingBusyLabel = "";
+        }
+        publish();
+    }
+
+    public void setSpeakingBusy(String label) {
+        recording = false;
+        speakingBusy = true;
+        speakingBusyLabel = label == null ? "" : label;
+        publish();
+    }
+
+    public void applySpeakingEvaluation(int score, String transcript, String feedback, String audioUrl, SpeakingAttempt bestAttemptFromServer) {
+        speakingBusy = false;
+        speakingBusyLabel = "";
+        recording = false;
+        currentAttempt = new SpeakingAttempt(score, transcript == null ? "" : transcript, feedback == null ? "" : feedback, audioUrl == null ? "" : audioUrl);
+        if (bestAttemptFromServer != null) {
+            bestAttempt = bestAttemptFromServer;
+        } else if (bestAttempt == null || score > bestAttempt.getScore()) {
+            bestAttempt = currentAttempt;
+        }
+        saveSpeakingAttemptUseCase.execute(lessonId, getCurrentSentence().getId(), currentAttempt, lessonSession.getPassThreshold());
+        if (score >= lessonSession.getPassThreshold()) {
+            sentenceStatuses.put(getCurrentSentence().getId(), SentenceStatus.COMPLETED);
+        } else {
+            sentenceStatuses.put(getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
+        }
+        publish();
+    }
+
+    public void showSpeakingMessage(String message) {
+        speakingBusy = false;
+        speakingBusyLabel = "";
+        recording = false;
+        currentAttempt = new SpeakingAttempt(
+                currentAttempt == null ? 0 : currentAttempt.getScore(),
+                currentAttempt == null ? "" : currentAttempt.getTranscript(),
+                message == null ? "" : message,
+                currentAttempt == null ? "" : currentAttempt.getAudioUrl()
+        );
+        publish();
+    }
+
     public void retrySpeaking() {
         recording = false;
-        currentAttempt = new SpeakingAttempt(58, "Practice and tap record again.", "Try once more with clearer pauses.");
+        currentAttempt = new SpeakingAttempt(58, "Practice and tap record again.", "Try once more with clearer pauses.", "");
         publish();
     }
 
@@ -257,11 +376,22 @@ public class LessonViewModel extends ViewModel {
         if (lessonSession == null) {
             return;
         }
+        if (lessonSession.getSentences().isEmpty()) {
+            uiState.postValue(new UiState());
+            return;
+        }
         Sentence current = getCurrentSentence();
+        boolean videoLesson = isVideoLesson();
+        boolean speakingEnabled = isSpeakingEnabled();
+        boolean dictationEnabled = isDictationEnabled();
+        selectedTab = normalizeSelectedTab(selectedTab, dictationEnabled, speakingEnabled);
+        long effectiveDuration = resolvePlaybackDuration(current);
+
         UiState state = new UiState();
         state.selectedTab = selectedTab;
         state.title = lessonSession.getTitle();
         state.subtitle = lessonSession.getCategoryTitle() + " - " + lessonSession.getLevel();
+        state.mediaSummary = buildMediaSummary(videoLesson, current);
         state.sentenceCounter = String.format(Locale.US, "%d/%d", currentIndex + 1, lessonSession.getSentences().size());
         state.currentStatus = sentenceStatuses.get(current.getId());
         state.progressPercent = calculateProgressPercent();
@@ -275,19 +405,47 @@ public class LessonViewModel extends ViewModel {
         state.showNextButton = feedback != null && currentIndex < lessonSession.getSentences().size() - 1;
         state.transcriptSentence = current.getContent();
         state.transcriptRows = buildTranscriptRows();
-        state.playbackTime = formatTime(playbackPosition) + " / " + formatTime(current.getDurationMillis());
-        state.playbackPercent = current.getDurationMillis() == 0 ? 0 : (int) ((playbackPosition * 100f) / current.getDurationMillis());
+        state.playbackTime = formatTime(playbackPosition) + " / " + formatTime(effectiveDuration);
+        state.playbackLabel = videoLesson ? "Open video clip" : "Play sentence audio";
+        state.playbackPercent = effectiveDuration == 0 ? 0 : (int) ((playbackPosition * 100f) / effectiveDuration);
         state.playing = playing;
+        state.canPlayAudio = current.getAudioUrl() != null && !current.getAudioUrl().trim().isEmpty();
+        state.videoLesson = videoLesson;
+        state.showDictationTab = dictationEnabled;
+        state.showTranscriptTab = true;
+        state.showSpeakingTab = speakingEnabled;
+        state.currentAudioUrl = current.getAudioUrl();
+        state.youtubeVideoId = lessonSession.getYoutubeVideoId();
+        state.startTime = current.getStartTime();
+        state.endTime = current.getEndTime();
+        state.currentSentenceId = current.getId();
         state.speakingReference = current.getContent();
         state.recording = recording;
-        state.recordingLabel = recording ? "Recording... tap again to stop" : "Tap to record";
-        state.bestScore = "Best Score: " + lessonSession.getBestAttempt().getScore() + "/100";
-        state.bestTranscript = lessonSession.getBestAttempt().getTranscript() + "\n" + lessonSession.getBestAttempt().getFeedback();
-        state.currentScore = "Current Attempt: " + currentAttempt.getScore() + "/100";
-        state.currentTranscript = currentAttempt.getTranscript() + "\n" + currentAttempt.getFeedback();
-        state.speakingNextEnabled = currentAttempt.getScore() >= lessonSession.getPassThreshold();
+        state.speakingBusy = speakingBusy;
+        state.recordingLabel = speakingBusy
+                ? speakingBusyLabel
+                : (recording ? "Recording... tap again to stop" : "Tap to record");
+        state.bestScore = "Best Score: " + (bestAttempt != null ? bestAttempt.getScore() : 0) + "/100";
+        state.bestTranscript = bestAttempt != null && !bestAttempt.getTranscript().isEmpty() 
+                ? "You said: " + bestAttempt.getTranscript() + "\n" + bestAttempt.getFeedback() 
+                : (bestAttempt != null ? bestAttempt.getFeedback() : "");
+        String baseApiUrl = hcmute.edu.vn.nguyenthetan.BuildConfig.TUNGTUNG_API_BASE_URL;
+        if (!baseApiUrl.endsWith("/")) {
+            baseApiUrl += "/";
+        }
+        state.bestAudioUrl = bestAttempt != null && bestAttempt.getAudioUrl() != null && !bestAttempt.getAudioUrl().trim().isEmpty()
+                ? baseApiUrl + "api/mobile/speaking/audio/best?sentenceId=" + current.getId()
+                : null;
+        state.currentScore = "Current Attempt: " + (currentAttempt != null ? currentAttempt.getScore() : 0) + "/100";
+        state.currentTranscript = currentAttempt != null && !currentAttempt.getTranscript().isEmpty() 
+                ? "You said: " + currentAttempt.getTranscript() + "\n" + currentAttempt.getFeedback() 
+                : (currentAttempt != null ? currentAttempt.getFeedback() : "");
+        state.currentUserAudioUrl = currentAttempt != null && currentAttempt.getAudioUrl() != null && !currentAttempt.getAudioUrl().trim().isEmpty()
+                ? baseApiUrl + "api/mobile/speaking/audio/current?sentenceId=" + current.getId()
+                : null;
+        state.speakingNextEnabled = !speakingBusy && currentAttempt != null && currentAttempt.getScore() >= lessonSession.getPassThreshold();
         state.comments = comments;
-        uiState.setValue(state);
+        uiState.postValue(state);
     }
 
     private List<TranscriptAdapter.Row> buildTranscriptRows() {
@@ -316,17 +474,84 @@ public class LessonViewModel extends ViewModel {
         return String.format(Locale.US, "%d:%02d", minutes, seconds);
     }
 
-    private void stopTimer() {
-        if (timer != null) {
-            timer.cancel();
-            timer = null;
+    private long resolvePlaybackDuration(Sentence sentence) {
+        if (playbackDuration > 0L) {
+            return playbackDuration;
         }
+        return sentence == null ? 0L : Math.max(sentence.getDurationMillis(), 0L);
+    }
+
+    private boolean isVideoLesson() {
+        return lessonSession != null && "VIDEO".equalsIgnoreCase(lessonSession.getContentType());
+    }
+
+    private boolean isSpeakingEnabled() {
+        if (lessonSession == null) {
+            return false;
+        }
+        String practiceType = lessonSession.getCategoryPracticeType();
+        return practiceType == null
+                || practiceType.trim().isEmpty()
+                || "SPEAKING".equalsIgnoreCase(practiceType)
+                || "BOTH".equalsIgnoreCase(practiceType)
+                || "LISTENING_SPEAKING".equalsIgnoreCase(practiceType);
+    }
+
+    private boolean isDictationEnabled() {
+        if (lessonSession == null) {
+            return false;
+        }
+        String practiceType = lessonSession.getCategoryPracticeType();
+        return practiceType == null
+                || practiceType.trim().isEmpty()
+                || "LISTENING".equalsIgnoreCase(practiceType)
+                || "BOTH".equalsIgnoreCase(practiceType)
+                || "LISTENING_SPEAKING".equalsIgnoreCase(practiceType);
+    }
+
+    private int normalizeSelectedTab(int candidate, boolean dictationEnabled, boolean speakingEnabled) {
+        if (candidate == TAB_DICTATION && dictationEnabled) {
+            return TAB_DICTATION;
+        }
+        if (candidate == TAB_TRANSCRIPT) {
+            return TAB_TRANSCRIPT;
+        }
+        if (candidate == TAB_SPEAKING && speakingEnabled) {
+            return TAB_SPEAKING;
+        }
+        if (dictationEnabled) {
+            return TAB_DICTATION;
+        }
+        if (speakingEnabled) {
+            return TAB_SPEAKING;
+        }
+        return TAB_TRANSCRIPT;
+    }
+
+    private String buildMediaSummary(boolean videoLesson, Sentence currentSentence) {
+        if (videoLesson) {
+            long startSeconds = currentSentence.getStartTime() == null ? 0L : Math.round(currentSentence.getStartTime());
+            long endSeconds = currentSentence.getEndTime() == null ? 0L : Math.round(currentSentence.getEndTime());
+            if (endSeconds > startSeconds) {
+                return "Video clip: " + formatTime(startSeconds * 1000L) + " - " + formatTime(endSeconds * 1000L);
+            }
+            return "Video clip from YouTube";
+        }
+        if (currentSentence.getAudioUrl() != null && !currentSentence.getAudioUrl().trim().isEmpty()) {
+            return "Audio sentence ready";
+        }
+        return "No media source for this sentence";
+    }
+
+    private void resetPlaybackInternal() {
         playing = false;
+        playbackPosition = 0L;
+        playbackDuration = 0L;
     }
 
     @Override
     protected void onCleared() {
-        stopTimer();
+        executorService.shutdownNow();
         super.onCleared();
     }
 }

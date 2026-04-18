@@ -1,6 +1,6 @@
 package hcmute.edu.vn.nguyenthetan.domain.usecase.lesson;
 
-import hcmute.edu.vn.nguyenthetan.domain.model.LessonProgress;
+import hcmute.edu.vn.nguyenthetan.domain.model.lesson.LessonProgress;
 import hcmute.edu.vn.nguyenthetan.domain.repository.LessonRepository;
 
 public class GetLessonProgressUseCase {

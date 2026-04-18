@@ -31,9 +31,11 @@ public class GuestSentenceProgressEntity {
     public Integer bestSpeakingScore;
     public String bestSpeakingTranscript;
     public String bestSpeakingFeedback;
+    public String bestSpeakingAudioUrl;
     public Integer currentSpeakingScore;
     public String currentSpeakingTranscript;
     public String currentSpeakingFeedback;
+    public String currentSpeakingAudioUrl;
     public long lastAccessedAt;
 
     public GuestSentenceProgressEntity(
@@ -43,9 +45,11 @@ public class GuestSentenceProgressEntity {
             Integer bestSpeakingScore,
             String bestSpeakingTranscript,
             String bestSpeakingFeedback,
+            String bestSpeakingAudioUrl,
             Integer currentSpeakingScore,
             String currentSpeakingTranscript,
             String currentSpeakingFeedback,
+            String currentSpeakingAudioUrl,
             long lastAccessedAt
     ) {
         this.sentenceId = sentenceId;
@@ -54,9 +58,11 @@ public class GuestSentenceProgressEntity {
         this.bestSpeakingScore = bestSpeakingScore;
         this.bestSpeakingTranscript = bestSpeakingTranscript;
         this.bestSpeakingFeedback = bestSpeakingFeedback;
+        this.bestSpeakingAudioUrl = bestSpeakingAudioUrl;
         this.currentSpeakingScore = currentSpeakingScore;
         this.currentSpeakingTranscript = currentSpeakingTranscript;
         this.currentSpeakingFeedback = currentSpeakingFeedback;
+        this.currentSpeakingAudioUrl = currentSpeakingAudioUrl;
         this.lastAccessedAt = lastAccessedAt;
     }
 }

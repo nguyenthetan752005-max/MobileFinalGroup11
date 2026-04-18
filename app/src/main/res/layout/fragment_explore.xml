@@ -83,6 +83,14 @@
             </LinearLayout>
         </HorizontalScrollView>
 
+        <ProgressBar
+            android:id="@+id/progressExploreLoad"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:visibility="gone" />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerCategories"
             android:layout_width="match_parent"

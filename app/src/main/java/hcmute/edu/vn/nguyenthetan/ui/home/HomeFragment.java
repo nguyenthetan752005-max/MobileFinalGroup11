@@ -1,6 +1,7 @@
 package hcmute.edu.vn.nguyenthetan.ui.home;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -8,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,8 +23,10 @@ import java.util.Locale;
 
 import hcmute.edu.vn.nguyenthetan.R;
 import hcmute.edu.vn.nguyenthetan.TungTungApplication;
+import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
 import hcmute.edu.vn.nguyenthetan.databinding.FragmentHomeBinding;
 import hcmute.edu.vn.nguyenthetan.domain.model.home.HomeDashboard;
+import hcmute.edu.vn.nguyenthetan.ui.onboarding.OnboardingActivity;
 
 public class HomeFragment extends Fragment {
 
@@ -36,6 +40,7 @@ public class HomeFragment extends Fragment {
     private RecommendationAdapter recommendationAdapter;
     private Listener listener;
     private long currentLessonId;
+    private UserSessionStore userSessionStore;
 
     public static HomeFragment newInstance() {
         return new HomeFragment();
@@ -67,9 +72,18 @@ public class HomeFragment extends Fragment {
         binding.recyclerRecommendations.setAdapter(recommendationAdapter);
 
         TungTungApplication application = (TungTungApplication) requireActivity().getApplication();
+        userSessionStore = application.getAppContainer().getUserSessionStore();
         HomeViewModelFactory factory = new HomeViewModelFactory(application.getAppContainer().getHomeDashboardUseCase());
         HomeViewModel viewModel = new ViewModelProvider(this, factory).get(HomeViewModel.class);
         viewModel.getDashboardState().observe(getViewLifecycleOwner(), this::render);
+        viewModel.getLoadingState().observe(getViewLifecycleOwner(), loading ->
+                binding.progressHomeLoad.setVisibility(Boolean.TRUE.equals(loading) ? View.VISIBLE : View.GONE)
+        );
+        application.getAppContainer().getSyncErrorMessage().observe(getViewLifecycleOwner(), message -> {
+            if (message != null && !message.trim().isEmpty()) {
+                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+            }
+        });
         
         application.getAppContainer().getIsSyncing().observe(getViewLifecycleOwner(), syncing -> {
             if (!syncing) {
@@ -84,33 +98,44 @@ public class HomeFragment extends Fragment {
                 listener.onContinueLearning(currentLessonId);
             }
         });
+        binding.buttonGuestCreateAccount.setOnClickListener(v ->
+                startActivity(new Intent(requireContext(), OnboardingActivity.class))
+        );
         binding.cardStreak.setOnClickListener(v -> openStreakDialog());
         binding.buttonStreak.setOnClickListener(v -> openStreakDialog());
     }
 
     private void render(HomeDashboard dashboard) {
+        boolean guestMode = userSessionStore == null || !userSessionStore.isLoggedIn();
         currentLessonId = dashboard.getCurrentLesson().getLessonId();
         binding.textGreeting.setText(dashboard.getGreeting());
         binding.textSubtitle.setText(dashboard.getSubtitle());
-        binding.textStreakValue.setText(String.format(Locale.US, "%d days", dashboard.getStreakSummary().getCurrentDays()));
-        binding.textMood.setText(dashboard.getStreakSummary().getActiveMood());
+        binding.cardGuestPromo.setVisibility(guestMode ? View.VISIBLE : View.GONE);
+        binding.textGuestPromoTitle.setText(R.string.home_guest_promo_title);
+        binding.textGuestPromoBody.setText(R.string.home_guest_promo_body);
+        binding.textStreakValue.setText(guestMode
+                ? getString(R.string.home_guest_streak_value)
+                : String.format(Locale.US, "%d days", dashboard.getStreakSummary().getCurrentDays()));
+        binding.textMood.setText(guestMode
+                ? getString(R.string.home_guest_mood)
+                : dashboard.getStreakSummary().getActiveMood());
         binding.textCurrentLessonTitle.setText(dashboard.getCurrentLesson().getTitle());
-        binding.progressCurrentLesson.setMax(dashboard.getCurrentLesson().getTotalSentences());
-        binding.progressCurrentLesson.setProgressCompat(dashboard.getCurrentLesson().getCompletedSentences(), true);
-        binding.textLessonProgress.setText(
-                String.format(
-                        Locale.US,
-                        "%d/%d sentences",
-                        dashboard.getCurrentLesson().getCompletedSentences(),
-                        dashboard.getCurrentLesson().getTotalSentences()
-                )
-        );
-        binding.chipPrimaryMode.setText(dashboard.getCurrentLesson().getPrimaryMode());
-        binding.chipSecondaryMode.setText(dashboard.getCurrentLesson().getSecondaryMode());
-        binding.textTodayValue.setText(dashboard.getStudyStats().getToday());
-        binding.textWeekValue.setText(dashboard.getStudyStats().getThisWeek());
-        binding.textBestValue.setText(String.valueOf(dashboard.getStudyStats().getBestStreak()));
-        renderStreakDots(dashboard.getStreakSummary().getWeekStatus());
+        binding.progressCurrentLesson.setMax(Math.max(1, dashboard.getCurrentLesson().getTotalSentences()));
+        binding.progressCurrentLesson.setProgressCompat(guestMode ? 0 : dashboard.getCurrentLesson().getCompletedSentences(), true);
+        binding.textLessonProgress.setText(guestMode
+                ? getString(R.string.home_guest_progress)
+                : getString(
+                R.string.lesson_progress_format,
+                dashboard.getCurrentLesson().getCompletedSentences(),
+                dashboard.getCurrentLesson().getTotalSentences()
+        ));
+        binding.chipPrimaryMode.setText(guestMode ? getString(R.string.home_guest_streak_title) : dashboard.getCurrentLesson().getPrimaryMode());
+        binding.chipSecondaryMode.setText(guestMode ? getString(R.string.button_create_account) : dashboard.getCurrentLesson().getSecondaryMode());
+        binding.textTodayValue.setText(guestMode ? getString(R.string.home_guest_today) : dashboard.getStudyStats().getToday());
+        binding.textWeekValue.setText(guestMode ? getString(R.string.home_guest_week) : dashboard.getStudyStats().getThisWeek());
+        binding.textBestValue.setText(guestMode ? getString(R.string.home_guest_best) : String.valueOf(dashboard.getStudyStats().getBestStreak()));
+        renderStreakDots(guestMode ? java.util.Collections.emptyList() : dashboard.getStreakSummary().getWeekStatus());
+        binding.buttonContinue.setText(guestMode ? R.string.button_start_listening : R.string.button_continue);
         recommendationAdapter.submitList(dashboard.getRecommendations());
     }
 
@@ -135,6 +160,11 @@ public class HomeFragment extends Fragment {
     }
 
     private void openStreakDialog() {
+        if (userSessionStore == null || !userSessionStore.isLoggedIn()) {
+            Toast.makeText(requireContext(), R.string.guest_sign_in_prompt, Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(requireContext(), OnboardingActivity.class));
+            return;
+        }
         if (listener != null) {
             listener.onOpenStreakDialog();
         }

@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/tt_background"
-    android:padding="@dimen/screen_padding">
+    android:layout_height="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/tt_background"
+        android:padding="@dimen/screen_padding">
 
     <LinearLayout
         android:id="@+id/contentContainer"
@@ -54,12 +58,23 @@
             app:strokeColor="@color/tt_border" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonFacebook"
+            android:id="@+id/buttonSignIn"
             style="@style/Widget.Material3.Button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="@string/button_facebook"
+            android:text="@string/button_sign_in"
+            android:textAllCaps="false"
+            app:backgroundTint="@color/tt_primary"
+            app:cornerRadius="@dimen/button_radius" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonCreateAccount"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/button_create_account"
             android:textAllCaps="false"
             app:backgroundTint="@color/tt_info"
             app:cornerRadius="@dimen/button_radius" />
@@ -75,14 +90,41 @@
             android:textColor="@color/tt_text_secondary" />
     </LinearLayout>
 
-    <View
-        android:id="@+id/bottomGlow"
-        android:layout_width="0dp"
-        android:layout_height="140dp"
-        android:alpha="0.8"
-        android:background="@color/tt_primary_tint"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        <View
+            android:id="@+id/bottomGlow"
+            android:layout_width="0dp"
+            android:layout_height="140dp"
+            android:alpha="0.8"
+            android:background="@color/tt_primary_tint"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+        android:id="@+id/loadingOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#99000000"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/textLoadingMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/loading_please_wait"
+            android:textColor="@android:color/white"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</FrameLayout>

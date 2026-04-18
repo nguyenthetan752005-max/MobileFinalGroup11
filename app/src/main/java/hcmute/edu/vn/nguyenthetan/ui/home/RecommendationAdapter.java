@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
+import hcmute.edu.vn.nguyenthetan.R;
 import hcmute.edu.vn.nguyenthetan.databinding.ItemRecommendationBinding;
 import hcmute.edu.vn.nguyenthetan.domain.model.home.Recommendation;
 
@@ -51,7 +52,7 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
         void bind(Recommendation item) {
             binding.textTitle.setText(item.getTitle());
             binding.textLevel.setText(item.getLevel());
-            binding.textLessonCount.setText(item.getLessonCount() + " lessons");
+            binding.textLessonCount.setText(binding.getRoot().getContext().getString(R.string.lesson_count_format, item.getLessonCount()));
             binding.chipPracticeType.setText(item.getPracticeType());
         }
     }

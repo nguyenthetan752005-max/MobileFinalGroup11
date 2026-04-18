@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import hcmute.edu.vn.nguyenthetan.R;
 import hcmute.edu.vn.nguyenthetan.databinding.ItemLessonSectionBinding;
 import hcmute.edu.vn.nguyenthetan.databinding.ItemLessonSummaryBinding;
 import hcmute.edu.vn.nguyenthetan.domain.model.explore.LessonSection;
@@ -85,7 +86,11 @@ public class LessonSectionAdapter extends RecyclerView.Adapter<LessonSectionAdap
                 lessonBinding.progressLesson.setMax(lesson.getTotalSentences());
                 lessonBinding.progressLesson.setProgressCompat(lesson.getCompletedSentences(), true);
                 lessonBinding.textProgress.setText(
-                        String.format(Locale.US, "%d/%d sentences", lesson.getCompletedSentences(), lesson.getTotalSentences())
+                        binding.getRoot().getContext().getString(
+                                R.string.lesson_progress_format,
+                                lesson.getCompletedSentences(),
+                                lesson.getTotalSentences()
+                        )
                 );
                 lessonBinding.getRoot().setOnClickListener(v -> listener.onLessonSelected(lesson.getLessonId()));
                 binding.lessonContainer.addView(lessonBinding.getRoot());

@@ -12,6 +12,7 @@ public class GetLessonCollectionUseCase {
     }
 
     public LessonCollection execute(String categoryId) {
+        repository.syncCategoryCollection(categoryId);
         return repository.getLessonCollection(categoryId);
     }
 }

@@ -11,6 +11,8 @@ import hcmute.edu.vn.nguyenthetan.data.local.dao.catalog.SectionDao;
 import hcmute.edu.vn.nguyenthetan.data.local.entity.catalog.CategoryEntity;
 import hcmute.edu.vn.nguyenthetan.data.local.entity.lesson.LessonEntity;
 import hcmute.edu.vn.nguyenthetan.data.local.entity.catalog.SectionEntity;
+import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteCategorySyncManager;
+import hcmute.edu.vn.nguyenthetan.data.repository.support.RepositoryFormatters;
 import hcmute.edu.vn.nguyenthetan.domain.model.explore.ExploreCategory;
 import hcmute.edu.vn.nguyenthetan.domain.model.explore.LessonCollection;
 import hcmute.edu.vn.nguyenthetan.domain.model.explore.LessonSection;
@@ -24,17 +26,33 @@ public class RoomCatalogRepository implements CatalogRepository {
     private final SectionDao sectionDao;
     private final LessonDao lessonDao;
     private final GuestProgressDao guestProgressDao;
+    private final RemoteCategorySyncManager remoteCategorySyncManager;
 
     public RoomCatalogRepository(
             CategoryDao categoryDao,
             SectionDao sectionDao,
             LessonDao lessonDao,
-            GuestProgressDao guestProgressDao
+            GuestProgressDao guestProgressDao,
+            RemoteCategorySyncManager remoteCategorySyncManager
     ) {
         this.categoryDao = categoryDao;
         this.sectionDao = sectionDao;
         this.lessonDao = lessonDao;
         this.guestProgressDao = guestProgressDao;
+        this.remoteCategorySyncManager = remoteCategorySyncManager;
+    }
+
+    @Override
+    public void syncCategoryCollection(String categorySlug) {
+        if (remoteCategorySyncManager != null) {
+            remoteCategorySyncManager.syncCategoryCollection(categorySlug);
+        }
+    }
+
+    @Override
+    public boolean hasCategoryCollection(String categorySlug) {
+        CategoryEntity category = categoryDao.getBySlug(categorySlug);
+        return category != null && sectionDao.countByCategoryId(category.id) > 0;
     }
 
     @Override
@@ -81,6 +99,9 @@ public class RoomCatalogRepository implements CatalogRepository {
         if (category == null) {
             category = categoryDao.getFirstCategory();
         }
+        if (category == null) {
+            return new LessonCollection(categorySlug == null ? "" : categorySlug, "", "", 0, new ArrayList<>());
+        }
 
         List<LessonSection> sections = new ArrayList<>();
         for (SectionEntity section : sectionDao.getByCategoryId(category.id)) {
@@ -92,7 +113,7 @@ public class RoomCatalogRepository implements CatalogRepository {
                         lesson.id,
                         lesson.title,
                         lesson.level,
-                        lesson.practiceType,
+                        RepositoryFormatters.formatLessonMode(category.practiceType, lesson.contentType),
                         completedSentences,
                         lesson.totalSentences,
                         resolveSummaryStatus(completedSentences, lesson.totalSentences, touchedSentences)

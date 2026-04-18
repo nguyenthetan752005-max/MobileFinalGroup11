@@ -21,6 +21,9 @@ public interface LessonDao {
     @Query("SELECT * FROM lesson_local ORDER BY orderIndex, id")
     List<LessonEntity> getAllOrdered();
 
+    @Query("DELETE FROM lesson_local")
+    void deleteAll();
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(List<LessonEntity> entities);
 }

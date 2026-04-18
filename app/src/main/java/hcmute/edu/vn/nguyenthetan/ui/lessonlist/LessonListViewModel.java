@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import hcmute.edu.vn.nguyenthetan.domain.model.explore.LessonCollection;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.GetLessonCollectionUseCase;
@@ -15,7 +17,9 @@ public class LessonListViewModel extends ViewModel {
     private final GetLessonCollectionUseCase getLessonCollectionUseCase;
     private final String categoryId;
     private final MutableLiveData<LessonCollection> collectionState = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> loadingState = new MutableLiveData<>(false);
     private final Set<Long> expandedSectionIds = new HashSet<>();
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private boolean loaded;
 
     public LessonListViewModel(GetLessonCollectionUseCase getLessonCollectionUseCase, String categoryId) {
@@ -27,17 +31,26 @@ public class LessonListViewModel extends ViewModel {
         return collectionState;
     }
 
+    public LiveData<Boolean> getLoadingState() {
+        return loadingState;
+    }
+
     public void load() {
         if (loaded) {
             return;
         }
-        LessonCollection collection = getLessonCollectionUseCase.execute(categoryId);
-        for (int index = 0; index < collection.getSections().size(); index++) {
-            if (index == 0) {
-                expandedSectionIds.add(collection.getSections().get(index).getId());
+        loadingState.setValue(true);
+        executorService.execute(() -> {
+            LessonCollection collection = getLessonCollectionUseCase.execute(categoryId);
+            expandedSectionIds.clear();
+            for (int index = 0; index < collection.getSections().size(); index++) {
+                if (index == 0) {
+                    expandedSectionIds.add(collection.getSections().get(index).getId());
+                }
             }
-        }
-        collectionState.setValue(collection);
+            collectionState.postValue(collection);
+            loadingState.postValue(false);
+        });
         loaded = true;
     }
 
@@ -52,5 +65,11 @@ public class LessonListViewModel extends ViewModel {
             expandedSectionIds.add(sectionId);
         }
         collectionState.setValue(collectionState.getValue());
+    }
+
+    @Override
+    protected void onCleared() {
+        executorService.shutdownNow();
+        super.onCleared();
     }
 }

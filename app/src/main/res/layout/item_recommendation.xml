@@ -21,7 +21,7 @@
             android:background="@color/tt_primary_tint"
             android:paddingHorizontal="10dp"
             android:paddingVertical="6dp"
-            android:text="Practice"
+            android:text="Skill"
             android:textColor="@color/tt_primary"
             android:textSize="12sp"
             android:textStyle="bold" />
