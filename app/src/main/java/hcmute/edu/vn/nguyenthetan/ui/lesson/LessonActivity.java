@@ -21,10 +21,12 @@ import android.view.View;
 import android.webkit.WebView;
 import android.widget.Toast;
 
+import androidx.annotation.OptIn;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.media3.common.util.UnstableApi;
 import androidx.webkit.WebViewCompat;
 import android.media.MediaPlayer;
 import androidx.media3.common.MediaItem;
@@ -1249,6 +1251,7 @@ public class LessonActivity extends AppCompatActivity implements TranscriptAdapt
         return MediaItem.fromUri(Uri.parse(source));
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     private DataSource.Factory buildAudioDataSourceFactory() {
         DefaultHttpDataSource.Factory httpFactory = new DefaultHttpDataSource.Factory();
         String token = userSessionStore == null ? null : userSessionStore.getToken();
