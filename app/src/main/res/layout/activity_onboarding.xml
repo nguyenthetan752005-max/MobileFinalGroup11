@@ -22,13 +22,27 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.45">
 
-        <TextView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="TungTung"
-            android:textColor="@color/tt_primary"
-            android:textSize="40sp"
-            android:textStyle="bold" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginEnd="8dp"
+                android:src="@drawable/ic_headphones"
+                android:tint="@color/tt_primary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TungTung"
+                android:textColor="@color/tt_primary"
+                android:textSize="40sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <TextView
             android:layout_width="wrap_content"
@@ -39,11 +53,22 @@
             android:textColor="@color/tt_text_secondary"
             android:textSize="16sp" />
 
-        <View
-            android:layout_width="160dp"
-            android:layout_height="160dp"
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="140dp"
+            android:layout_height="140dp"
             android:layout_marginTop="28dp"
-            android:background="@drawable/ic_launcher_foreground" />
+            app:cardCornerRadius="70dp"
+            app:cardElevation="@dimen/elevation_lg"
+            app:strokeWidth="0dp"
+            app:cardBackgroundColor="@color/tt_primary_tint">
+
+            <ImageView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_headphones"
+                android:tint="@color/tt_primary" />
+        </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/buttonGoogle"
@@ -94,8 +119,8 @@
             android:id="@+id/bottomGlow"
             android:layout_width="0dp"
             android:layout_height="140dp"
-            android:alpha="0.8"
-            android:background="@color/tt_primary_tint"
+            android:alpha="0.9"
+            android:background="@drawable/shape_onboarding_glow"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />

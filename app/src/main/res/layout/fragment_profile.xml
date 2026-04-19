@@ -11,15 +11,23 @@
         android:orientation="vertical"
         android:padding="@dimen/screen_padding">
 
-        <TextView
-            android:id="@+id/textAvatar"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:background="@color/tt_primary_tint"
-            android:gravity="center"
-            android:textColor="@color/tt_primary"
-            android:textSize="26sp"
-            android:textStyle="bold" />
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="@dimen/avatar_large"
+            android:layout_height="@dimen/avatar_large"
+            app:cardCornerRadius="40dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp"
+            app:cardBackgroundColor="@color/tt_primary_tint">
+
+            <TextView
+                android:id="@+id/textAvatar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:textColor="@color/tt_primary"
+                android:textSize="26sp"
+                android:textStyle="bold" />
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:id="@+id/textName"
@@ -52,6 +60,7 @@
             android:layout_marginTop="16dp"
             app:cardBackgroundColor="@color/tt_surface"
             app:cardCornerRadius="@dimen/card_radius"
+            app:cardElevation="@dimen/elevation_sm"
             app:strokeColor="@color/tt_border"
             app:strokeWidth="1dp">
 
@@ -88,6 +97,7 @@
             android:visibility="gone"
             app:cardBackgroundColor="@color/tt_primary_tint"
             app:cardCornerRadius="@dimen/card_radius"
+            app:cardElevation="@dimen/elevation_sm"
             app:strokeColor="@color/tt_primary"
             app:strokeWidth="1dp">
 
@@ -141,6 +151,7 @@
                 android:layout_marginEnd="6dp"
                 app:cardBackgroundColor="@color/tt_surface"
                 app:cardCornerRadius="@dimen/card_radius"
+                app:cardElevation="@dimen/elevation_sm"
                 app:strokeColor="@color/tt_border"
                 app:strokeWidth="1dp">
 
@@ -177,6 +188,7 @@
                 android:layout_marginEnd="6dp"
                 app:cardBackgroundColor="@color/tt_surface"
                 app:cardCornerRadius="@dimen/card_radius"
+                app:cardElevation="@dimen/elevation_sm"
                 app:strokeColor="@color/tt_border"
                 app:strokeWidth="1dp">
 
@@ -212,6 +224,7 @@
                 android:layout_marginStart="6dp"
                 app:cardBackgroundColor="@color/tt_surface"
                 app:cardCornerRadius="@dimen/card_radius"
+                app:cardElevation="@dimen/elevation_sm"
                 app:strokeColor="@color/tt_border"
                 app:strokeWidth="1dp">
 
@@ -248,6 +261,7 @@
             android:layout_marginTop="20dp"
             app:cardBackgroundColor="@color/tt_surface"
             app:cardCornerRadius="@dimen/card_radius"
+            app:cardElevation="@dimen/elevation_sm"
             app:strokeColor="@color/tt_border"
             app:strokeWidth="1dp">
 
@@ -282,6 +296,7 @@
             android:layout_marginTop="20dp"
             app:cardBackgroundColor="@color/tt_surface"
             app:cardCornerRadius="@dimen/card_radius"
+            app:cardElevation="@dimen/elevation_sm"
             app:strokeColor="@color/tt_border"
             app:strokeWidth="1dp">
 
@@ -292,14 +307,22 @@
                 android:orientation="horizontal"
                 android:padding="16dp">
 
-                <TextView
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:background="@color/tt_primary_tint"
-                    android:gravity="center"
-                    android:text="TT"
-                    android:textColor="@color/tt_primary"
-                    android:textStyle="bold" />
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="0dp"
+                    app:cardBackgroundColor="@color/tt_primary_tint">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="TT"
+                        android:textColor="@color/tt_primary"
+                        android:textStyle="bold" />
+                </com.google.android.material.card.MaterialCardView>
 
                 <TextView
                     android:id="@+id/textMood"
@@ -320,6 +343,7 @@
             android:layout_marginTop="20dp"
             app:cardBackgroundColor="@color/tt_surface"
             app:cardCornerRadius="@dimen/card_radius"
+            app:cardElevation="@dimen/elevation_sm"
             app:strokeColor="@color/tt_border"
             app:strokeWidth="1dp">
 
@@ -335,6 +359,13 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginEnd="12dp"
+                        android:src="@drawable/ic_dark_mode"
+                        android:tint="@color/tt_text_secondary" />
+
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -348,12 +379,24 @@
                         android:layout_height="wrap_content" />
                 </LinearLayout>
 
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="12dp"
+                    android:background="@color/tt_border" />
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginEnd="12dp"
+                        android:src="@drawable/ic_notification"
+                        android:tint="@color/tt_text_secondary" />
 
                     <TextView
                         android:layout_width="0dp"
@@ -368,12 +411,31 @@
                         android:layout_height="wrap_content" />
                 </LinearLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="12dp"
+                    android:background="@color/tt_border" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="Language: English"
-                    android:textColor="@color/tt_text_secondary" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginEnd="12dp"
+                        android:src="@drawable/ic_language"
+                        android:tint="@color/tt_text_secondary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Language: English"
+                        android:textColor="@color/tt_text_secondary" />
+                </LinearLayout>
             </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>

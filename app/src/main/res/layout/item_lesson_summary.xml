@@ -6,6 +6,7 @@
     android:layout_marginBottom="10dp"
     app:cardBackgroundColor="@color/tt_surface"
     app:cardCornerRadius="@dimen/card_radius"
+    app:cardElevation="@dimen/elevation_sm"
     app:strokeColor="@color/tt_border"
     app:strokeWidth="1dp">
 

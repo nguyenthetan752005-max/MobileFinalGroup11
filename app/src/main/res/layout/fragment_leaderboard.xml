@@ -15,6 +15,14 @@
         android:textSize="28sp"
         android:textStyle="bold" />
 
+    <TextView
+        android:id="@+id/textActiveTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="@color/tt_text_secondary"
+        android:textSize="14sp" />
+
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
@@ -50,6 +58,7 @@
         android:layout_marginTop="12dp"
         app:cardBackgroundColor="@color/tt_primary_tint"
         app:cardCornerRadius="@dimen/card_radius"
+        app:cardElevation="@dimen/elevation_md"
         app:strokeColor="@color/tt_primary"
         app:strokeWidth="1dp">
 

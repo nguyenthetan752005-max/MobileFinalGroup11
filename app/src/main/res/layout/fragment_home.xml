@@ -31,7 +31,7 @@
                 android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@null"
-                android:src="@android:drawable/ic_dialog_email"
+                android:src="@drawable/ic_notification"
                 android:tint="@color/tt_text_secondary" />
 
             <ImageButton
@@ -41,7 +41,7 @@
                 android:layout_marginStart="8dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@null"
-                android:src="@android:drawable/btn_star_big_on"
+                android:src="@drawable/ic_streak_fire"
                 android:tint="@color/tt_primary" />
         </LinearLayout>
 
@@ -78,6 +78,7 @@
             android:visibility="gone"
             app:cardBackgroundColor="@color/tt_primary_tint"
             app:cardCornerRadius="@dimen/card_radius"
+            app:cardElevation="@dimen/elevation_sm"
             app:strokeColor="@color/tt_primary"
             app:strokeWidth="1dp">
 
@@ -124,6 +125,7 @@
             android:layout_marginTop="18dp"
             app:cardBackgroundColor="@color/tt_surface"
             app:cardCornerRadius="@dimen/card_radius"
+            app:cardElevation="@dimen/elevation_sm"
             app:strokeColor="@color/tt_border"
             app:strokeWidth="1dp">
 
@@ -192,6 +194,7 @@
             android:layout_marginTop="12dp"
             app:cardBackgroundColor="@color/tt_surface"
             app:cardCornerRadius="@dimen/card_radius"
+            app:cardElevation="@dimen/elevation_md"
             app:strokeColor="@color/tt_border"
             app:strokeWidth="1dp">
 
@@ -276,6 +279,7 @@
                 android:layout_marginEnd="6dp"
                 app:cardBackgroundColor="@color/tt_surface"
                 app:cardCornerRadius="@dimen/card_radius"
+                app:cardElevation="@dimen/elevation_sm"
                 app:strokeColor="@color/tt_border"
                 app:strokeWidth="1dp">
 
@@ -312,6 +316,7 @@
                 android:layout_marginEnd="6dp"
                 app:cardBackgroundColor="@color/tt_surface"
                 app:cardCornerRadius="@dimen/card_radius"
+                app:cardElevation="@dimen/elevation_sm"
                 app:strokeColor="@color/tt_border"
                 app:strokeWidth="1dp">
 
@@ -347,6 +352,7 @@
                 android:layout_marginStart="6dp"
                 app:cardBackgroundColor="@color/tt_surface"
                 app:cardCornerRadius="@dimen/card_radius"
+                app:cardElevation="@dimen/elevation_sm"
                 app:strokeColor="@color/tt_border"
                 app:strokeWidth="1dp">
 

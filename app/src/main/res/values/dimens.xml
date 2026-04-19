@@ -5,4 +5,10 @@
     <dimen name="button_radius">8dp</dimen>
     <dimen name="modal_radius">16dp</dimen>
     <dimen name="bottom_nav_height">72dp</dimen>
+    <dimen name="avatar_large">80dp</dimen>
+    <dimen name="avatar_medium">40dp</dimen>
+    <dimen name="avatar_small">28dp</dimen>
+    <dimen name="elevation_sm">2dp</dimen>
+    <dimen name="elevation_md">4dp</dimen>
+    <dimen name="elevation_lg">8dp</dimen>
 </resources>

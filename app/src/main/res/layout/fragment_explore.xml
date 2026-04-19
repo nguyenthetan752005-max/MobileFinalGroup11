@@ -30,7 +30,7 @@
             app:boxCornerRadiusTopEnd="@dimen/button_radius"
             app:boxCornerRadiusTopStart="@dimen/button_radius"
             app:endIconMode="custom"
-            app:endIconDrawable="@android:drawable/ic_menu_search"
+            app:endIconDrawable="@drawable/ic_search"
             app:endIconTint="@color/tt_text_muted">
 
             <com.google.android.material.textfield.TextInputEditText

@@ -6,6 +6,7 @@
     android:layout_marginBottom="10dp"
     app:cardBackgroundColor="@color/tt_surface"
     app:cardCornerRadius="@dimen/card_radius"
+    app:cardElevation="@dimen/elevation_sm"
     app:strokeColor="@color/tt_border"
     app:strokeWidth="1dp">
 
@@ -16,22 +17,55 @@
         android:orientation="horizontal"
         android:padding="14dp">
 
-        <TextView
-            android:id="@+id/textRank"
+        <FrameLayout
             android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:gravity="center"
-            android:textColor="@color/tt_text_primary"
-            android:textStyle="bold" />
+            android:layout_height="36dp">
 
-        <TextView
-            android:id="@+id/textAvatar"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardRankCircle"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp"
+                app:cardBackgroundColor="@color/tt_surface_alt">
+
+                <TextView
+                    android:id="@+id/textRank"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:textColor="@color/tt_text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <ImageView
+                android:id="@+id/iconTrophy"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="top|end"
+                android:src="@drawable/ic_trophy"
+                android:tint="@color/tt_warning"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:background="@color/tt_primary_tint"
-            android:gravity="center"
-            android:textColor="@color/tt_primary"
-            android:textStyle="bold" />
+            app:cardCornerRadius="18dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp"
+            app:cardBackgroundColor="@color/tt_primary_tint">
+
+            <TextView
+                android:id="@+id/textAvatar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:textColor="@color/tt_primary"
+                android:textStyle="bold" />
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:id="@+id/textName"

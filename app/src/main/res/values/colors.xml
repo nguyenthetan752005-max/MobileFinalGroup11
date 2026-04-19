@@ -14,6 +14,18 @@
     <color name="tt_text_secondary">#555555</color>
     <color name="tt_text_muted">#888888</color>
     <color name="tt_border">#E5E7EB</color>
+    <color name="tt_badge_completed_bg">#D1FAE5</color>
+    <color name="tt_badge_completed_text">#065F46</color>
+    <color name="tt_badge_in_progress_bg">#E2E3E5</color>
+    <color name="tt_badge_in_progress_text">#383D41</color>
+    <color name="tt_badge_skipped_bg">#FFFBEB</color>
+    <color name="tt_badge_skipped_text">#92400E</color>
+    <color name="tt_feedback_correct_bg">#ECFDF5</color>
+    <color name="tt_feedback_correct_border">#A7F3D0</color>
+    <color name="tt_feedback_correct_text">#065F46</color>
+    <color name="tt_feedback_skip_bg">#FFFBEB</color>
+    <color name="tt_feedback_skip_border">#FDE68A</color>
+    <color name="tt_feedback_skip_text">#92400E</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>

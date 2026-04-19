@@ -22,6 +22,7 @@ import android.webkit.WebView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
@@ -34,6 +35,7 @@ import androidx.media3.datasource.DataSource;
 import androidx.media3.datasource.DefaultDataSource;
 import androidx.media3.datasource.DefaultHttpDataSource;
 import androidx.media3.datasource.HttpDataSource;
+import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -1249,6 +1251,7 @@ public class LessonActivity extends AppCompatActivity implements TranscriptAdapt
         return MediaItem.fromUri(Uri.parse(source));
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     private DataSource.Factory buildAudioDataSourceFactory() {
         DefaultHttpDataSource.Factory httpFactory = new DefaultHttpDataSource.Factory();
         String token = userSessionStore == null ? null : userSessionStore.getToken();
