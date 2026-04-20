@@ -32,8 +32,7 @@
                 android:layout_width="36dp"
                 android:layout_height="36dp"
                 android:layout_marginEnd="8dp"
-                android:src="@drawable/ic_headphones"
-                android:tint="@color/tt_primary" />
+                android:src="@drawable/origin" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -63,11 +62,10 @@
             app:cardBackgroundColor="@color/tt_primary_tint">
 
             <ImageView
-                android:layout_width="64dp"
-                android:layout_height="64dp"
+                android:layout_width="140dp"
+                android:layout_height="137dp"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_headphones"
-                android:tint="@color/tt_primary" />
+                android:src="@drawable/origin" />
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.button.MaterialButton
@@ -80,7 +78,12 @@
             android:textAllCaps="false"
             android:textColor="@color/tt_text_primary"
             app:cornerRadius="@dimen/button_radius"
-            app:strokeColor="@color/tt_border" />
+            app:strokeColor="@color/tt_border"
+            app:icon="@drawable/google"
+            app:iconTint="@null"
+            app:iconGravity="textStart"
+            app:iconPadding="12dp"
+            app:iconSize="24dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/buttonSignIn"

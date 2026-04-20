@@ -61,6 +61,7 @@ dependencies {
     implementation(libs.work.runtime)
     implementation(libs.play.services.auth)
     implementation(libs.androidx.webkit)
+    implementation(libs.glide)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

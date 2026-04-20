@@ -51,6 +51,17 @@
         android:layout_marginTop="12dp"
         android:layout_weight="1" />
 
+    <TextView
+        android:id="@+id/textLeaderboardEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="@string/leaderboard_empty"
+        android:textColor="@color/tt_text_secondary"
+        android:visibility="gone" />
+
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardYourRank"
         android:layout_width="match_parent"

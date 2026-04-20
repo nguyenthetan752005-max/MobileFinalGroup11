@@ -3,7 +3,12 @@
     <string name="nav_home">Home</string>
     <string name="nav_explore">Explore</string>
     <string name="nav_leaderboard">Leaderboard</string>
+    <string name="nav_top">Top</string>
     <string name="nav_profile">Profile</string>
+    <string name="explore_search_hint">Search topics</string>
+    <string name="explore_no_results">No topics match your search.</string>
+    <string name="filter_listening">Listening</string>
+    <string name="filter_speaking">Speaking</string>
     <string name="home_greeting">Good morning, Tan</string>
     <string name="home_subtitle">Keep your streak going.</string>
     <string name="button_continue">Continue</string>
@@ -64,6 +69,9 @@
     <string name="label_sign_in_to_comment">Sign in to comment</string>
     <string name="label_leaderboard_week">This Week</string>
     <string name="label_leaderboard_month">This Month</string>
+    <string name="loading">Loading...</string>
+    <string name="leaderboard_active_time">Your active time: %1$s</string>
+    <string name="leaderboard_empty">No leaderboard data yet.</string>
     <string name="placeholder_coming_soon">Feature queued after the core flow.</string>
     <string name="guest_login_required">You need to sign in to use this feature.</string>
     <string name="guest_display_name">Guest</string>
@@ -71,6 +79,18 @@
     <string name="guest_profile_cta">Sign in to unlock statistics and study streaks</string>
     <string name="guest_profile_title">Build a real learning profile</string>
     <string name="guest_profile_body">Create an account to see your personal information, save progress, comment on lessons, and keep your streak across sessions.</string>
+    <string name="profile_theme_label">Theme</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="lesson_search_hint">Search lessons</string>
+    <string name="lesson_search_no_results">No lessons match your search.</string>
+    <string name="speaking_intro">Listen to the sample, record your voice, then compare the result.</string>
+    <string name="speaking_reference_label">REFERENCE</string>
+    <string name="speaking_sample_prompt">Play sample audio</string>
+    <string name="speaking_record_prompt">Record your answer</string>
+    <string name="speaking_best_attempt">Best attempt</string>
+    <string name="speaking_current_attempt">Current attempt</string>
+    <string name="profile_header_label">Learning profile</string>
     
     <string name="dialog_login_required_title">Sign In Required</string>
     <string name="dialog_login_required_message">You need to sign in to access this feature. Do you want to sign in now?</string>

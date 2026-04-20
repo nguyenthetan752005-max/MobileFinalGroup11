@@ -80,6 +80,7 @@ public class RoomCatalogRepository implements CatalogRepository {
 
             categories.add(new ExploreCategory(
                     category.slug,
+                    category.imageUrl,
                     category.name,
                     category.levelRange,
                     category.totalLessons,

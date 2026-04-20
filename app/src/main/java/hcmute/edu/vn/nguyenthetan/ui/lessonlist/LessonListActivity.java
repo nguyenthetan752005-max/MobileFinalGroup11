@@ -3,6 +3,8 @@ package hcmute.edu.vn.nguyenthetan.ui.lessonlist;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Toast;
 
@@ -43,6 +45,21 @@ public class LessonListActivity extends AppCompatActivity implements LessonSecti
         binding.recyclerSections.setAdapter(adapter);
 
         binding.buttonBack.setOnClickListener(v -> finish());
+        binding.inputLessonSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                adapter.setSearchQuery(s == null ? "" : s.toString());
+                updateLessonSearchEmptyState();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
 
         TungTungApplication application = (TungTungApplication) getApplication();
         String categoryId = getIntent().getStringExtra(EXTRA_CATEGORY_ID);
@@ -69,6 +86,7 @@ public class LessonListActivity extends AppCompatActivity implements LessonSecti
         binding.textCategoryDescription.setText(collection.getDescription());
         binding.textTotalLessons.setText(collection.getTotalLessons() + " lessons");
         adapter.submitList(collection.getSections());
+        updateLessonSearchEmptyState();
     }
 
     @Override
@@ -84,5 +102,13 @@ public class LessonListActivity extends AppCompatActivity implements LessonSecti
     @Override
     public void onLessonSelected(long lessonId) {
         startActivity(LessonActivity.newIntent(this, lessonId));
+    }
+
+    private void updateLessonSearchEmptyState() {
+        String query = binding.inputLessonSearch.getText() == null
+                ? ""
+                : binding.inputLessonSearch.getText().toString().trim();
+        boolean showEmptyState = !query.isEmpty() && adapter.getItemCount() == 0;
+        binding.textNoLessonResults.setVisibility(showEmptyState ? View.VISIBLE : View.GONE);
     }
 }

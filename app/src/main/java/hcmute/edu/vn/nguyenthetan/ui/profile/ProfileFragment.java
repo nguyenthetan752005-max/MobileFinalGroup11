@@ -21,6 +21,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import hcmute.edu.vn.nguyenthetan.R;
 import hcmute.edu.vn.nguyenthetan.TungTungApplication;
+import hcmute.edu.vn.nguyenthetan.core.ThemePreferenceStore;
 import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
 import hcmute.edu.vn.nguyenthetan.data.remote.api.MobileApiService;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.UserProfileDto;
@@ -73,9 +74,12 @@ public class ProfileFragment extends Fragment {
         );
         viewModel.load();
 
-        binding.switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) -> AppCompatDelegate.setDefaultNightMode(
-                isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
-        ));
+        binding.textThemeLight.setOnClickListener(v ->
+                ThemePreferenceStore.setThemeMode(requireContext(), AppCompatDelegate.MODE_NIGHT_NO)
+        );
+        binding.textThemeDark.setOnClickListener(v ->
+                ThemePreferenceStore.setThemeMode(requireContext(), AppCompatDelegate.MODE_NIGHT_YES)
+        );
         binding.cardMood.setOnClickListener(v -> {
             if (userSessionStore != null && userSessionStore.isLoggedIn()) {
                 showStreakDialog(getParentFragmentManager(), false);
@@ -100,7 +104,6 @@ public class ProfileFragment extends Fragment {
         binding.textMood.setText(guestMode
                 ? getString(R.string.guest_profile_cta)
                 : profileData.getStreakSummary().getActiveMood() + " mood");
-        binding.switchDarkMode.setChecked(profileData.isDarkModeEnabled());
         binding.switchNotifications.setChecked(profileData.isNotificationsEnabled());
         binding.switchNotifications.setEnabled(!guestMode);
         binding.layoutProfileStats.setVisibility(guestMode ? View.GONE : View.VISIBLE);
@@ -114,6 +117,7 @@ public class ProfileFragment extends Fragment {
         } else {
             binding.activityChartContainer.removeAllViews();
         }
+        renderThemeMode();
         renderSessionCard(profileData);
     }
 
@@ -219,6 +223,16 @@ public class ProfileFragment extends Fragment {
             return parts[0].substring(0, Math.min(2, parts[0].length())).toUpperCase();
         }
         return (parts[0].substring(0, 1) + parts[parts.length - 1].substring(0, 1)).toUpperCase();
+    }
+
+    private void renderThemeMode() {
+        boolean darkMode = ThemePreferenceStore.isDarkMode(requireContext());
+        int activeColor = ContextCompat.getColor(requireContext(), R.color.tt_primary);
+        int inactiveColor = ContextCompat.getColor(requireContext(), R.color.tt_text_secondary);
+        binding.textThemeLight.setTextColor(darkMode ? inactiveColor : activeColor);
+        binding.textThemeDark.setTextColor(darkMode ? activeColor : inactiveColor);
+        binding.textThemeLight.setAlpha(darkMode ? 0.7f : 1f);
+        binding.textThemeDark.setAlpha(darkMode ? 1f : 0.7f);
     }
 
     @Override

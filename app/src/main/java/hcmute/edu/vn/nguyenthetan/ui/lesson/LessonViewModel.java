@@ -424,11 +424,13 @@ public class LessonViewModel extends ViewModel {
         state.speakingBusy = speakingBusy;
         state.recordingLabel = speakingBusy
                 ? speakingBusyLabel
-                : (recording ? "Recording... tap again to stop" : "Tap to record");
-        state.bestScore = "Best Score: " + (bestAttempt != null ? bestAttempt.getScore() : 0) + "/100";
-        state.bestTranscript = bestAttempt != null && !bestAttempt.getTranscript().isEmpty() 
-                ? "You said: " + bestAttempt.getTranscript() + "\n" + bestAttempt.getFeedback() 
-                : (bestAttempt != null ? bestAttempt.getFeedback() : "");
+                : (recording ? "Recording... tap again to stop" : "Tap the mic to start");
+        state.bestScore = bestAttempt != null ? bestAttempt.getScore() + "/100" : "No score yet";
+        state.bestTranscript = bestAttempt != null && !bestAttempt.getTranscript().isEmpty()
+                ? bestAttempt.getTranscript() + "\n" + bestAttempt.getFeedback()
+                : (bestAttempt != null && !bestAttempt.getFeedback().isEmpty()
+                ? bestAttempt.getFeedback()
+                : "Your strongest result will appear here.");
         String baseApiUrl = hcmute.edu.vn.nguyenthetan.BuildConfig.TUNGTUNG_API_BASE_URL;
         if (!baseApiUrl.endsWith("/")) {
             baseApiUrl += "/";
@@ -436,10 +438,12 @@ public class LessonViewModel extends ViewModel {
         state.bestAudioUrl = bestAttempt != null && bestAttempt.getAudioUrl() != null && !bestAttempt.getAudioUrl().trim().isEmpty()
                 ? baseApiUrl + "api/mobile/speaking/audio/best?sentenceId=" + current.getId()
                 : null;
-        state.currentScore = "Current Attempt: " + (currentAttempt != null ? currentAttempt.getScore() : 0) + "/100";
-        state.currentTranscript = currentAttempt != null && !currentAttempt.getTranscript().isEmpty() 
-                ? "You said: " + currentAttempt.getTranscript() + "\n" + currentAttempt.getFeedback() 
-                : (currentAttempt != null ? currentAttempt.getFeedback() : "");
+        state.currentScore = currentAttempt != null ? currentAttempt.getScore() + "/100" : "Waiting";
+        state.currentTranscript = currentAttempt != null && !currentAttempt.getTranscript().isEmpty()
+                ? currentAttempt.getTranscript() + "\n" + currentAttempt.getFeedback()
+                : (currentAttempt != null && !currentAttempt.getFeedback().isEmpty()
+                ? currentAttempt.getFeedback()
+                : "Record once to get feedback.");
         state.currentUserAudioUrl = currentAttempt != null && currentAttempt.getAudioUrl() != null && !currentAttempt.getAudioUrl().trim().isEmpty()
                 ? baseApiUrl + "api/mobile/speaking/audio/current?sentenceId=" + current.getId()
                 : null;

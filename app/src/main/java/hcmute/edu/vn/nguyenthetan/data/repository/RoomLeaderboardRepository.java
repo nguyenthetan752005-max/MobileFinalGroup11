@@ -21,11 +21,13 @@ public class RoomLeaderboardRepository implements LeaderboardRepository {
     @Override
     public LeaderboardData getLeaderboard() {
         LeaderboardMetaEntity meta = leaderboardDao.getMeta();
+        int currentUserRank = meta == null ? 0 : meta.currentUserRank;
+        String currentUserTime = meta == null || meta.currentUserTime == null ? "" : meta.currentUserTime;
         return new LeaderboardData(
                 mapEntries(leaderboardDao.getByPeriod("WEEKLY")),
                 mapEntries(leaderboardDao.getByPeriod("MONTHLY")),
-                meta.currentUserRank,
-                meta.currentUserTime
+                currentUserRank,
+                currentUserTime
         );
     }
 

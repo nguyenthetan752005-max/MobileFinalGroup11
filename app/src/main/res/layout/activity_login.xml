@@ -82,7 +82,12 @@
             android:layout_marginTop="12dp"
             android:text="@string/button_google"
             android:textAllCaps="false"
-            app:cornerRadius="@dimen/button_radius" />
+            app:cornerRadius="@dimen/button_radius"
+            app:icon="@drawable/google"
+            app:iconTint="@null"
+            app:iconGravity="textStart"
+            app:iconPadding="12dp"
+            app:iconSize="24dp" />
 
             <TextView
                 android:id="@+id/textCreateAccount"

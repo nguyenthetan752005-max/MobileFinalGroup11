@@ -23,7 +23,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:hint="Search lessons"
+            android:hint="@string/explore_search_hint"
             app:boxBackgroundColor="@color/tt_surface"
             app:boxCornerRadiusBottomEnd="@dimen/button_radius"
             app:boxCornerRadiusBottomStart="@dimen/button_radius"
@@ -54,32 +54,25 @@
                 android:orientation="horizontal">
 
                 <com.google.android.material.chip.Chip
+                    android:id="@+id/chipListening"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="All"
-                    android:textColor="@color/tt_primary"
+                    android:checkable="true"
+                    android:checked="true"
+                    android:text="@string/filter_listening"
+                    app:checkedIconVisible="false"
                     app:chipBackgroundColor="@color/tt_primary_tint" />
 
                 <com.google.android.material.chip.Chip
+                    android:id="@+id/chipSpeaking"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
-                    android:text="Listening"
-                    app:chipBackgroundColor="@color/tt_surface" />
-
-                <com.google.android.material.chip.Chip
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:text="Speaking"
-                    app:chipBackgroundColor="@color/tt_surface" />
-
-                <com.google.android.material.chip.Chip
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:text="Beginner"
-                    app:chipBackgroundColor="@color/tt_surface" />
+                    android:checkable="true"
+                    android:checked="true"
+                    android:text="@string/filter_speaking"
+                    app:checkedIconVisible="false"
+                    app:chipBackgroundColor="@color/tt_primary_tint" />
             </LinearLayout>
         </HorizontalScrollView>
 
@@ -97,6 +90,16 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:nestedScrollingEnabled="false" />
+
+        <TextView
+            android:id="@+id/textExploreEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:text="@string/explore_no_results"
+            android:textColor="@color/tt_text_secondary"
+            android:visibility="gone" />
 
     </LinearLayout>
 

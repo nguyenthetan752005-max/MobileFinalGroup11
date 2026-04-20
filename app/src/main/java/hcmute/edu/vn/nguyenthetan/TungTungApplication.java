@@ -2,6 +2,7 @@ package hcmute.edu.vn.nguyenthetan;
 
 import android.app.Application;
 
+import hcmute.edu.vn.nguyenthetan.core.ThemePreferenceStore;
 import hcmute.edu.vn.nguyenthetan.core.di.AppContainer;
 
 public class TungTungApplication extends Application {
@@ -12,6 +13,7 @@ public class TungTungApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        ThemePreferenceStore.applySavedTheme(this);
     }
 
     public AppContainer getAppContainer() {

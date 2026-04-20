@@ -28,15 +28,22 @@ public class LessonSectionAdapter extends RecyclerView.Adapter<LessonSectionAdap
 
     private final Listener listener;
     private final List<LessonSection> items = new ArrayList<>();
+    private final List<LessonSection> sourceItems = new ArrayList<>();
+    private String searchQuery = "";
 
     public LessonSectionAdapter(Listener listener) {
         this.listener = listener;
     }
 
     public void submitList(List<LessonSection> sections) {
-        items.clear();
-        items.addAll(sections);
-        notifyDataSetChanged();
+        sourceItems.clear();
+        sourceItems.addAll(sections);
+        applyFilter();
+    }
+
+    public void setSearchQuery(String query) {
+        searchQuery = query == null ? "" : query.trim().toLowerCase(Locale.US);
+        applyFilter();
     }
 
     @NonNull
@@ -48,12 +55,39 @@ public class LessonSectionAdapter extends RecyclerView.Adapter<LessonSectionAdap
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(items.get(position), listener);
+        holder.bind(items.get(position), listener, searchQuery);
     }
 
     @Override
     public int getItemCount() {
         return items.size();
+    }
+
+    private void applyFilter() {
+        items.clear();
+        if (searchQuery.isEmpty()) {
+            items.addAll(sourceItems);
+            notifyDataSetChanged();
+            return;
+        }
+
+        for (LessonSection section : sourceItems) {
+            List<LessonSummary> visibleLessons = new ArrayList<>();
+            for (LessonSummary lesson : section.getLessons()) {
+                String lessonTitle = lesson.getTitle() == null ? "" : lesson.getTitle().toLowerCase(Locale.US);
+                String lessonLevel = lesson.getLevel() == null ? "" : lesson.getLevel().toLowerCase(Locale.US);
+                String practiceType = lesson.getPracticeType() == null ? "" : lesson.getPracticeType().toLowerCase(Locale.US);
+                if (lessonTitle.contains(searchQuery)
+                        || lessonLevel.contains(searchQuery)
+                        || practiceType.contains(searchQuery)) {
+                    visibleLessons.add(lesson);
+                }
+            }
+            if (!visibleLessons.isEmpty()) {
+                items.add(new LessonSection(section.getId(), section.getTitle(), visibleLessons));
+            }
+        }
+        notifyDataSetChanged();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -65,11 +99,13 @@ public class LessonSectionAdapter extends RecyclerView.Adapter<LessonSectionAdap
             this.binding = binding;
         }
 
-        void bind(LessonSection section, Listener listener) {
+        void bind(LessonSection section, Listener listener, String searchQuery) {
             binding.textSectionTitle.setText(section.getTitle());
-            boolean expanded = listener.isExpanded(section.getId());
-            binding.textArrow.setText(expanded ? "▴" : "▾");
-            binding.cardHeader.setOnClickListener(v -> listener.onSectionToggled(section.getId()));
+            boolean expanded = searchQuery.isEmpty() ? listener.isExpanded(section.getId()) : true;
+            binding.textArrow.setText(expanded ? "\u25B4" : "\u25BE");
+            binding.cardHeader.setOnClickListener(searchQuery.isEmpty()
+                    ? v -> listener.onSectionToggled(section.getId())
+                    : null);
             binding.lessonContainer.removeAllViews();
 
             if (!expanded) {

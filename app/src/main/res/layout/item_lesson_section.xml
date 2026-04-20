@@ -36,7 +36,7 @@
                 android:id="@+id/textArrow"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="▾"
+                android:text="&#x25BE;"
                 android:textColor="@color/tt_text_secondary"
                 android:textSize="18sp" />
         </LinearLayout>

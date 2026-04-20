@@ -7,14 +7,10 @@ import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.room.Room;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
-import hcmute.edu.vn.nguyenthetan.BuildConfig;
-import hcmute.edu.vn.nguyenthetan.core.AccountLockInterceptor;
 import hcmute.edu.vn.nguyenthetan.core.RetryUtil;
 import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
 import hcmute.edu.vn.nguyenthetan.data.local.db.TungTungDatabase;
@@ -29,6 +25,7 @@ import hcmute.edu.vn.nguyenthetan.data.remote.dto.HealthStatusDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileBootstrapDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteCatalogSyncManager;
 import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteCategorySyncManager;
+import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteLeaderboardSyncManager;
 import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteLessonSyncManager;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.CheckDictationAnswerUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.comment.GetCommentsUseCase;
@@ -41,11 +38,7 @@ import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.GetLessonSessionUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.profile.GetProfileUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SaveSentenceStatusUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SaveSpeakingAttemptUseCase;
-import okhttp3.OkHttpClient;
-import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class AppContainer {
 
@@ -70,6 +63,7 @@ public class AppContainer {
     private final MutableLiveData<Boolean> isSyncing = new MutableLiveData<>(true);
     private final MutableLiveData<String> syncErrorMessage = new MutableLiveData<>();
     private final RemoteCatalogSyncManager remoteCatalogSyncManager;
+    private final RemoteLeaderboardSyncManager remoteLeaderboardSyncManager;
     private final ExecutorService ioExecutor;
     private final TungTungDatabase database;
     private final MobileApiService mobileApiService;
@@ -78,49 +72,15 @@ public class AppContainer {
 
     public AppContainer(Context context) {
         userSessionStore = new UserSessionStore(context);
-        database = Room.databaseBuilder(
-                        context.getApplicationContext(),
-                        TungTungDatabase.class,
-                        "tungtung.db"
-                )
-                .fallbackToDestructiveMigration()
-                .allowMainThreadQueries()
-                .build();
+        database = DatabaseModule.createDatabase(context);
 
         ioExecutor = Executors.newSingleThreadExecutor();
 
-        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
-
-        OkHttpClient httpClient = new OkHttpClient.Builder()
-                .connectTimeout(10, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .writeTimeout(30, TimeUnit.SECONDS)
-                .retryOnConnectionFailure(true)
-                .addInterceptor(chain -> {
-                    okhttp3.Request original = chain.request();
-                    String token = userSessionStore.getToken();
-                    if (token != null && !token.isEmpty()) {
-                        okhttp3.Request.Builder builder = original.newBuilder()
-                                .header("Authorization", "Bearer " + token);
-                        return chain.proceed(builder.build());
-                    }
-                    return chain.proceed(original);
-                })
-                .addInterceptor(new AccountLockInterceptor(userSessionStore))
-                .addInterceptor(loggingInterceptor)
-                .build();
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(BuildConfig.TUNGTUNG_API_BASE_URL)
-                .client(httpClient)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        mobileApiService = retrofit.create(MobileApiService.class);
+        mobileApiService = NetworkModule.createMobileApiService(userSessionStore);
         RemoteCategorySyncManager remoteCategorySyncManager = new RemoteCategorySyncManager(mobileApiService, database);
         remoteCatalogSyncManager = new RemoteCatalogSyncManager(mobileApiService, database);
         RemoteLessonSyncManager remoteLessonSyncManager = new RemoteLessonSyncManager(mobileApiService, database);
+        remoteLeaderboardSyncManager = new RemoteLeaderboardSyncManager(mobileApiService, database);
 
         sync();
 
@@ -181,13 +141,16 @@ public class AppContainer {
             try {
                 Log.d(TAG, "Starting remote catalog sync.");
                 remoteCatalogSyncManager.sync();
+                remoteLeaderboardSyncManager.sync();
                 Log.d(TAG, "Remote catalog sync finished.");
                 if (database.categoryDao().count() <= 0) {
                     syncErrorMessage.postValue("Không thể tải dữ liệu từ server, hãy thử kiểm tra lại kết nối!");
                 }
             } catch (Exception exception) {
                 Log.e(TAG, "Remote catalog sync failed.", exception);
-                syncErrorMessage.postValue("Không thể tải dữ liệu từ server, hãy thử kiểm tra lại kết nối!");
+                if (database.categoryDao().count() <= 0) {
+                    syncErrorMessage.postValue("Không thể tải dữ liệu từ server, hãy thử kiểm tra lại kết nối!");
+                }
             } finally {
                 isSyncing.postValue(false);
             }

@@ -364,36 +364,36 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/speaking_intro"
+                    android:textColor="@color/tt_text_secondary"
+                    android:textSize="14sp" />
+
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
                     app:cardBackgroundColor="@color/tt_surface"
                     app:cardCornerRadius="@dimen/card_radius"
-                    app:cardElevation="@dimen/elevation_sm"
-                    app:strokeColor="@color/tt_border"
+                    app:cardElevation="@dimen/elevation_md"
+                    app:strokeColor="@color/tt_primary"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_horizontal"
-                            android:text="READ THIS"
-                            android:textColor="@color/tt_text_muted"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
+                        android:padding="18dp">
 
                         <TextView
                             android:id="@+id/textSpeakingReference"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:gravity="center"
+                            android:layout_marginTop="12dp"
+                            android:gravity="center_horizontal"
+                            android:lineSpacingExtra="4dp"
                             android:textColor="@color/tt_text_primary"
                             android:textSize="20sp"
                             android:textStyle="bold" />
@@ -402,26 +402,41 @@
 
                 <ImageButton
                     android:id="@+id/buttonSpeakingPlay"
-                    android:layout_width="52dp"
-                    android:layout_height="52dp"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
                     android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="16dp"
-                    android:backgroundTint="@color/tt_info"
+                    android:layout_marginTop="10dp"
+                    android:backgroundTint="@color/tt_primary_tint"
                     android:src="@drawable/ic_play"
                     android:contentDescription="@string/lesson_play_sample"
-                    android:tint="@color/white" />
+                    android:tint="@color/tt_primary" />
 
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/buttonRecord"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                <FrameLayout
+                    android:layout_width="124dp"
+                    android:layout_height="124dp"
                     android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="20dp"
-                    android:src="@drawable/ic_mic"
-                    app:backgroundTint="@color/tt_primary"
-                    app:fabCustomSize="96dp"
-                    app:elevation="@dimen/elevation_md"
-                    app:tint="@color/white" />
+                    android:layout_marginTop="12dp">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="124dp"
+                        android:layout_height="124dp"
+                        app:cardBackgroundColor="@color/tt_primary_tint"
+                        app:cardCornerRadius="62dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="@color/tt_primary"
+                        app:strokeWidth="1dp" />
+
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/buttonRecord"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_mic"
+                        app:backgroundTint="@color/tt_primary"
+                        app:fabCustomSize="92dp"
+                        app:elevation="@dimen/elevation_md"
+                        app:tint="@color/white" />
+                </FrameLayout>
 
                 <TextView
                     android:id="@+id/textRecordingState"
@@ -435,14 +450,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
                     <com.google.android.material.card.MaterialCardView
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="6dp"
-                        app:cardBackgroundColor="@color/tt_surface"
+                        app:cardBackgroundColor="@color/tt_surface_alt"
                         app:cardCornerRadius="@dimen/card_radius"
                         app:cardElevation="@dimen/elevation_sm"
                         app:strokeColor="@color/tt_warning"
@@ -452,11 +465,20 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:padding="12dp">
+                            android:padding="14dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/speaking_best_attempt"
+                                android:textColor="@color/tt_text_secondary"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
 
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
                                 android:gravity="center_vertical"
                                 android:orientation="horizontal">
 
@@ -483,17 +505,16 @@
                                 android:id="@+id/textBestTranscript"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
+                                android:layout_marginTop="8dp"
                                 android:textColor="@color/tt_text_secondary"
-                                android:textSize="12sp" />
+                                android:textSize="13sp" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
                     <com.google.android.material.card.MaterialCardView
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="6dp"
+                        android:layout_marginTop="12dp"
                         app:cardBackgroundColor="@color/tt_surface"
                         app:cardCornerRadius="@dimen/card_radius"
                         app:cardElevation="@dimen/elevation_sm"
@@ -504,11 +525,20 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:padding="12dp">
+                            android:padding="14dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/speaking_current_attempt"
+                                android:textColor="@color/tt_text_secondary"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
 
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
                                 android:gravity="center_vertical"
                                 android:orientation="horizontal">
 
@@ -535,9 +565,9 @@
                                 android:id="@+id/textCurrentTranscript"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
+                                android:layout_marginTop="8dp"
                                 android:textColor="@color/tt_text_secondary"
-                                android:textSize="12sp" />
+                                android:textSize="13sp" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>

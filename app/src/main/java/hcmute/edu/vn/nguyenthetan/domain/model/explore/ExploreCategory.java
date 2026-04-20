@@ -3,6 +3,7 @@ package hcmute.edu.vn.nguyenthetan.domain.model.explore;
 public class ExploreCategory {
 
     private final String id;
+    private final String imageUrl;
     private final String title;
     private final String levelRange;
     private final int lessonCount;
@@ -11,6 +12,7 @@ public class ExploreCategory {
 
     public ExploreCategory(
             String id,
+            String imageUrl,
             String title,
             String levelRange,
             int lessonCount,
@@ -18,6 +20,7 @@ public class ExploreCategory {
             String progressLabel
     ) {
         this.id = id;
+        this.imageUrl = imageUrl;
         this.title = title;
         this.levelRange = levelRange;
         this.lessonCount = lessonCount;
@@ -27,6 +30,10 @@ public class ExploreCategory {
 
     public String getId() {
         return id;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
     }
 
     public String getTitle() {

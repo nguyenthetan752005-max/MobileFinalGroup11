@@ -22,6 +22,7 @@ import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileBootstrapDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileBootstrapCommentDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileCategoryCollectionSectionDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileCategoryDto;
+import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileLeaderboardDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileLeaderboardEntryDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileLessonDetailDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileLessonDto;
@@ -43,7 +44,7 @@ public final class RemoteEntityMapper {
             entities.add(new CategoryEntity(
                     categoryId,
                     resolveSlug(dto),
-                    safeString(dto.name, "Category " + categoryId),
+                    safeString(dto.name, ""),
                     dto.imageUrl,
                     dto.levelRange,
                     normalizeContentType(dto.contentType),
@@ -228,12 +229,33 @@ public final class RemoteEntityMapper {
 
     public static LeaderboardMetaEntity toLeaderboardMeta(MobileBootstrapDto bootstrapDto) {
         if (bootstrapDto == null || bootstrapDto.leaderboard == null) {
-            return new LeaderboardMetaEntity(1L, 0, "Guest mode");
+            return new LeaderboardMetaEntity(1L, 0, "");
         }
         return new LeaderboardMetaEntity(
                 1L,
                 bootstrapDto.leaderboard.currentUserRank,
                 bootstrapDto.leaderboard.currentUserTime
+        );
+    }
+
+    public static List<LeaderboardEntryEntity> toLeaderboardEntries(MobileLeaderboardDto dto) {
+        List<LeaderboardEntryEntity> entries = new ArrayList<>();
+        if (dto == null) {
+            return entries;
+        }
+        appendEntries(entries, "WEEKLY", dto.weeklyEntries);
+        appendEntries(entries, "MONTHLY", dto.monthlyEntries);
+        return entries;
+    }
+
+    public static LeaderboardMetaEntity toLeaderboardMeta(MobileLeaderboardDto dto) {
+        if (dto == null) {
+            return new LeaderboardMetaEntity(1L, 0, "");
+        }
+        return new LeaderboardMetaEntity(
+                1L,
+                dto.currentUserRank,
+                dto.currentUserTime
         );
     }
 

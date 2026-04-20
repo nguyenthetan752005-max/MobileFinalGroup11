@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="tt_primary">#E67300</color>
-    <color name="tt_primary_pressed">#CC6600</color>
-    <color name="tt_primary_tint">#FFF3E0</color>
+    <color name="tt_primary">#F97316</color>
+    <color name="tt_primary_pressed">#EA580C</color>
+    <color name="tt_primary_tint">#FFF7ED</color>
     <color name="tt_success">#10B981</color>
     <color name="tt_warning">#F59E0B</color>
     <color name="tt_error">#DC2626</color>
     <color name="tt_info">#3B82F6</color>
-    <color name="tt_background">#F9FAFB</color>
+    <color name="tt_background">#F8FAFC</color>
     <color name="tt_surface">#FFFFFF</color>
-    <color name="tt_surface_alt">#FFF7ED</color>
-    <color name="tt_text_primary">#1A1A1A</color>
-    <color name="tt_text_secondary">#555555</color>
-    <color name="tt_text_muted">#888888</color>
-    <color name="tt_border">#E5E7EB</color>
+    <color name="tt_surface_alt">#E2E8F0</color>
+    <color name="tt_text_primary">#0F172A</color>
+    <color name="tt_text_secondary">#64748B</color>
+    <color name="tt_text_muted">#94A3B8</color>
+    <color name="tt_border">#E2E8F0</color>
     <color name="tt_badge_completed_bg">#D1FAE5</color>
     <color name="tt_badge_completed_text">#065F46</color>
     <color name="tt_badge_in_progress_bg">#E2E3E5</color>
