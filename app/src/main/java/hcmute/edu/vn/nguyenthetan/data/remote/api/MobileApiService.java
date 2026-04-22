@@ -48,6 +48,9 @@ public interface MobileApiService {
     @GET("api/mobile/categories/{categorySlug}/sections")
     Call<MobileCategoryCollectionDto> getCategoryCollection(@Path("categorySlug") String categorySlug);
 
+    @GET("api/mobile/sections/{sectionId}/lessons")
+    Call<List<hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileLessonDto>> getSectionLessons(@Path("sectionId") long sectionId);
+
     @GET("api/mobile/catalog/bootstrap-lite")
     Call<MobileBootstrapDto> getBootstrapLite();
 
@@ -68,6 +71,15 @@ public interface MobileApiService {
 
     @GET("api/mobile/profile/{userId}")
     Call<UserProfileDto> getProfile(@Path("userId") long userId);
+
+    @PUT("api/mobile/profile/{userId}/password")
+    Call<GenericApiResponseDto> changePassword(
+            @Path("userId") long userId,
+            @Body java.util.Map<String, String> request
+    );
+
+    @POST("api/mobile/auth/forgot-password")
+    Call<AuthResponseDto> forgotPassword(@Body java.util.Map<String, String> request);
 
     @PUT("api/mobile/profile/{userId}/username")
     Call<GenericApiResponseDto> updateUsername(
@@ -92,6 +104,9 @@ public interface MobileApiService {
 
     @GET("api/mobile/sentences/{sentenceId}/comments")
     Call<List<MobileBootstrapCommentDto>> getSentenceComments(@Path("sentenceId") long sentenceId);
+
+    @GET("api/mobile/profile/{userId}/comments")
+    Call<List<MobileBootstrapCommentDto>> getUserComments(@Path("userId") long userId);
 
     @GET("api/mobile/comments/{commentId}/replies")
     Call<List<MobileBootstrapCommentDto>> getCommentReplies(@Path("commentId") long commentId);

@@ -33,6 +33,7 @@ public class SentenceEntity {
     public Double startTime;
     public Double endTime;
     public int orderIndex;
+    public java.util.List<String> properNouns;
 
     public SentenceEntity(
             long id,
@@ -44,7 +45,8 @@ public class SentenceEntity {
             long durationMillis,
             Double startTime,
             Double endTime,
-            int orderIndex
+            int orderIndex,
+            java.util.List<String> properNouns
     ) {
         this.id = id;
         this.lessonId = lessonId;
@@ -56,5 +58,6 @@ public class SentenceEntity {
         this.startTime = startTime;
         this.endTime = endTime;
         this.orderIndex = orderIndex;
+        this.properNouns = properNouns;
     }
 }

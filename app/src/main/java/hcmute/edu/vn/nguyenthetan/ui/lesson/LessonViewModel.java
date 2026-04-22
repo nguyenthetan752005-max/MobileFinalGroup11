@@ -74,6 +74,7 @@ public class LessonViewModel extends ViewModel {
         public String currentScore;
         public String currentTranscript;
         public String currentUserAudioUrl;
+        public boolean showSpeakingActions;
         public boolean speakingNextEnabled;
         public List<Comment> comments;
     }
@@ -209,7 +210,7 @@ public class LessonViewModel extends ViewModel {
 
     public void completePlayback(long durationMillis) {
         playbackDuration = Math.max(durationMillis, playbackDuration);
-        playbackPosition = playbackDuration;
+        playbackPosition = 0L;
         playing = false;
         publish();
     }
@@ -261,25 +262,6 @@ public class LessonViewModel extends ViewModel {
         publish();
     }
 
-    public void toggleRecording() {
-        recording = !recording;
-        if (!recording) {
-            int score = (currentIndex % 2 == 0) ? 78 : 65;
-            currentAttempt = new SpeakingAttempt(score, getCurrentSentence().getContent(), score >= lessonSession.getPassThreshold()
-                    ? "Clear enough to pass. Keep that rhythm."
-                    : "You are close. Focus on consonant endings.", "");
-            if (bestAttempt == null || score > bestAttempt.getScore()) {
-                bestAttempt = currentAttempt;
-            }
-            saveSpeakingAttemptUseCase.execute(lessonId, getCurrentSentence().getId(), currentAttempt, lessonSession.getPassThreshold());
-            if (score >= lessonSession.getPassThreshold()) {
-                sentenceStatuses.put(getCurrentSentence().getId(), SentenceStatus.COMPLETED);
-            } else {
-                sentenceStatuses.put(getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
-            }
-        }
-        publish();
-    }
 
     public void applyDictationFeedback(DictationFeedback result, boolean markCompleted, boolean markSkipped) {
         feedback = result;
@@ -395,7 +377,7 @@ public class LessonViewModel extends ViewModel {
         state.sentenceCounter = String.format(Locale.US, "%d/%d", currentIndex + 1, lessonSession.getSentences().size());
         state.currentStatus = sentenceStatuses.get(current.getId());
         state.progressPercent = calculateProgressPercent();
-        state.hint = current.getHintText().isEmpty() ? "Hint: no proper noun hint for this sentence." : "Hint: " + current.getHintText();
+        state.hint = resolveHintText(current);
         state.inputText = inputText;
         state.showFeedback = feedback != null;
         state.feedbackTitle = feedback != null ? feedback.getTitle() : "";
@@ -447,6 +429,7 @@ public class LessonViewModel extends ViewModel {
         state.currentUserAudioUrl = currentAttempt != null && currentAttempt.getAudioUrl() != null && !currentAttempt.getAudioUrl().trim().isEmpty()
                 ? baseApiUrl + "api/mobile/speaking/audio/current?sentenceId=" + current.getId()
                 : null;
+        state.showSpeakingActions = currentAttempt != null;
         state.speakingNextEnabled = !speakingBusy && currentAttempt != null && currentAttempt.getScore() >= lessonSession.getPassThreshold();
         state.comments = comments;
         uiState.postValue(state);
@@ -545,6 +528,29 @@ public class LessonViewModel extends ViewModel {
             return "Audio sentence ready";
         }
         return "No media source for this sentence";
+    }
+
+    private String resolveHintText(Sentence current) {
+        StringBuilder hint = new StringBuilder();
+        if (current.getHintText() != null && !current.getHintText().isEmpty()) {
+            hint.append("Hint: ").append(current.getHintText());
+        }
+        if (current.getProperNouns() != null && !current.getProperNouns().isEmpty()) {
+            if (hint.length() > 0) hint.append("\n");
+            
+            // Format proper nouns, capitalizing them
+            List<String> formatted = new ArrayList<>();
+            for (String pn : current.getProperNouns()) {
+                if (!pn.isEmpty()) {
+                    formatted.add(pn.substring(0, 1).toUpperCase() + pn.substring(1));
+                }
+            }
+            hint.append("Proper Nouns: ").append(android.text.TextUtils.join(", ", formatted));
+        }
+        if (hint.length() == 0) {
+            hint.append("No hints available for this sentence.");
+        }
+        return hint.toString();
     }
 
     private void resetPlaybackInternal() {

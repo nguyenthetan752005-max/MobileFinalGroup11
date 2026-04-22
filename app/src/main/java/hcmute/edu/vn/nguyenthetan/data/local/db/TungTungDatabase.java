@@ -4,6 +4,8 @@ import androidx.room.Database;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
+import hcmute.edu.vn.nguyenthetan.data.local.dao.system.OfflineActionDao;
+import hcmute.edu.vn.nguyenthetan.data.local.entity.system.OfflineActionEntity;
 import hcmute.edu.vn.nguyenthetan.data.local.dao.user.AppSettingsDao;
 import hcmute.edu.vn.nguyenthetan.data.local.dao.catalog.CategoryDao;
 import hcmute.edu.vn.nguyenthetan.data.local.dao.community.CommentDao;
@@ -47,13 +49,16 @@ import hcmute.edu.vn.nguyenthetan.data.local.entity.system.SyncStateEntity;
                 SectionEntity.class,
                 SentenceEntity.class,
                 StreakDayEntity.class,
-                SyncStateEntity.class
+                SyncStateEntity.class,
+                OfflineActionEntity.class
         },
-        version = 4,
+        version = 6,
         exportSchema = false
 )
 @TypeConverters(RoomConverters.class)
 public abstract class TungTungDatabase extends RoomDatabase {
+
+    public abstract OfflineActionDao offlineActionDao();
 
     public abstract AppSettingsDao appSettingsDao();
 

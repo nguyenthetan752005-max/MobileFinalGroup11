@@ -188,7 +188,8 @@ public final class RemoteEntityMapper {
                     resolveDurationMillis(dto),
                     dto.startTime,
                     dto.endTime,
-                    dto.orderIndex
+                    dto.orderIndex,
+                    dto.properNouns
             ));
         }
         return entities;

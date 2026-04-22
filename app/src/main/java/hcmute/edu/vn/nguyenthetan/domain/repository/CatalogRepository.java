@@ -9,6 +9,8 @@ public interface CatalogRepository {
 
     void syncCategoryCollection(String categorySlug);
 
+    void syncSectionLessons(long sectionId);
+
     boolean hasCategoryCollection(String categorySlug);
 
     List<ExploreCategory> getExploreCategories();

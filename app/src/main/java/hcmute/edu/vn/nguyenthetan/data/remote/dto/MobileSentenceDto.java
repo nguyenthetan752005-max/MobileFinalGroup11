@@ -29,4 +29,7 @@ public class MobileSentenceDto {
 
     @SerializedName(value = "orderIndex", alternate = {"order_index"})
     public int orderIndex;
+
+    @SerializedName("properNouns")
+    public java.util.List<String> properNouns;
 }

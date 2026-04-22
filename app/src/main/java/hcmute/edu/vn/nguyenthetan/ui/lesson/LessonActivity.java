@@ -70,6 +70,7 @@ public class LessonActivity extends AppCompatActivity implements TranscriptAdapt
     private LessonViewModel.UiState latestState;
     private boolean updatingTabs;
     private boolean audioPrefetchEnqueued;
+    private long sessionStartTime;
 
     private AudioPlaybackManager audioPlaybackManager;
     private YouTubePlaybackManager youtubePlaybackManager;
@@ -299,6 +300,8 @@ public class LessonActivity extends AppCompatActivity implements TranscriptAdapt
         applyStatusChip(state.currentStatus);
 
         binding.textHint.setText(state.hint);
+        binding.textSpeakingHint.setText(state.hint);
+        binding.textSpeakingHint.setVisibility(state.hint != null && !state.hint.isEmpty() ? View.VISIBLE : View.GONE);
         binding.textMediaSummary.setText(state.mediaSummary);
         binding.textTranscriptMediaSummary.setText(state.mediaSummary);
         
@@ -347,6 +350,8 @@ public class LessonActivity extends AppCompatActivity implements TranscriptAdapt
         binding.textCurrentScore.setText(state.currentScore);
         binding.buttonPlayCurrentAudio.setVisibility(state.currentUserAudioUrl != null && !state.currentUserAudioUrl.trim().isEmpty() ? View.VISIBLE : View.GONE);
         binding.textCurrentTranscript.setText(state.currentTranscript);
+        binding.buttonTryAgain.setVisibility(state.showSpeakingActions ? View.VISIBLE : View.GONE);
+        binding.buttonSpeakingNext.setVisibility(state.showSpeakingActions ? View.VISIBLE : View.GONE);
         binding.buttonSpeakingNext.setEnabled(state.speakingNextEnabled);
         binding.buttonWriteComment.setText(userSessionStore.isLoggedIn() ? R.string.label_write_comment : R.string.label_sign_in_to_comment);
         commentsAdapter.submitList(state.comments);
@@ -400,9 +405,33 @@ public class LessonActivity extends AppCompatActivity implements TranscriptAdapt
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        sessionStartTime = System.currentTimeMillis();
+    }
+
+    @Override
     protected void onPause() {
         releaseLessonMedia(true, false);
+        trackTimeSpent();
         super.onPause();
+    }
+
+    private void trackTimeSpent() {
+        if (sessionStartTime > 0 && userSessionStore.isLoggedIn() && mobileApiService != null) {
+            long durationMillis = System.currentTimeMillis() - sessionStartTime;
+            int durationSeconds = (int) (durationMillis / 1000);
+            if (durationSeconds > 0) {
+                mobileApiService.trackTime(new hcmute.edu.vn.nguyenthetan.data.remote.dto.TimeTrackingRequestDto(userSessionStore.getUserId(), durationSeconds))
+                        .enqueue(new Callback<hcmute.edu.vn.nguyenthetan.data.remote.dto.GenericApiResponseDto>() {
+                            @Override
+                            public void onResponse(@NonNull Call<hcmute.edu.vn.nguyenthetan.data.remote.dto.GenericApiResponseDto> call, @NonNull Response<hcmute.edu.vn.nguyenthetan.data.remote.dto.GenericApiResponseDto> response) {}
+                            @Override
+                            public void onFailure(@NonNull Call<hcmute.edu.vn.nguyenthetan.data.remote.dto.GenericApiResponseDto> call, @NonNull Throwable t) {}
+                        });
+            }
+        }
+        sessionStartTime = 0;
     }
 
     @Override
@@ -480,8 +509,7 @@ public class LessonActivity extends AppCompatActivity implements TranscriptAdapt
     private void handleRecordAction() {
         if (latestState == null) return;
         if (!userSessionStore.isLoggedIn()) {
-            Toast.makeText(this, R.string.lesson_sign_in_for_ai, Toast.LENGTH_SHORT).show();
-            viewModel.toggleRecording();
+            requireLoginForRestrictedFeature();
             return;
         }
         if (audioRecordingManager.isRecording()) {

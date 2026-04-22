@@ -65,6 +65,8 @@ public class LessonListActivity extends AppCompatActivity implements LessonSecti
         String categoryId = getIntent().getStringExtra(EXTRA_CATEGORY_ID);
         LessonListViewModelFactory factory = new LessonListViewModelFactory(
                 application.getAppContainer().getLessonCollectionUseCase(),
+                application.getAppContainer().getSyncCategoryCollectionUseCase(),
+                application.getAppContainer().getSyncSectionLessonsUseCase(),
                 categoryId
         );
         viewModel = new ViewModelProvider(this, factory).get(LessonListViewModel.class);

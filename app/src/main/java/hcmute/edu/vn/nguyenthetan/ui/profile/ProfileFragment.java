@@ -91,6 +91,22 @@ public class ProfileFragment extends Fragment {
         binding.buttonGuestProfileCreateAccount.setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), OnboardingActivity.class))
         );
+
+        binding.actionEditProfile.setOnClickListener(v -> {
+            if (userSessionStore != null && userSessionStore.isLoggedIn()) {
+                startActivity(new Intent(requireContext(), EditProfileActivity.class));
+            } else {
+                promptLoginRequired();
+            }
+        });
+
+        binding.actionMyComments.setOnClickListener(v -> {
+            if (userSessionStore != null && userSessionStore.isLoggedIn()) {
+                startActivity(new Intent(requireContext(), MyCommentsActivity.class));
+            } else {
+                promptLoginRequired();
+            }
+        });
     }
 
     private void render(ProfileData profileData) {
@@ -109,6 +125,7 @@ public class ProfileFragment extends Fragment {
         binding.layoutProfileStats.setVisibility(guestMode ? View.GONE : View.VISIBLE);
         binding.cardWeeklyActivity.setVisibility(guestMode ? View.GONE : View.VISIBLE);
         binding.cardMood.setVisibility(guestMode ? View.GONE : View.VISIBLE);
+        binding.cardAccountActions.setVisibility(guestMode ? View.GONE : View.VISIBLE);
         binding.cardGuestProfilePromo.setVisibility(guestMode ? View.VISIBLE : View.GONE);
         binding.textGuestProfileTitle.setText(R.string.guest_profile_title);
         binding.textGuestProfileBody.setText(R.string.guest_profile_body);

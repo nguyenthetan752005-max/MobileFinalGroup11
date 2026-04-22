@@ -11,6 +11,7 @@ public class Sentence {
     private final long durationMillis;
     private final Double startTime;
     private final Double endTime;
+    private final java.util.List<String> properNouns;
 
     public Sentence(
             long id,
@@ -21,7 +22,8 @@ public class Sentence {
             String hintText,
             long durationMillis,
             Double startTime,
-            Double endTime
+            Double endTime,
+            java.util.List<String> properNouns
     ) {
         this.id = id;
         this.orderIndex = orderIndex;
@@ -32,6 +34,7 @@ public class Sentence {
         this.durationMillis = durationMillis;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.properNouns = properNouns;
     }
 
     public long getId() {
@@ -68,5 +71,9 @@ public class Sentence {
 
     public Double getEndTime() {
         return endTime;
+    }
+
+    public java.util.List<String> getProperNouns() {
+        return properNouns;
     }
 }

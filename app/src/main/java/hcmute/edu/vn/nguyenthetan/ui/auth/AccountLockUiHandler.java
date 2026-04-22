@@ -27,5 +27,12 @@ public final class AccountLockUiHandler {
             activity.startActivity(intent);
             activity.finish();
         });
+
+        SessionEventBus.getNetworkOfflineMessage().observe(activity, message -> {
+            if (message != null && !message.trim().isEmpty()) {
+                android.widget.Toast.makeText(activity, message, android.widget.Toast.LENGTH_LONG).show();
+                SessionEventBus.clearNetworkOffline();
+            }
+        });
     }
 }

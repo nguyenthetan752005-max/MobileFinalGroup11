@@ -397,6 +397,16 @@
                             android:textColor="@color/tt_text_primary"
                             android:textSize="20sp"
                             android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/textSpeakingHint"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:background="@color/tt_primary_tint"
+                            android:padding="12dp"
+                            android:textColor="@color/tt_primary"
+                            android:textSize="14sp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 

@@ -45,7 +45,10 @@ public class LeaderboardFragment extends Fragment {
         binding.recyclerLeaderboard.setAdapter(adapter);
 
         TungTungApplication application = (TungTungApplication) requireActivity().getApplication();
-        LeaderboardViewModelFactory factory = new LeaderboardViewModelFactory(application.getAppContainer().getLeaderboardUseCase());
+        LeaderboardViewModelFactory factory = new LeaderboardViewModelFactory(
+                application.getAppContainer().getLeaderboardUseCase(),
+                application.getAppContainer().getSyncLeaderboardUseCase()
+        );
         LeaderboardViewModel viewModel = new ViewModelProvider(this, factory).get(LeaderboardViewModel.class);
         viewModel.getUiState().observe(getViewLifecycleOwner(), state -> renderState(state, viewModel));
 
@@ -73,6 +76,10 @@ public class LeaderboardFragment extends Fragment {
             }
         });
 
+        binding.swipeRefreshLayout.setOnRefreshListener(() -> {
+            viewModel.refresh();
+        });
+
         viewModel.load();
     }
 
@@ -95,6 +102,7 @@ public class LeaderboardFragment extends Fragment {
                 binding.textLeaderboardEmpty.setText(getString(R.string.loading));
                 break;
             case EMPTY:
+                binding.swipeRefreshLayout.setRefreshing(false);
                 binding.tabLayout.setVisibility(View.GONE);
                 binding.recyclerLeaderboard.setVisibility(View.GONE);
                 binding.cardYourRank.setVisibility(View.GONE);
@@ -103,6 +111,7 @@ public class LeaderboardFragment extends Fragment {
                 adapter.submitList(Collections.emptyList());
                 break;
             case ERROR:
+                binding.swipeRefreshLayout.setRefreshing(false);
                 binding.tabLayout.setVisibility(View.GONE);
                 binding.recyclerLeaderboard.setVisibility(View.GONE);
                 binding.cardYourRank.setVisibility(View.GONE);
@@ -112,6 +121,7 @@ public class LeaderboardFragment extends Fragment {
                         : state.getMessage());
                 break;
             case SUCCESS:
+                binding.swipeRefreshLayout.setRefreshing(false);
                 LeaderboardData data = state.getData();
                 if (data == null) {
                     break;

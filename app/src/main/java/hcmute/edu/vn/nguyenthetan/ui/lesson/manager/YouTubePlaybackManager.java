@@ -164,7 +164,10 @@ public class YouTubePlaybackManager {
         stopVideoPlaybackCallbacks();
         
         if (durationMillis > 0L) {
-            completeVideoPlaybackRunnable = () -> listener.onCompletePlayback(durationMillis);
+            completeVideoPlaybackRunnable = () -> {
+                pauseYoutubePlayer();
+                listener.onCompletePlayback(durationMillis);
+            };
             playbackHandler.postDelayed(completeVideoPlaybackRunnable, durationMillis);
         }
     }

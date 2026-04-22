@@ -27,6 +27,15 @@
             android:name=".ui.auth.LoginActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.auth.ForgotPasswordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.profile.EditProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.profile.MyCommentsActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.lessonlist.LessonListActivity"
             android:exported="false" />
         <activity

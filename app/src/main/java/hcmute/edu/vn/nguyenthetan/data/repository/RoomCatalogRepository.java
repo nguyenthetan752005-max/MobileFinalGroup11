@@ -50,6 +50,13 @@ public class RoomCatalogRepository implements CatalogRepository {
     }
 
     @Override
+    public void syncSectionLessons(long sectionId) {
+        if (remoteCategorySyncManager != null) {
+            remoteCategorySyncManager.syncSectionLessons(sectionId);
+        }
+    }
+
+    @Override
     public boolean hasCategoryCollection(String categorySlug) {
         CategoryEntity category = categoryDao.getBySlug(categorySlug);
         return category != null && sectionDao.countByCategoryId(category.id) > 0;

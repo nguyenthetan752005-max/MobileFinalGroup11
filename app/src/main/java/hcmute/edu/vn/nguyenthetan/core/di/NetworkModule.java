@@ -35,6 +35,7 @@ public final class NetworkModule {
                     }
                     return chain.proceed(original);
                 })
+                .addInterceptor(new hcmute.edu.vn.nguyenthetan.core.NetworkResilienceInterceptor())
                 .addInterceptor(new AccountLockInterceptor(userSessionStore))
                 .addInterceptor(loggingInterceptor)
                 .build();

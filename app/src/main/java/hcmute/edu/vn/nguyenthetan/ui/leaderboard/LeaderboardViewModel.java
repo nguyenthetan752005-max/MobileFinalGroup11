@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel;
 
 import hcmute.edu.vn.nguyenthetan.domain.model.leaderboard.LeaderboardData;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.leaderboard.GetLeaderboardUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.leaderboard.SyncLeaderboardUseCase;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,12 +14,14 @@ import java.util.concurrent.Executors;
 public class LeaderboardViewModel extends ViewModel {
 
     private final GetLeaderboardUseCase getLeaderboardUseCase;
+    private final SyncLeaderboardUseCase syncLeaderboardUseCase;
     private final ExecutorService ioExecutor = Executors.newSingleThreadExecutor();
     private final MutableLiveData<LeaderboardUiState> uiState = new MutableLiveData<>(LeaderboardUiState.idle());
     private boolean loaded;
 
-    public LeaderboardViewModel(GetLeaderboardUseCase getLeaderboardUseCase) {
+    public LeaderboardViewModel(GetLeaderboardUseCase getLeaderboardUseCase, SyncLeaderboardUseCase syncLeaderboardUseCase) {
         this.getLeaderboardUseCase = getLeaderboardUseCase;
+        this.syncLeaderboardUseCase = syncLeaderboardUseCase;
     }
 
     public LiveData<LeaderboardUiState> getUiState() {
@@ -40,9 +43,12 @@ public class LeaderboardViewModel extends ViewModel {
         if (forceReload) {
             loaded = false;
         }
-        uiState.setValue(LeaderboardUiState.loading());
+        uiState.postValue(LeaderboardUiState.loading());
         ioExecutor.execute(() -> {
             try {
+                if (forceReload) {
+                    syncLeaderboardUseCase.execute();
+                }
                 LeaderboardData data = getLeaderboardUseCase.execute();
                 boolean hasWeekly = data.getWeeklyEntries() != null && !data.getWeeklyEntries().isEmpty();
                 boolean hasMonthly = data.getMonthlyEntries() != null && !data.getMonthlyEntries().isEmpty();

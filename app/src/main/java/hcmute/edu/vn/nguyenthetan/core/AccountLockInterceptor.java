@@ -29,21 +29,15 @@ public class AccountLockInterceptor implements Interceptor {
             return response;
         }
 
+        userSessionStore.clear();
         ApiErrorDto errorDto = parseErrorBody(response);
-        if (errorDto == null || errorDto.code == null) {
-            return response;
+        String message = "Phiên đăng nhập không hợp lệ hoặc đã hết hạn, vui lòng đăng nhập lại.";
+        
+        if (errorDto != null && errorDto.message != null && !errorDto.message.trim().isEmpty()) {
+            message = errorDto.message;
         }
-
-        String code = errorDto.code.toUpperCase();
-        if ("ACCOUNT_LOCKED".equals(code) || "ACCOUNT_BANNED".equals(code) || "ACCOUNT_INACTIVE".equals(code) ||
-            "TOKEN_EXPIRED".equals(code) || "TOKEN_REVOKED".equals(code) || "INVALID_TOKEN".equals(code)) {
-            userSessionStore.clear();
-            String message = errorDto.message == null || errorDto.message.trim().isEmpty()
-                    ? "Phiên đăng nhập không hợp lệ hoặc tài khoản đã bị khóa."
-                    : errorDto.message;
-            SessionEventBus.postAccountLocked(message);
-        }
-
+        
+        SessionEventBus.postAccountLocked(message);
         return response;
     }
 

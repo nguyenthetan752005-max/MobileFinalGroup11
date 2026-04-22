@@ -103,7 +103,8 @@ public class RoomLessonRepository implements LessonRepository {
                     entity.hintText == null ? "" : entity.hintText,
                     entity.durationMillis,
                     entity.startTime,
-                    entity.endTime
+                    entity.endTime,
+                    entity.properNouns
             ));
         }
 

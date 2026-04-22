@@ -81,7 +81,9 @@ public class RemoteCategorySyncManager {
             List<LessonEntity> lessons = new ArrayList<>();
             if (collection.sections != null) {
                 for (MobileCategoryCollectionSectionDto sectionDto : collection.sections) {
-                    lessons.addAll(RemoteEntityMapper.toLessonEntities(sectionDto.lessons));
+                    if (sectionDto.lessons != null) {
+                        lessons.addAll(RemoteEntityMapper.toLessonEntities(sectionDto.lessons));
+                    }
                 }
             }
 
@@ -92,6 +94,31 @@ public class RemoteCategorySyncManager {
             });
         } catch (IOException exception) {
             Log.w(TAG, "Category collection sync failed for " + categorySlug + ": " + exception.getMessage());
+        }
+    }
+
+    public void syncSectionLessons(long sectionId) {
+        try {
+            Response<List<hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileLessonDto>> response = RetryUtil.retryWithBackoff(
+                    () -> mobileApiService.getSectionLessons(sectionId).execute(),
+                    3,
+                    700L,
+                    2500L,
+                    2.0
+            );
+            if (!response.isSuccessful() || response.body() == null) {
+                Log.w(TAG, "Section lessons sync skipped. HTTP " + response.code() + " for section " + sectionId);
+                return;
+            }
+
+            List<LessonEntity> lessons = RemoteEntityMapper.toLessonEntities(response.body());
+            if (lessons.isEmpty()) return;
+
+            database.runInTransaction(() -> {
+                database.lessonDao().insertAll(lessons);
+            });
+        } catch (IOException exception) {
+            Log.w(TAG, "Section lessons sync failed for section " + sectionId + ": " + exception.getMessage());
         }
     }
 }

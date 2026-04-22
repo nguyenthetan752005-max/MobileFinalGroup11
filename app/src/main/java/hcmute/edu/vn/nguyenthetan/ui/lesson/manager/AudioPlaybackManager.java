@@ -114,7 +114,7 @@ public class AudioPlaybackManager {
                 listener.onProgressUpdate(mediaPlayer.getCurrentPosition(), mediaPlayer.getDuration(), false);
                 return;
             }
-            if (replayRequested) {
+            if (replayRequested || mediaPlayer.getPlaybackState() == Player.STATE_ENDED) {
                 mediaPlayer.seekTo(0L);
             }
             mediaPlayer.play();

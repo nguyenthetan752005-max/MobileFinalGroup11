@@ -23,7 +23,6 @@ import hcmute.edu.vn.nguyenthetan.data.repository.RoomProfileRepository;
 import hcmute.edu.vn.nguyenthetan.data.remote.api.MobileApiService;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.HealthStatusDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileBootstrapDto;
-import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteCatalogSyncManager;
 import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteCategorySyncManager;
 import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteLeaderboardSyncManager;
 import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteLessonSyncManager;
@@ -32,6 +31,7 @@ import hcmute.edu.vn.nguyenthetan.domain.usecase.comment.GetCommentsUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.explore.GetExploreCatalogUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.home.GetHomeDashboardUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.leaderboard.GetLeaderboardUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.leaderboard.SyncLeaderboardUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.GetLessonCollectionUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.GetLessonProgressUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.GetLessonSessionUseCase;
@@ -55,14 +55,17 @@ public class AppContainer {
     private final GetLessonSessionUseCase getLessonSessionUseCase;
     private final GetLessonProgressUseCase getLessonProgressUseCase;
     private final GetLeaderboardUseCase getLeaderboardUseCase;
+    private final SyncLeaderboardUseCase syncLeaderboardUseCase;
     private final GetProfileUseCase getProfileUseCase;
     private final GetCommentsUseCase getCommentsUseCase;
     private final CheckDictationAnswerUseCase checkDictationAnswerUseCase;
     private final SaveSentenceStatusUseCase saveSentenceStatusUseCase;
     private final SaveSpeakingAttemptUseCase saveSpeakingAttemptUseCase;
+    private final hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncCategoryCollectionUseCase syncCategoryCollectionUseCase;
+    private final hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncSectionLessonsUseCase syncSectionLessonsUseCase;
     private final MutableLiveData<Boolean> isSyncing = new MutableLiveData<>(true);
     private final MutableLiveData<String> syncErrorMessage = new MutableLiveData<>();
-    private final RemoteCatalogSyncManager remoteCatalogSyncManager;
+    private final RemoteCategorySyncManager remoteCategorySyncManager;
     private final RemoteLeaderboardSyncManager remoteLeaderboardSyncManager;
     private final ExecutorService ioExecutor;
     private final TungTungDatabase database;
@@ -77,8 +80,7 @@ public class AppContainer {
         ioExecutor = Executors.newSingleThreadExecutor();
 
         mobileApiService = NetworkModule.createMobileApiService(userSessionStore);
-        RemoteCategorySyncManager remoteCategorySyncManager = new RemoteCategorySyncManager(mobileApiService, database);
-        remoteCatalogSyncManager = new RemoteCatalogSyncManager(mobileApiService, database);
+        remoteCategorySyncManager = new RemoteCategorySyncManager(mobileApiService, database);
         RemoteLessonSyncManager remoteLessonSyncManager = new RemoteLessonSyncManager(mobileApiService, database);
         remoteLeaderboardSyncManager = new RemoteLeaderboardSyncManager(mobileApiService, database);
 
@@ -127,11 +129,14 @@ public class AppContainer {
         getLessonSessionUseCase = new GetLessonSessionUseCase(lessonRepository);
         getLessonProgressUseCase = new GetLessonProgressUseCase(lessonRepository);
         getLeaderboardUseCase = new GetLeaderboardUseCase(leaderboardRepository);
+        syncLeaderboardUseCase = new SyncLeaderboardUseCase(remoteLeaderboardSyncManager);
         getProfileUseCase = new GetProfileUseCase(profileRepository);
         getCommentsUseCase = new GetCommentsUseCase(commentRepository);
         checkDictationAnswerUseCase = new CheckDictationAnswerUseCase();
         saveSentenceStatusUseCase = new SaveSentenceStatusUseCase(lessonRepository);
         saveSpeakingAttemptUseCase = new SaveSpeakingAttemptUseCase(lessonRepository);
+        syncCategoryCollectionUseCase = new hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncCategoryCollectionUseCase(catalogRepository);
+        syncSectionLessonsUseCase = new hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncSectionLessonsUseCase(catalogRepository);
     }
 
     public void sync() {
@@ -139,15 +144,15 @@ public class AppContainer {
             syncErrorMessage.postValue(null);
             isSyncing.postValue(true);
             try {
-                Log.d(TAG, "Starting remote catalog sync.");
-                remoteCatalogSyncManager.sync();
+                Log.d(TAG, "Starting remote category sync.");
+                remoteCategorySyncManager.syncCategories();
                 remoteLeaderboardSyncManager.sync();
-                Log.d(TAG, "Remote catalog sync finished.");
+                Log.d(TAG, "Remote category sync finished.");
                 if (database.categoryDao().count() <= 0) {
                     syncErrorMessage.postValue("Không thể tải dữ liệu từ server, hãy thử kiểm tra lại kết nối!");
                 }
             } catch (Exception exception) {
-                Log.e(TAG, "Remote catalog sync failed.", exception);
+                Log.e(TAG, "Remote category sync failed.", exception);
                 if (database.categoryDao().count() <= 0) {
                     syncErrorMessage.postValue("Không thể tải dữ liệu từ server, hãy thử kiểm tra lại kết nối!");
                 }
@@ -181,6 +186,10 @@ public class AppContainer {
         return getLeaderboardUseCase;
     }
 
+    public SyncLeaderboardUseCase getSyncLeaderboardUseCase() {
+        return syncLeaderboardUseCase;
+    }
+
     public GetProfileUseCase getProfileUseCase() {
         return getProfileUseCase;
     }
@@ -199,6 +208,14 @@ public class AppContainer {
 
     public SaveSpeakingAttemptUseCase getSaveSpeakingAttemptUseCase() {
         return saveSpeakingAttemptUseCase;
+    }
+
+    public hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncCategoryCollectionUseCase getSyncCategoryCollectionUseCase() {
+        return syncCategoryCollectionUseCase;
+    }
+
+    public hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncSectionLessonsUseCase getSyncSectionLessonsUseCase() {
+        return syncSectionLessonsUseCase;
     }
 
     public LiveData<Boolean> getIsSyncing() {
