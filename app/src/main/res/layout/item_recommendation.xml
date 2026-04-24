@@ -4,10 +4,10 @@
     android:layout_width="180dp"
     android:layout_height="wrap_content"
     android:layout_marginEnd="12dp"
-    app:cardBackgroundColor="@color/tt_surface"
+    app:cardBackgroundColor="?attr/ttColorSurface"
     app:cardCornerRadius="@dimen/card_radius"
     app:cardElevation="@dimen/elevation_sm"
-    app:strokeColor="@color/tt_border"
+    app:strokeColor="?attr/ttColorBorder"
     app:strokeWidth="1dp">
 
     <LinearLayout
@@ -18,7 +18,7 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="100dp"
-            android:background="@color/tt_primary_tint">
+            android:background="?attr/ttColorPrimaryTint">
 
             <ImageView
                 android:id="@+id/imageThumbnail"
@@ -32,7 +32,7 @@
                 android:layout_height="32dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_nav_explore"
-                android:tint="@color/tt_primary" />
+                android:tint="?attr/ttColorPrimary" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -43,7 +43,7 @@
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="3dp"
                 android:text="Skill"
-                android:textColor="@color/tt_primary"
+                android:textColor="?attr/ttColorPrimary"
                 android:textSize="10sp"
                 android:textStyle="bold" />
         </FrameLayout>
@@ -58,7 +58,7 @@
                 android:id="@+id/textTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/tt_text_primary"
+                android:textColor="?attr/ttColorTextPrimary"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:maxLines="2"
@@ -69,7 +69,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:textColor="@color/tt_text_secondary"
+                android:textColor="?attr/ttColorTextSecondary"
                 android:textSize="12sp" />
 
             <TextView
@@ -77,7 +77,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:textColor="@color/tt_text_muted"
+                android:textColor="?attr/ttColorTextMuted"
                 android:textSize="11sp" />
 
             <com.google.android.material.chip.Chip
@@ -86,9 +86,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:textColor="@color/tt_primary"
-                app:chipBackgroundColor="@color/tt_primary_tint" />
+                android:textColor="?attr/ttColorPrimary"
+                app:chipBackgroundColor="?attr/ttColorPrimaryTint" />
         </LinearLayout>
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>
+

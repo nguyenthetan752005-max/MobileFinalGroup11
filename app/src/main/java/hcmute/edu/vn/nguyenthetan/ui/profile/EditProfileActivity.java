@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import hcmute.edu.vn.nguyenthetan.ui.common.ThemedActivity;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +21,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class EditProfileActivity extends AppCompatActivity {
+public class EditProfileActivity extends ThemedActivity {
 
     private ActivityEditProfileBinding binding;
     private MobileApiService mobileApiService;
@@ -150,3 +150,4 @@ public class EditProfileActivity extends AppCompatActivity {
         binding.buttonBack.setEnabled(!loading);
     }
 }
+

@@ -2,6 +2,7 @@ package hcmute.edu.vn.nguyenthetan;
 
 import android.app.Application;
 
+import hcmute.edu.vn.nguyenthetan.core.DailyReminderScheduler;
 import hcmute.edu.vn.nguyenthetan.core.ThemePreferenceStore;
 import hcmute.edu.vn.nguyenthetan.core.di.AppContainer;
 
@@ -14,6 +15,7 @@ public class TungTungApplication extends Application {
     public void onCreate() {
         super.onCreate();
         ThemePreferenceStore.applySavedTheme(this);
+        DailyReminderScheduler.createNotificationChannel(this);
     }
 
     public AppContainer getAppContainer() {

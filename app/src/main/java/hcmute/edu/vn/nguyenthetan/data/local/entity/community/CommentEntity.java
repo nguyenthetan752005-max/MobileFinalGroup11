@@ -28,6 +28,7 @@ public class CommentEntity {
     public long id;
 
     public long sentenceId;
+    public long authorId;
     public Long parentCommentId;
     public String author;
     public String avatarLabel;
@@ -40,6 +41,7 @@ public class CommentEntity {
     public CommentEntity(
             long id,
             long sentenceId,
+            long authorId,
             Long parentCommentId,
             String author,
             String avatarLabel,
@@ -51,6 +53,7 @@ public class CommentEntity {
     ) {
         this.id = id;
         this.sentenceId = sentenceId;
+        this.authorId = authorId;
         this.parentCommentId = parentCommentId;
         this.author = author;
         this.avatarLabel = avatarLabel;

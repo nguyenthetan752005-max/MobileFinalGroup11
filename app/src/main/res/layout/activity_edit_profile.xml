@@ -7,7 +7,7 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/tt_background">
+        android:background="?attr/ttColorBackground">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -28,7 +28,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:text="Chỉnh sửa hồ sơ"
-                android:textColor="@color/tt_text_primary"
+                android:textColor="?attr/ttColorTextPrimary"
                 android:textSize="28sp"
                 android:textStyle="bold" />
 
@@ -38,7 +38,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="28dp"
                 android:text="Đổi tên hiển thị"
-                android:textColor="@color/tt_text_primary"
+                android:textColor="?attr/ttColorTextPrimary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -70,7 +70,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:text="Đổi mật khẩu"
-                android:textColor="@color/tt_text_primary"
+                android:textColor="?attr/ttColorTextPrimary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -142,3 +142,4 @@
     </LinearLayout>
 
 </FrameLayout>
+

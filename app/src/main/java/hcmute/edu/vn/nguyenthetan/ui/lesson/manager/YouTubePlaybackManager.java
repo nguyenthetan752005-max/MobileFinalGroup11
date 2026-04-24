@@ -48,6 +48,9 @@ public class YouTubePlaybackManager {
     private String loadedVideoClipKey = "";
 
     private Runnable completeVideoPlaybackRunnable;
+    private volatile float activeEndTimeSeconds = -1f;
+    private volatile float activeStartTimeSeconds = -1f;
+    private volatile boolean endTimeCheckActive = false;
 
     public YouTubePlaybackManager(Context context, LifecycleOwner lifecycleOwner, YouTubePlayerView youTubePlayerView, Listener listener) {
         this.context = context;
@@ -55,12 +58,7 @@ public class YouTubePlaybackManager {
         this.youTubePlayerView = youTubePlayerView;
         this.listener = listener;
 
-        completeVideoPlaybackRunnable = () -> {
-            if (this.listener != null) {
-                // Because we pass the duration in the scheduled call, we rely on the caller to know it or we pass it
-                // Actually the LessonActivity used to resolve the duration. The manager can calculate it.
-            }
-        };
+        completeVideoPlaybackRunnable = () -> {};
     }
 
     public void initialize() {
@@ -105,6 +103,21 @@ public class YouTubePlaybackManager {
                 youtubePlaybackReleased = false;
                 youtubePlayerFallbackTriggered = false;
                 listener.onPlayerReadyInitSync();
+            }
+
+            @Override
+            public void onCurrentSecond(@NonNull YouTubePlayer player, float second) {
+                if (!endTimeCheckActive || activeEndTimeSeconds < 0f) {
+                    return;
+                }
+                if (second >= activeEndTimeSeconds) {
+                    endTimeCheckActive = false;
+                    pauseYoutubePlayer();
+                    long clipDuration = activeStartTimeSeconds >= 0f
+                            ? Math.round((activeEndTimeSeconds - activeStartTimeSeconds) * 1000d)
+                            : Math.round(activeEndTimeSeconds * 1000d);
+                    listener.onCompletePlayback(clipDuration);
+                }
             }
 
             @Override
@@ -153,22 +166,20 @@ public class YouTubePlaybackManager {
 
         youtubePlaybackReleased = false;
         float startSeconds = startTime == null ? 0f : (float) Math.max(0d, startTime);
-        if (replayRequested) {
-            youtubePlayer.loadVideo(youtubeVideoId, startSeconds);
-        } else {
-            youtubePlayer.loadVideo(youtubeVideoId, startSeconds);
-        }
+        youtubePlayer.loadVideo(youtubeVideoId, startSeconds);
 
         long durationMillis = resolveVideoDurationMillis(startTime, endTime);
         listener.onProgressUpdate(0L, durationMillis, true);
         stopVideoPlaybackCallbacks();
-        
-        if (durationMillis > 0L) {
-            completeVideoPlaybackRunnable = () -> {
-                pauseYoutubePlayer();
-                listener.onCompletePlayback(durationMillis);
-            };
-            playbackHandler.postDelayed(completeVideoPlaybackRunnable, durationMillis);
+
+        // Sử dụng onCurrentSecond listener để dừng chính xác tại endTime
+        activeStartTimeSeconds = startSeconds;
+        if (endTime != null && endTime > (double) startSeconds) {
+            activeEndTimeSeconds = endTime.floatValue();
+            endTimeCheckActive = true;
+        } else {
+            activeEndTimeSeconds = -1f;
+            endTimeCheckActive = false;
         }
     }
 

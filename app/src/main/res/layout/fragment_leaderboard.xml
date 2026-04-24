@@ -8,7 +8,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/tt_background"
+        android:background="?attr/ttColorBackground"
         android:orientation="vertical"
         android:padding="@dimen/screen_padding">
 
@@ -16,7 +16,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Leaderboard"
-        android:textColor="@color/tt_text_primary"
+        android:textColor="?attr/ttColorTextPrimary"
         android:textSize="28sp"
         android:textStyle="bold" />
 
@@ -25,7 +25,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:textColor="@color/tt_text_secondary"
+        android:textColor="?attr/ttColorTextSecondary"
         android:textSize="14sp" />
 
     <com.google.android.material.tabs.TabLayout
@@ -33,10 +33,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:background="@color/tt_surface"
-        app:tabIndicatorColor="@color/tt_primary"
-        app:tabSelectedTextColor="@color/tt_primary"
-        app:tabTextColor="@color/tt_text_secondary">
+        android:background="?attr/ttColorSurface"
+        app:tabIndicatorColor="?attr/ttColorPrimary"
+        app:tabSelectedTextColor="?attr/ttColorPrimary"
+        app:tabTextColor="?attr/ttColorTextSecondary">
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
@@ -64,7 +64,7 @@
         android:layout_weight="1"
         android:gravity="center"
         android:text="@string/leaderboard_empty"
-        android:textColor="@color/tt_text_secondary"
+        android:textColor="?attr/ttColorTextSecondary"
         android:visibility="gone" />
 
     <com.google.android.material.card.MaterialCardView
@@ -72,10 +72,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        app:cardBackgroundColor="@color/tt_primary_tint"
+        app:cardBackgroundColor="?attr/ttColorPrimaryTint"
         app:cardCornerRadius="@dimen/card_radius"
         app:cardElevation="@dimen/elevation_md"
-        app:strokeColor="@color/tt_primary"
+        app:strokeColor="?attr/ttColorPrimary"
         app:strokeWidth="1dp">
 
         <LinearLayout
@@ -90,14 +90,14 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Your rank"
-                android:textColor="@color/tt_primary"
+                android:textColor="?attr/ttColorPrimary"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/textYourRank"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/tt_primary"
+                android:textColor="?attr/ttColorPrimary"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -105,3 +105,4 @@
 
     </LinearLayout>
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+

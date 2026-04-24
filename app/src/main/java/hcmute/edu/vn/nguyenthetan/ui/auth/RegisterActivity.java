@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import hcmute.edu.vn.nguyenthetan.ui.common.ThemedActivity;
 
 import hcmute.edu.vn.nguyenthetan.R;
 import hcmute.edu.vn.nguyenthetan.TungTungApplication;
@@ -23,7 +23,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class RegisterActivity extends AppCompatActivity {
+public class RegisterActivity extends ThemedActivity {
 
     private static final String TAG = "RegisterActivity";
 
@@ -225,3 +225,4 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 }
+

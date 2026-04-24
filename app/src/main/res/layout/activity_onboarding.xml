@@ -7,7 +7,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/tt_background"
+        android:background="?attr/ttColorBackground"
         android:padding="@dimen/screen_padding">
 
     <LinearLayout
@@ -38,7 +38,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="TungTung"
-                android:textColor="@color/tt_primary"
+                android:textColor="?attr/ttColorPrimary"
                 android:textSize="40sp"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -49,7 +49,7 @@
             android:layout_marginTop="12dp"
             android:gravity="center"
             android:text="Master English listening and speaking through short, focused practice."
-            android:textColor="@color/tt_text_secondary"
+            android:textColor="?attr/ttColorTextSecondary"
             android:textSize="16sp" />
 
         <com.google.android.material.card.MaterialCardView
@@ -59,7 +59,7 @@
             app:cardCornerRadius="70dp"
             app:cardElevation="@dimen/elevation_lg"
             app:strokeWidth="0dp"
-            app:cardBackgroundColor="@color/tt_primary_tint">
+            app:cardBackgroundColor="?attr/ttColorPrimaryTint">
 
             <ImageView
                 android:layout_width="140dp"
@@ -76,9 +76,9 @@
             android:layout_marginTop="32dp"
             android:text="@string/button_google"
             android:textAllCaps="false"
-            android:textColor="@color/tt_text_primary"
+            android:textColor="?attr/ttColorTextPrimary"
             app:cornerRadius="@dimen/button_radius"
-            app:strokeColor="@color/tt_border"
+            app:strokeColor="?attr/ttColorBorder"
             app:icon="@drawable/google"
             app:iconTint="@null"
             app:iconGravity="textStart"
@@ -93,7 +93,7 @@
             android:layout_marginTop="12dp"
             android:text="@string/button_sign_in"
             android:textAllCaps="false"
-            app:backgroundTint="@color/tt_primary"
+            app:backgroundTint="?attr/ttColorPrimary"
             app:cornerRadius="@dimen/button_radius" />
 
         <com.google.android.material.button.MaterialButton
@@ -115,7 +115,7 @@
             android:layout_marginTop="12dp"
             android:text="@string/button_continue_guest"
             android:textAllCaps="false"
-            android:textColor="@color/tt_text_secondary" />
+            android:textColor="?attr/ttColorTextSecondary" />
     </LinearLayout>
 
         <View
@@ -156,3 +156,4 @@
     </LinearLayout>
 
 </FrameLayout>
+

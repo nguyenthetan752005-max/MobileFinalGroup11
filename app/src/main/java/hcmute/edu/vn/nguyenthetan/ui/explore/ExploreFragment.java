@@ -22,6 +22,7 @@ import com.google.android.material.chip.Chip;
 
 import hcmute.edu.vn.nguyenthetan.R;
 import hcmute.edu.vn.nguyenthetan.TungTungApplication;
+import hcmute.edu.vn.nguyenthetan.core.ThemeColorResolver;
 import hcmute.edu.vn.nguyenthetan.databinding.FragmentExploreBinding;
 import hcmute.edu.vn.nguyenthetan.domain.model.explore.ExploreCategory;
 
@@ -123,18 +124,18 @@ public class ExploreFragment extends Fragment implements CategoryAdapter.Listene
     }
 
     private void updateChipAppearance(Chip chip) {
-        int backgroundColor = ContextCompat.getColor(
-                requireContext(),
-                chip.isChecked() ? R.color.tt_primary_tint : R.color.tt_surface
-        );
-        int textColor = ContextCompat.getColor(
-                requireContext(),
-                chip.isChecked() ? R.color.tt_primary : R.color.tt_text_secondary
-        );
+        int backgroundColor = chip.isChecked()
+                ? ThemeColorResolver.resolveColor(requireContext(), R.attr.ttColorPrimaryTint)
+                : ThemeColorResolver.resolveColor(requireContext(), R.attr.ttColorSurface);
+        int textColor = chip.isChecked()
+                ? ThemeColorResolver.resolveColor(requireContext(), R.attr.ttColorPrimary)
+                : ThemeColorResolver.resolveColor(requireContext(), R.attr.ttColorTextSecondary);
         chip.setChipBackgroundColor(ColorStateList.valueOf(backgroundColor));
         chip.setTextColor(textColor);
         chip.setChipStrokeWidth(chip.isChecked() ? 0f : getResources().getDisplayMetrics().density);
-        chip.setChipStrokeColor(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.tt_border)));
+        chip.setChipStrokeColor(ColorStateList.valueOf(
+                ThemeColorResolver.resolveColor(requireContext(), R.attr.ttColorBorder)
+        ));
     }
 
     private int resolveSpanCount() {

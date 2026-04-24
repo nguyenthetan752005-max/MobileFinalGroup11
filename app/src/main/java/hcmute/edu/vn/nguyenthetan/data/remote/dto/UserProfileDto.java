@@ -29,4 +29,19 @@ public class UserProfileDto {
 
     @SerializedName(value = "activeTime30d", alternate = {"active_time_30d"})
     public int activeTime30d;
+
+    @SerializedName(value = "notificationsEnabled", alternate = {"notifications_enabled"})
+    public Boolean notificationsEnabled;
+
+    @SerializedName(value = "notificationTimezone", alternate = {"notification_timezone"})
+    public String notificationTimezone;
+
+    @SerializedName(value = "dailyReminderEnabled", alternate = {"daily_reminder_enabled"})
+    public Boolean dailyReminderEnabled;
+
+    @SerializedName(value = "dailyReminderTime", alternate = {"daily_reminder_time"})
+    public String dailyReminderTime;
+
+    @SerializedName(value = "dailyReminderTimezone", alternate = {"daily_reminder_timezone"})
+    public String dailyReminderTimezone;
 }

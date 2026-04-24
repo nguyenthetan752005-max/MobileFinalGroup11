@@ -12,10 +12,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
 import hcmute.edu.vn.nguyenthetan.R;
+import hcmute.edu.vn.nguyenthetan.core.ThemeColorResolver;
 import hcmute.edu.vn.nguyenthetan.databinding.DialogStreakBinding;
 
 public class StreakDialogFragment extends DialogFragment {
@@ -66,8 +66,12 @@ public class StreakDialogFragment extends DialogFragment {
             dot.setLayoutParams(params);
             GradientDrawable bg = new GradientDrawable();
             bg.setShape(GradientDrawable.OVAL);
-            bg.setColor(ContextCompat.getColor(requireContext(), studied ? R.color.tt_primary : R.color.tt_surface));
-            bg.setStroke(dp(2), ContextCompat.getColor(requireContext(), studied ? R.color.tt_primary : R.color.tt_border));
+            bg.setColor(studied
+                    ? ThemeColorResolver.resolveColor(requireContext(), R.attr.ttColorPrimary)
+                    : ThemeColorResolver.resolveColor(requireContext(), R.attr.ttColorSurface));
+            bg.setStroke(dp(2), studied
+                    ? ThemeColorResolver.resolveColor(requireContext(), R.attr.ttColorPrimary)
+                    : ThemeColorResolver.resolveColor(requireContext(), R.attr.ttColorBorder));
             dot.setBackground(bg);
             container.addView(dot);
         }
@@ -79,7 +83,7 @@ public class StreakDialogFragment extends DialogFragment {
         for (String mood : moods) {
             TextView item = new TextView(requireContext());
             item.setText(mood);
-            item.setTextColor(ContextCompat.getColor(requireContext(), R.color.tt_text_primary));
+            item.setTextColor(ThemeColorResolver.resolveColor(requireContext(), R.attr.ttColorTextPrimary));
             item.setPadding(dp(12), dp(10), dp(12), dp(10));
             container.addView(item);
         }

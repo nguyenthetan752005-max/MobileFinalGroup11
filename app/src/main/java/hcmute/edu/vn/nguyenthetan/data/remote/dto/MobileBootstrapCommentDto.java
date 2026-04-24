@@ -12,6 +12,9 @@ public class MobileBootstrapCommentDto {
     @SerializedName(value = "parentCommentId", alternate = {"parentComment_id", "parent_id"})
     public String parentCommentId;
 
+    @SerializedName(value = "userId", alternate = {"user_id"})
+    public String userId;
+
     @SerializedName(value = "author", alternate = {"authorName", "author_name"})
     public String author;
 

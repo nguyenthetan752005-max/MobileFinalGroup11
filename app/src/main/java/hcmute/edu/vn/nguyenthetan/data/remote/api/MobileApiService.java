@@ -17,6 +17,8 @@ import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileBootstrapCommentDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileCategoryDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileLeaderboardDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileLessonDetailDto;
+import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileReminderSettingsDto;
+import hcmute.edu.vn.nguyenthetan.data.remote.dto.NotificationPreferenceRequestDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.ProgressUpdateRequestDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.RegisterRequestDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.SpeakingResultDto;
@@ -60,6 +62,9 @@ public interface MobileApiService {
     @GET("api/mobile/bootstrap")
     Call<MobileBootstrapDto> getBootstrap();
 
+    @GET("api/mobile/app-settings/reminder")
+    Call<MobileReminderSettingsDto> getReminderSettings();
+
     @POST("api/mobile/auth/login")
     Call<AuthResponseDto> login(@Body LoginRequestDto request);
 
@@ -76,6 +81,12 @@ public interface MobileApiService {
     Call<GenericApiResponseDto> changePassword(
             @Path("userId") long userId,
             @Body java.util.Map<String, String> request
+    );
+
+    @PUT("api/mobile/profile/{userId}/notifications")
+    Call<GenericApiResponseDto> updateNotificationPreference(
+            @Path("userId") long userId,
+            @Body NotificationPreferenceRequestDto request
     );
 
     @POST("api/mobile/auth/forgot-password")

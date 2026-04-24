@@ -204,6 +204,7 @@ public final class RemoteEntityMapper {
             entities.add(new CommentEntity(
                     resolveId(dto.id),
                     resolveId(dto.sentenceId),
+                    resolveId(dto.userId),
                     resolveNullableId(dto.parentCommentId),
                     dto.author,
                     dto.avatarLabel,

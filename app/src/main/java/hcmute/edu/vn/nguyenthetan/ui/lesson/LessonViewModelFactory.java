@@ -8,6 +8,7 @@ import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.CheckDictationAnswerUseC
 import hcmute.edu.vn.nguyenthetan.domain.usecase.comment.GetCommentsUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.GetLessonProgressUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.GetLessonSessionUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.comment.SyncSentenceCommentsUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SaveSentenceStatusUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SaveSpeakingAttemptUseCase;
 
@@ -16,6 +17,7 @@ public class LessonViewModelFactory implements ViewModelProvider.Factory {
     private final GetLessonSessionUseCase getLessonSessionUseCase;
     private final GetLessonProgressUseCase getLessonProgressUseCase;
     private final GetCommentsUseCase getCommentsUseCase;
+    private final SyncSentenceCommentsUseCase syncSentenceCommentsUseCase;
     private final CheckDictationAnswerUseCase checkDictationAnswerUseCase;
     private final SaveSentenceStatusUseCase saveSentenceStatusUseCase;
     private final SaveSpeakingAttemptUseCase saveSpeakingAttemptUseCase;
@@ -25,6 +27,7 @@ public class LessonViewModelFactory implements ViewModelProvider.Factory {
             GetLessonSessionUseCase getLessonSessionUseCase,
             GetLessonProgressUseCase getLessonProgressUseCase,
             GetCommentsUseCase getCommentsUseCase,
+            SyncSentenceCommentsUseCase syncSentenceCommentsUseCase,
             CheckDictationAnswerUseCase checkDictationAnswerUseCase,
             SaveSentenceStatusUseCase saveSentenceStatusUseCase,
             SaveSpeakingAttemptUseCase saveSpeakingAttemptUseCase,
@@ -33,6 +36,7 @@ public class LessonViewModelFactory implements ViewModelProvider.Factory {
         this.getLessonSessionUseCase = getLessonSessionUseCase;
         this.getLessonProgressUseCase = getLessonProgressUseCase;
         this.getCommentsUseCase = getCommentsUseCase;
+        this.syncSentenceCommentsUseCase = syncSentenceCommentsUseCase;
         this.checkDictationAnswerUseCase = checkDictationAnswerUseCase;
         this.saveSentenceStatusUseCase = saveSentenceStatusUseCase;
         this.saveSpeakingAttemptUseCase = saveSpeakingAttemptUseCase;
@@ -48,6 +52,7 @@ public class LessonViewModelFactory implements ViewModelProvider.Factory {
                     getLessonSessionUseCase,
                     getLessonProgressUseCase,
                     getCommentsUseCase,
+                    syncSentenceCommentsUseCase,
                     checkDictationAnswerUseCase,
                     saveSentenceStatusUseCase,
                     saveSpeakingAttemptUseCase,

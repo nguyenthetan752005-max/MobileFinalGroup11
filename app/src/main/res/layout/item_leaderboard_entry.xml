@@ -4,10 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="10dp"
-    app:cardBackgroundColor="@color/tt_surface"
+    app:cardBackgroundColor="?attr/ttColorSurface"
     app:cardCornerRadius="@dimen/card_radius"
     app:cardElevation="@dimen/elevation_sm"
-    app:strokeColor="@color/tt_border"
+    app:strokeColor="?attr/ttColorBorder"
     app:strokeWidth="1dp">
 
     <LinearLayout
@@ -28,14 +28,14 @@
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="0dp"
-                app:cardBackgroundColor="@color/tt_surface_alt">
+                app:cardBackgroundColor="?attr/ttColorSurfaceAlt">
 
                 <TextView
                     android:id="@+id/textRank"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:textColor="@color/tt_text_primary"
+                    android:textColor="?attr/ttColorTextPrimary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
             </com.google.android.material.card.MaterialCardView>
@@ -56,14 +56,14 @@
             app:cardCornerRadius="18dp"
             app:cardElevation="0dp"
             app:strokeWidth="0dp"
-            app:cardBackgroundColor="@color/tt_primary_tint">
+            app:cardBackgroundColor="?attr/ttColorPrimaryTint">
 
             <TextView
                 android:id="@+id/textAvatar"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:textColor="@color/tt_primary"
+                android:textColor="?attr/ttColorPrimary"
                 android:textStyle="bold" />
         </com.google.android.material.card.MaterialCardView>
 
@@ -73,15 +73,16 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:layout_weight="1"
-            android:textColor="@color/tt_text_primary"
+            android:textColor="?attr/ttColorTextPrimary"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/tt_text_secondary"
+            android:textColor="?attr/ttColorTextSecondary"
             android:textStyle="bold" />
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>
+

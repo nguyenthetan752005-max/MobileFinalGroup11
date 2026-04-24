@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/tt_background">
+    android:background="?attr/ttColorBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,17 +22,18 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="TungTung"
-                android:textColor="@color/tt_primary"
+                android:textColor="?attr/ttColorPrimary"
                 android:textSize="28sp"
                 android:textStyle="bold" />
 
             <ImageButton
+                android:id="@+id/buttonNotification"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@null"
+                android:contentDescription="@string/settings_notifications_title"
                 android:src="@drawable/ic_notification"
-                android:tint="@color/tt_text_secondary" />
+                android:tint="?attr/ttColorTextSecondary" />
 
             <ImageButton
                 android:id="@+id/buttonStreak"
@@ -42,7 +43,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@null"
                 android:src="@drawable/ic_streak_fire"
-                android:tint="@color/tt_primary" />
+                android:tint="?attr/ttColorPrimary" />
         </LinearLayout>
 
         <TextView
@@ -50,7 +51,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
-            android:textColor="@color/tt_text_primary"
+            android:textColor="?attr/ttColorTextPrimary"
             android:textSize="22sp"
             android:textStyle="bold" />
 
@@ -59,7 +60,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:textColor="@color/tt_text_secondary"
+            android:textColor="?attr/ttColorTextSecondary"
             android:textSize="14sp" />
 
         <ProgressBar
@@ -76,10 +77,10 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
             android:visibility="gone"
-            app:cardBackgroundColor="@color/tt_primary_tint"
+            app:cardBackgroundColor="?attr/ttColorPrimaryTint"
             app:cardCornerRadius="@dimen/card_radius"
             app:cardElevation="@dimen/elevation_sm"
-            app:strokeColor="@color/tt_primary"
+            app:strokeColor="?attr/ttColorPrimary"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -92,7 +93,7 @@
                     android:id="@+id/textGuestPromoTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/tt_text_primary"
+                    android:textColor="?attr/ttColorTextPrimary"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -101,7 +102,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:textColor="@color/tt_text_secondary"
+                    android:textColor="?attr/ttColorTextSecondary"
                     android:textSize="14sp" />
 
                 <com.google.android.material.button.MaterialButton
@@ -112,7 +113,7 @@
                     android:layout_marginTop="12dp"
                     android:text="@string/button_create_account"
                     android:textAllCaps="false"
-                    app:backgroundTint="@color/tt_primary"
+                    app:backgroundTint="?attr/ttColorPrimary"
                     app:cornerRadius="@dimen/button_radius" />
             </LinearLayout>
 
@@ -123,10 +124,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
-            app:cardBackgroundColor="@color/tt_surface"
+            app:cardBackgroundColor="?attr/ttColorSurface"
             app:cardCornerRadius="@dimen/card_radius"
             app:cardElevation="@dimen/elevation_sm"
-            app:strokeColor="@color/tt_border"
+            app:strokeColor="?attr/ttColorBorder"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -146,7 +147,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Study streak"
-                        android:textColor="@color/tt_text_secondary"
+                        android:textColor="?attr/ttColorTextSecondary"
                         android:textSize="13sp" />
 
                     <TextView
@@ -154,7 +155,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:textColor="@color/tt_primary"
+                        android:textColor="?attr/ttColorPrimary"
                         android:textSize="30sp"
                         android:textStyle="bold" />
 
@@ -170,10 +171,10 @@
                     android:id="@+id/textMood"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@color/tt_primary_tint"
+                    android:background="?attr/ttColorPrimaryTint"
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="8dp"
-                    android:textColor="@color/tt_primary"
+                    android:textColor="?attr/ttColorPrimary"
                     android:textStyle="bold" />
             </LinearLayout>
 
@@ -184,7 +185,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:text="Continue Learning"
-            android:textColor="@color/tt_text_primary"
+            android:textColor="?attr/ttColorTextPrimary"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -192,10 +193,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            app:cardBackgroundColor="@color/tt_surface"
+            app:cardBackgroundColor="?attr/ttColorSurface"
             app:cardCornerRadius="@dimen/card_radius"
             app:cardElevation="@dimen/elevation_md"
-            app:strokeColor="@color/tt_border"
+            app:strokeColor="?attr/ttColorBorder"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -208,7 +209,7 @@
                     android:id="@+id/textCurrentLessonTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/tt_text_primary"
+                    android:textColor="?attr/ttColorTextPrimary"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -217,15 +218,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
-                    app:indicatorColor="@color/tt_primary"
-                    app:trackColor="@color/tt_border" />
+                    app:indicatorColor="?attr/ttColorPrimary"
+                    app:trackColor="?attr/ttColorBorder" />
 
                 <TextView
                     android:id="@+id/textLessonProgress"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:textColor="@color/tt_text_secondary"
+                    android:textColor="?attr/ttColorTextSecondary"
                     android:textSize="13sp" />
 
                 <LinearLayout
@@ -239,8 +240,8 @@
                         style="@style/Widget.Material3.Chip.Assist"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/tt_primary"
-                        app:chipBackgroundColor="@color/tt_primary_tint" />
+                        android:textColor="?attr/ttColorPrimary"
+                        app:chipBackgroundColor="?attr/ttColorPrimaryTint" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipSecondaryMode"
@@ -248,8 +249,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
-                        android:textColor="@color/tt_text_secondary"
-                        app:chipBackgroundColor="@color/tt_border" />
+                        android:textColor="?attr/ttColorTextSecondary"
+                        app:chipBackgroundColor="?attr/ttColorBorder" />
                 </LinearLayout>
 
                 <com.google.android.material.button.MaterialButton
@@ -260,7 +261,7 @@
                     android:layout_marginTop="16dp"
                     android:text="@string/button_continue"
                     android:textAllCaps="false"
-                    app:backgroundTint="@color/tt_primary"
+                    app:backgroundTint="?attr/ttColorPrimary"
                     app:cornerRadius="@dimen/button_radius" />
             </LinearLayout>
 
@@ -277,10 +278,10 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginEnd="6dp"
-                app:cardBackgroundColor="@color/tt_surface"
+                app:cardBackgroundColor="?attr/ttColorSurface"
                 app:cardCornerRadius="@dimen/card_radius"
                 app:cardElevation="@dimen/elevation_sm"
-                app:strokeColor="@color/tt_border"
+                app:strokeColor="?attr/ttColorBorder"
                 app:strokeWidth="1dp">
 
                 <LinearLayout
@@ -293,7 +294,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Today"
-                        android:textColor="@color/tt_text_secondary"
+                        android:textColor="?attr/ttColorTextSecondary"
                         android:textSize="12sp" />
 
                     <TextView
@@ -301,7 +302,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:textColor="@color/tt_primary"
+                        android:textColor="?attr/ttColorPrimary"
                         android:textSize="20sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -314,10 +315,10 @@
                 android:layout_weight="1"
                 android:layout_marginStart="6dp"
                 android:layout_marginEnd="6dp"
-                app:cardBackgroundColor="@color/tt_surface"
+                app:cardBackgroundColor="?attr/ttColorSurface"
                 app:cardCornerRadius="@dimen/card_radius"
                 app:cardElevation="@dimen/elevation_sm"
-                app:strokeColor="@color/tt_border"
+                app:strokeColor="?attr/ttColorBorder"
                 app:strokeWidth="1dp">
 
                 <LinearLayout
@@ -330,7 +331,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="This Week"
-                        android:textColor="@color/tt_text_secondary"
+                        android:textColor="?attr/ttColorTextSecondary"
                         android:textSize="12sp" />
 
                     <TextView
@@ -338,7 +339,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:textColor="@color/tt_primary"
+                        android:textColor="?attr/ttColorPrimary"
                         android:textSize="20sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -350,10 +351,10 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="6dp"
-                app:cardBackgroundColor="@color/tt_surface"
+                app:cardBackgroundColor="?attr/ttColorSurface"
                 app:cardCornerRadius="@dimen/card_radius"
                 app:cardElevation="@dimen/elevation_sm"
-                app:strokeColor="@color/tt_border"
+                app:strokeColor="?attr/ttColorBorder"
                 app:strokeWidth="1dp">
 
                 <LinearLayout
@@ -366,7 +367,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Best Streak"
-                        android:textColor="@color/tt_text_secondary"
+                        android:textColor="?attr/ttColorTextSecondary"
                         android:textSize="12sp" />
 
                     <TextView
@@ -374,7 +375,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:textColor="@color/tt_primary"
+                        android:textColor="?attr/ttColorPrimary"
                         android:textSize="20sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -387,7 +388,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:text="Recommended"
-            android:textColor="@color/tt_text_primary"
+            android:textColor="?attr/ttColorTextPrimary"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -403,3 +404,4 @@
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>
+

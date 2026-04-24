@@ -4,13 +4,13 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import hcmute.edu.vn.nguyenthetan.R;
+import hcmute.edu.vn.nguyenthetan.core.ThemeColorResolver;
 import hcmute.edu.vn.nguyenthetan.databinding.ItemTranscriptSentenceBinding;
 import hcmute.edu.vn.nguyenthetan.domain.model.lesson.SentenceStatus;
 
@@ -79,14 +79,12 @@ public class TranscriptAdapter extends RecyclerView.Adapter<TranscriptAdapter.Vi
             binding.textOrder.setText(String.valueOf(row.order));
             binding.textSentence.setText(row.sentence);
             binding.textStatus.setText(row.status.name().replace('_', ' '));
-            binding.getRoot().setCardBackgroundColor(ContextCompat.getColor(
-                    binding.getRoot().getContext(),
-                    row.selected ? R.color.tt_primary_tint : R.color.tt_surface
-            ));
-            binding.getRoot().setStrokeColor(ContextCompat.getColor(
-                    binding.getRoot().getContext(),
-                    row.selected ? R.color.tt_primary : R.color.tt_border
-            ));
+            binding.getRoot().setCardBackgroundColor(row.selected
+                    ? ThemeColorResolver.resolveColor(binding.getRoot().getContext(), R.attr.ttColorPrimaryTint)
+                    : ThemeColorResolver.resolveColor(binding.getRoot().getContext(), R.attr.ttColorSurface));
+            binding.getRoot().setStrokeColor(row.selected
+                    ? ThemeColorResolver.resolveColor(binding.getRoot().getContext(), R.attr.ttColorPrimary)
+                    : ThemeColorResolver.resolveColor(binding.getRoot().getContext(), R.attr.ttColorBorder));
             binding.getRoot().setOnClickListener(v -> listener.onSentenceSelected(getBindingAdapterPosition()));
             binding.buttonPlayRow.setOnClickListener(v -> listener.onPlayRow(getBindingAdapterPosition()));
         }

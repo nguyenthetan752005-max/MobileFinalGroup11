@@ -13,5 +13,94 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowBackground">@color/tt_background</item>
+        <item name="ttColorPrimary">@color/tt_primary</item>
+        <item name="ttColorPrimaryTint">@color/tt_primary_tint</item>
+        <item name="ttColorBackground">@color/tt_background</item>
+        <item name="ttColorSurface">@color/tt_surface</item>
+        <item name="ttColorSurfaceAlt">@color/tt_surface_alt</item>
+        <item name="ttColorTextPrimary">@color/tt_text_primary</item>
+        <item name="ttColorTextSecondary">@color/tt_text_secondary</item>
+        <item name="ttColorTextMuted">@color/tt_text_muted</item>
+        <item name="ttColorBorder">@color/tt_border</item>
+    </style>
+
+    <style name="ThemeOverlay_TungTung_Palette_Classic">
+        <item name="colorPrimary">#FB923C</item>
+        <item name="colorSurface">#1E293B</item>
+        <item name="colorOnSurface">#F8FAFC</item>
+        <item name="colorSurfaceVariant">#334155</item>
+        <item name="colorOutline">#334155</item>
+        <item name="android:colorBackground">#0F172A</item>
+        <item name="android:navigationBarColor">#1E293B</item>
+        <item name="android:windowBackground">#0F172A</item>
+        <item name="ttColorPrimary">#FB923C</item>
+        <item name="ttColorPrimaryTint">#4A2A16</item>
+        <item name="ttColorBackground">#0F172A</item>
+        <item name="ttColorSurface">#1E293B</item>
+        <item name="ttColorSurfaceAlt">#334155</item>
+        <item name="ttColorTextPrimary">#F8FAFC</item>
+        <item name="ttColorTextSecondary">#94A3B8</item>
+        <item name="ttColorTextMuted">#64748B</item>
+        <item name="ttColorBorder">#334155</item>
+    </style>
+
+    <style name="ThemeOverlay_TungTung_Palette_Ocean">
+        <item name="colorPrimary">#38BDF8</item>
+        <item name="colorSurface">#102033</item>
+        <item name="colorOnSurface">#E2F2FF</item>
+        <item name="colorSurfaceVariant">#18324D</item>
+        <item name="colorOutline">#254866</item>
+        <item name="android:colorBackground">#081521</item>
+        <item name="android:navigationBarColor">#102033</item>
+        <item name="android:windowBackground">#081521</item>
+        <item name="ttColorPrimary">#38BDF8</item>
+        <item name="ttColorPrimaryTint">#0C3A53</item>
+        <item name="ttColorBackground">#081521</item>
+        <item name="ttColorSurface">#102033</item>
+        <item name="ttColorSurfaceAlt">#18324D</item>
+        <item name="ttColorTextPrimary">#E2F2FF</item>
+        <item name="ttColorTextSecondary">#94A3B8</item>
+        <item name="ttColorTextMuted">#64748B</item>
+        <item name="ttColorBorder">#254866</item>
+    </style>
+
+    <style name="ThemeOverlay_TungTung_Palette_Forest">
+        <item name="colorPrimary">#4ADE80</item>
+        <item name="colorSurface">#14221A</item>
+        <item name="colorOnSurface">#ECFDF3</item>
+        <item name="colorSurfaceVariant">#1D3628</item>
+        <item name="colorOutline">#285039</item>
+        <item name="android:colorBackground">#0B140F</item>
+        <item name="android:navigationBarColor">#14221A</item>
+        <item name="android:windowBackground">#0B140F</item>
+        <item name="ttColorPrimary">#4ADE80</item>
+        <item name="ttColorPrimaryTint">#143622</item>
+        <item name="ttColorBackground">#0B140F</item>
+        <item name="ttColorSurface">#14221A</item>
+        <item name="ttColorSurfaceAlt">#1D3628</item>
+        <item name="ttColorTextPrimary">#ECFDF3</item>
+        <item name="ttColorTextSecondary">#A7B7AF</item>
+        <item name="ttColorTextMuted">#6B7C73</item>
+        <item name="ttColorBorder">#285039</item>
+    </style>
+
+    <style name="ThemeOverlay_TungTung_Palette_Sunset">
+        <item name="colorPrimary">#FB7185</item>
+        <item name="colorSurface">#2C1822</item>
+        <item name="colorOnSurface">#FFF1F5</item>
+        <item name="colorSurfaceVariant">#432033</item>
+        <item name="colorOutline">#5C2C44</item>
+        <item name="android:colorBackground">#1A0E15</item>
+        <item name="android:navigationBarColor">#2C1822</item>
+        <item name="android:windowBackground">#1A0E15</item>
+        <item name="ttColorPrimary">#FB7185</item>
+        <item name="ttColorPrimaryTint">#4A1F2C</item>
+        <item name="ttColorBackground">#1A0E15</item>
+        <item name="ttColorSurface">#2C1822</item>
+        <item name="ttColorSurfaceAlt">#432033</item>
+        <item name="ttColorTextPrimary">#FFF1F5</item>
+        <item name="ttColorTextSecondary">#C2A6AF</item>
+        <item name="ttColorTextMuted">#8E7480</item>
+        <item name="ttColorBorder">#5C2C44</item>
     </style>
 </resources>

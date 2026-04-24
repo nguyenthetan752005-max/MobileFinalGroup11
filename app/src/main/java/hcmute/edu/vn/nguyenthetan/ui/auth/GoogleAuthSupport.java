@@ -91,6 +91,7 @@ public final class GoogleAuthSupport {
                 .build();
         GoogleSignInClient client = GoogleSignIn.getClient(activity, options);
         callback.onGoogleAuthLoadingChanged(true);
-        launcher.launch(client.getSignInIntent());
+        // Sign out trước để xóa cache tài khoản cũ, luôn hiện bảng chọn tài khoản Google
+        client.signOut().addOnCompleteListener(activity, task -> launcher.launch(client.getSignInIntent()));
     }
 }

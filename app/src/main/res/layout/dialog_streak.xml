@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/tt_surface"
+    android:background="?attr/ttColorSurface"
     android:orientation="vertical"
     android:padding="20dp">
 
@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:textColor="@color/tt_text_primary"
+        android:textColor="?attr/ttColorTextPrimary"
         android:textSize="26sp"
         android:textStyle="bold" />
 
@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:gravity="center"
-        android:textColor="@color/tt_text_secondary" />
+        android:textColor="?attr/ttColorTextSecondary" />
 
     <LinearLayout
         android:id="@+id/weekDotsContainer"
@@ -45,7 +45,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="18dp"
         android:gravity="center"
-        android:textColor="@color/tt_text_muted"
+        android:textColor="?attr/ttColorTextMuted"
         android:textStyle="italic" />
 
     <com.google.android.material.button.MaterialButton
@@ -54,6 +54,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="18dp"
         android:textAllCaps="false"
-        app:backgroundTint="@color/tt_primary" />
+        app:backgroundTint="?attr/ttColorPrimary" />
 
 </LinearLayout>
+

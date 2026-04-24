@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/tt_background">
+    android:background="?attr/ttColorBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,10 +14,10 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardBackgroundColor="@color/tt_surface"
+            app:cardBackgroundColor="?attr/ttColorSurface"
             app:cardCornerRadius="@dimen/card_radius"
             app:cardElevation="@dimen/elevation_md"
-            app:strokeColor="@color/tt_border"
+            app:strokeColor="?attr/ttColorBorder"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -27,6 +27,7 @@
                 android:padding="18dp">
 
                 <LinearLayout
+                    android:id="@+id/rowThemeSettings"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
@@ -38,14 +39,14 @@
                         app:cardCornerRadius="44dp"
                         app:cardElevation="0dp"
                         app:strokeWidth="0dp"
-                        app:cardBackgroundColor="@color/tt_primary_tint">
+                        app:cardBackgroundColor="?attr/ttColorPrimaryTint">
 
                         <TextView
                             android:id="@+id/textAvatar"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:gravity="center"
-                            android:textColor="@color/tt_primary"
+                            android:textColor="?attr/ttColorPrimary"
                             android:textSize="28sp"
                             android:textStyle="bold" />
                     </com.google.android.material.card.MaterialCardView>
@@ -61,7 +62,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/profile_header_label"
-                            android:textColor="@color/tt_primary"
+                            android:textColor="?attr/ttColorPrimary"
                             android:textSize="12sp"
                             android:textStyle="bold" />
 
@@ -70,7 +71,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:textColor="@color/tt_text_primary"
+                            android:textColor="?attr/ttColorTextPrimary"
                             android:textSize="24sp"
                             android:textStyle="bold" />
 
@@ -79,7 +80,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:textColor="@color/tt_text_secondary"
+                            android:textColor="?attr/ttColorTextSecondary"
                             android:textSize="14sp" />
                     </LinearLayout>
                 </LinearLayout>
@@ -96,7 +97,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginTop="16dp"
-                    android:background="@color/tt_border" />
+                    android:background="?attr/ttColorBorder" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -110,7 +111,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:textColor="@color/tt_text_primary"
+                        android:textColor="?attr/ttColorTextPrimary"
                         android:textStyle="bold" />
 
                     <com.google.android.material.button.MaterialButton
@@ -130,10 +131,10 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:visibility="gone"
-            app:cardBackgroundColor="@color/tt_primary_tint"
+            app:cardBackgroundColor="?attr/ttColorPrimaryTint"
             app:cardCornerRadius="@dimen/card_radius"
             app:cardElevation="@dimen/elevation_sm"
-            app:strokeColor="@color/tt_primary"
+            app:strokeColor="?attr/ttColorPrimary"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -146,7 +147,7 @@
                     android:id="@+id/textGuestProfileTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/tt_text_primary"
+                    android:textColor="?attr/ttColorTextPrimary"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -155,7 +156,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:textColor="@color/tt_text_secondary"
+                    android:textColor="?attr/ttColorTextSecondary"
                     android:textSize="14sp" />
 
                 <com.google.android.material.button.MaterialButton
@@ -166,7 +167,7 @@
                     android:layout_marginTop="12dp"
                     android:text="@string/button_create_account"
                     android:textAllCaps="false"
-                    app:backgroundTint="@color/tt_primary"
+                    app:backgroundTint="?attr/ttColorPrimary"
                     app:cornerRadius="@dimen/button_radius" />
             </LinearLayout>
 
@@ -189,10 +190,10 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginEnd="6dp"
-                    app:cardBackgroundColor="@color/tt_surface"
+                    app:cardBackgroundColor="?attr/ttColorSurface"
                     app:cardCornerRadius="@dimen/card_radius"
                     app:cardElevation="@dimen/elevation_sm"
-                    app:strokeColor="@color/tt_border"
+                    app:strokeColor="?attr/ttColorBorder"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -205,7 +206,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Current"
-                            android:textColor="@color/tt_text_secondary"
+                            android:textColor="?attr/ttColorTextSecondary"
                             android:textSize="12sp" />
 
                         <TextView
@@ -213,7 +214,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:textColor="@color/tt_primary"
+                            android:textColor="?attr/ttColorPrimary"
                             android:textSize="20sp"
                             android:textStyle="bold" />
                     </LinearLayout>
@@ -225,10 +226,10 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginStart="6dp"
-                    app:cardBackgroundColor="@color/tt_surface"
+                    app:cardBackgroundColor="?attr/ttColorSurface"
                     app:cardCornerRadius="@dimen/card_radius"
                     app:cardElevation="@dimen/elevation_sm"
-                    app:strokeColor="@color/tt_border"
+                    app:strokeColor="?attr/ttColorBorder"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -241,7 +242,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Longest"
-                            android:textColor="@color/tt_text_secondary"
+                            android:textColor="?attr/ttColorTextSecondary"
                             android:textSize="12sp" />
 
                         <TextView
@@ -249,7 +250,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:textColor="@color/tt_primary"
+                            android:textColor="?attr/ttColorPrimary"
                             android:textSize="20sp"
                             android:textStyle="bold" />
                     </LinearLayout>
@@ -261,10 +262,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                app:cardBackgroundColor="@color/tt_surface"
+                app:cardBackgroundColor="?attr/ttColorSurface"
                 app:cardCornerRadius="@dimen/card_radius"
                 app:cardElevation="@dimen/elevation_sm"
-                app:strokeColor="@color/tt_border"
+                app:strokeColor="?attr/ttColorBorder"
                 app:strokeWidth="1dp">
 
                 <LinearLayout
@@ -277,7 +278,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Total study"
-                        android:textColor="@color/tt_text_secondary"
+                        android:textColor="?attr/ttColorTextSecondary"
                         android:textSize="12sp" />
 
                     <TextView
@@ -285,7 +286,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:textColor="@color/tt_primary"
+                        android:textColor="?attr/ttColorPrimary"
                         android:textSize="22sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -298,10 +299,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            app:cardBackgroundColor="@color/tt_surface"
+            app:cardBackgroundColor="?attr/ttColorSurface"
             app:cardCornerRadius="@dimen/card_radius"
             app:cardElevation="@dimen/elevation_sm"
-            app:strokeColor="@color/tt_border"
+            app:strokeColor="?attr/ttColorBorder"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -314,7 +315,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Weekly activity"
-                    android:textColor="@color/tt_text_primary"
+                    android:textColor="?attr/ttColorTextPrimary"
                     android:textStyle="bold" />
 
                 <LinearLayout
@@ -333,10 +334,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            app:cardBackgroundColor="@color/tt_surface"
+            app:cardBackgroundColor="?attr/ttColorSurface"
             app:cardCornerRadius="@dimen/card_radius"
             app:cardElevation="@dimen/elevation_sm"
-            app:strokeColor="@color/tt_border"
+            app:strokeColor="?attr/ttColorBorder"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -352,14 +353,14 @@
                     app:cardCornerRadius="24dp"
                     app:cardElevation="0dp"
                     app:strokeWidth="0dp"
-                    app:cardBackgroundColor="@color/tt_primary_tint">
+                    app:cardBackgroundColor="?attr/ttColorPrimaryTint">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:gravity="center"
                         android:text="TT"
-                        android:textColor="@color/tt_primary"
+                        android:textColor="?attr/ttColorPrimary"
                         android:textStyle="bold" />
                 </com.google.android.material.card.MaterialCardView>
 
@@ -369,7 +370,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
                     android:layout_weight="1"
-                    android:textColor="@color/tt_text_primary"
+                    android:textColor="?attr/ttColorTextPrimary"
                     android:textStyle="bold" />
             </LinearLayout>
 
@@ -381,10 +382,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            app:cardBackgroundColor="@color/tt_surface"
+            app:cardBackgroundColor="?attr/ttColorSurface"
             app:cardCornerRadius="@dimen/card_radius"
             app:cardElevation="@dimen/elevation_sm"
-            app:strokeColor="@color/tt_border"
+            app:strokeColor="?attr/ttColorBorder"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -409,21 +410,21 @@
                         android:layout_height="24dp"
                         android:layout_marginEnd="12dp"
                         android:src="@drawable/ic_nav_profile"
-                        android:tint="@color/tt_text_secondary" />
+                        android:tint="?attr/ttColorTextSecondary" />
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Chỉnh sửa hồ sơ"
-                        android:textColor="@color/tt_text_primary" />
+                        android:textColor="?attr/ttColorTextPrimary" />
                 </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginVertical="8dp"
-                    android:background="@color/tt_border" />
+                    android:background="?attr/ttColorBorder" />
 
                 <LinearLayout
                     android:id="@+id/actionMyComments"
@@ -441,14 +442,14 @@
                         android:layout_height="24dp"
                         android:layout_marginEnd="12dp"
                         android:src="@drawable/ic_nav_explore"
-                        android:tint="@color/tt_text_secondary" />
+                        android:tint="?attr/ttColorTextSecondary" />
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Bình luận của tôi"
-                        android:textColor="@color/tt_text_primary" />
+                        android:textColor="?attr/ttColorTextPrimary" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -458,10 +459,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            app:cardBackgroundColor="@color/tt_surface"
+            app:cardBackgroundColor="?attr/ttColorSurface"
             app:cardCornerRadius="@dimen/card_radius"
             app:cardElevation="@dimen/elevation_sm"
-            app:strokeColor="@color/tt_border"
+            app:strokeColor="?attr/ttColorBorder"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -481,14 +482,14 @@
                         android:layout_height="24dp"
                         android:layout_marginEnd="12dp"
                         android:src="@drawable/ic_dark_mode"
-                        android:tint="@color/tt_text_secondary" />
+                        android:tint="?attr/ttColorTextSecondary" />
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/profile_theme_label"
-                        android:textColor="@color/tt_text_primary" />
+                        android:textColor="?attr/ttColorTextPrimary" />
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -502,7 +503,7 @@
                             android:layout_height="wrap_content"
                             android:paddingHorizontal="6dp"
                             android:text="@string/theme_light"
-                            android:textColor="@color/tt_text_secondary"
+                            android:textColor="?attr/ttColorTextSecondary"
                             android:textStyle="bold" />
 
                         <TextView
@@ -510,7 +511,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginHorizontal="6dp"
                             android:text="/"
-                            android:textColor="@color/tt_text_muted" />
+                            android:textColor="?attr/ttColorTextMuted" />
 
                         <TextView
                             android:id="@+id/textThemeDark"
@@ -518,7 +519,7 @@
                             android:layout_height="wrap_content"
                             android:paddingHorizontal="6dp"
                             android:text="@string/theme_dark"
-                            android:textColor="@color/tt_text_secondary"
+                            android:textColor="?attr/ttColorTextSecondary"
                             android:textStyle="bold" />
                     </LinearLayout>
                 </LinearLayout>
@@ -527,11 +528,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginVertical="12dp"
-                    android:background="@color/tt_border" />
+                    android:background="?attr/ttColorBorder" />
 
                 <LinearLayout
+                    android:id="@+id/rowNotificationSettings"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -540,14 +545,28 @@
                         android:layout_height="24dp"
                         android:layout_marginEnd="12dp"
                         android:src="@drawable/ic_notification"
-                        android:tint="@color/tt_text_secondary" />
+                        android:tint="?attr/ttColorTextSecondary" />
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Notifications"
-                        android:textColor="@color/tt_text_primary" />
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_notifications_title"
+                            android:textColor="?attr/ttColorTextPrimary" />
+
+                        <TextView
+                            android:id="@+id/textNotificationSummary"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:textColor="?attr/ttColorTextSecondary"
+                            android:textSize="12sp" />
+                    </LinearLayout>
 
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/switchNotifications"
@@ -555,11 +574,74 @@
                         android:layout_height="wrap_content" />
                 </LinearLayout>
 
+                <TextView
+                    android:id="@+id/textSettingsGuestHint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="?attr/ttColorTextSecondary"
+                    android:textSize="12sp"
+                    android:visibility="gone" />
+
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginVertical="12dp"
-                    android:background="@color/tt_border" />
+                    android:background="?attr/ttColorBorder" />
+
+                <LinearLayout
+                    android:id="@+id/rowAppearanceSettings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingVertical="4dp">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginEnd="12dp"
+                        android:src="@drawable/ic_dark_mode"
+                        android:tint="?attr/ttColorTextSecondary" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_appearance_title"
+                            android:textColor="?attr/ttColorTextPrimary" />
+
+                        <TextView
+                            android:id="@+id/textAppearanceSummary"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:textColor="?attr/ttColorTextSecondary"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/textAppearancePreview"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_preview_action"
+                        android:textColor="?attr/ttColorPrimary"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="12dp"
+                    android:background="?attr/ttColorBorder" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -572,13 +654,13 @@
                         android:layout_height="24dp"
                         android:layout_marginEnd="12dp"
                         android:src="@drawable/ic_language"
-                        android:tint="@color/tt_text_secondary" />
+                        android:tint="?attr/ttColorTextSecondary" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Language: English"
-                        android:textColor="@color/tt_text_secondary" />
+                        android:text="@string/settings_language_summary"
+                        android:textColor="?attr/ttColorTextSecondary" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -587,3 +669,4 @@
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>
+

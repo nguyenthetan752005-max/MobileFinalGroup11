@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/tt_background">
+    android:background="?attr/ttColorBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -24,14 +24,14 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@null"
                 android:src="@drawable/ic_arrow_back"
-                android:tint="@color/tt_text_primary" />
+                android:tint="?attr/ttColorTextPrimary" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="Explore"
-                android:textColor="@color/tt_primary"
+                android:textColor="?attr/ttColorPrimary"
                 android:textStyle="bold" />
 
             <TextView
@@ -39,14 +39,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="/"
-                android:textColor="@color/tt_text_muted" />
+                android:textColor="?attr/ttColorTextMuted" />
 
             <TextView
                 android:id="@+id/textBreadcrumbTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:textColor="@color/tt_text_primary"
+                android:textColor="?attr/ttColorTextPrimary"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -54,10 +54,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:cardBackgroundColor="@color/tt_surface"
+            app:cardBackgroundColor="?attr/ttColorSurface"
             app:cardCornerRadius="@dimen/card_radius"
             app:cardElevation="@dimen/elevation_sm"
-            app:strokeColor="@color/tt_border"
+            app:strokeColor="?attr/ttColorBorder"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -70,7 +70,7 @@
                     android:id="@+id/textCategoryTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/tt_text_primary"
+                    android:textColor="?attr/ttColorTextPrimary"
                     android:textSize="22sp"
                     android:textStyle="bold" />
 
@@ -79,7 +79,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:textColor="@color/tt_text_secondary"
+                    android:textColor="?attr/ttColorTextSecondary"
                     android:textSize="14sp" />
 
                 <TextView
@@ -87,7 +87,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:textColor="@color/tt_primary"
+                    android:textColor="?attr/ttColorPrimary"
                     android:textStyle="bold" />
             </LinearLayout>
 
@@ -98,21 +98,21 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:hint="@string/lesson_search_hint"
-            app:boxBackgroundColor="@color/tt_surface"
+            app:boxBackgroundColor="?attr/ttColorSurface"
             app:boxCornerRadiusBottomEnd="@dimen/button_radius"
             app:boxCornerRadiusBottomStart="@dimen/button_radius"
             app:boxCornerRadiusTopEnd="@dimen/button_radius"
             app:boxCornerRadiusTopStart="@dimen/button_radius"
             app:endIconMode="custom"
             app:endIconDrawable="@drawable/ic_search"
-            app:endIconTint="@color/tt_text_muted">
+            app:endIconTint="?attr/ttColorTextMuted">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/inputLessonSearch"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="text"
-                android:textColor="@color/tt_text_primary" />
+                android:textColor="?attr/ttColorTextPrimary" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <androidx.recyclerview.widget.RecyclerView
@@ -129,7 +129,7 @@
             android:layout_marginTop="16dp"
             android:gravity="center"
             android:text="@string/lesson_search_no_results"
-            android:textColor="@color/tt_text_secondary"
+            android:textColor="?attr/ttColorTextSecondary"
             android:visibility="gone" />
 
         <ProgressBar
@@ -143,3 +143,4 @@
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>
+

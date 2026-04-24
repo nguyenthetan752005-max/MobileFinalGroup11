@@ -23,6 +23,7 @@ import java.util.Locale;
 
 import hcmute.edu.vn.nguyenthetan.R;
 import hcmute.edu.vn.nguyenthetan.TungTungApplication;
+import hcmute.edu.vn.nguyenthetan.core.ThemeColorResolver;
 import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
 import hcmute.edu.vn.nguyenthetan.databinding.FragmentHomeBinding;
 import hcmute.edu.vn.nguyenthetan.domain.model.home.HomeDashboard;
@@ -34,6 +35,8 @@ public class HomeFragment extends Fragment {
         void onContinueLearning(long lessonId);
 
         void onOpenStreakDialog();
+
+        void onOpenSettings();
     }
 
     private FragmentHomeBinding binding;
@@ -103,6 +106,7 @@ public class HomeFragment extends Fragment {
         );
         binding.cardStreak.setOnClickListener(v -> openStreakDialog());
         binding.buttonStreak.setOnClickListener(v -> openStreakDialog());
+        binding.buttonNotification.setOnClickListener(v -> openSettings());
     }
 
     private void render(HomeDashboard dashboard) {
@@ -151,8 +155,12 @@ public class HomeFragment extends Fragment {
 
             GradientDrawable background = new GradientDrawable();
             background.setShape(GradientDrawable.OVAL);
-            background.setColor(ContextCompat.getColor(requireContext(), studied ? R.color.tt_primary : R.color.tt_surface));
-            background.setStroke(dp(2), ContextCompat.getColor(requireContext(), studied ? R.color.tt_primary : R.color.tt_border));
+            background.setColor(studied
+                    ? ThemeColorResolver.resolveColor(requireContext(), R.attr.ttColorPrimary)
+                    : ThemeColorResolver.resolveColor(requireContext(), R.attr.ttColorSurface));
+            background.setStroke(dp(2), studied
+                    ? ThemeColorResolver.resolveColor(requireContext(), R.attr.ttColorPrimary)
+                    : ThemeColorResolver.resolveColor(requireContext(), R.attr.ttColorBorder));
             dot.setBackground(background);
 
             binding.streakDotsContainer.addView(dot);
@@ -167,6 +175,12 @@ public class HomeFragment extends Fragment {
         }
         if (listener != null) {
             listener.onOpenStreakDialog();
+        }
+    }
+
+    private void openSettings() {
+        if (listener != null) {
+            listener.onOpenSettings();
         }
     }
 

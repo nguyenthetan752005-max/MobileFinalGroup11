@@ -13,7 +13,96 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowBackground">@color/tt_background</item>
+        <item name="ttColorPrimary">@color/tt_primary</item>
+        <item name="ttColorPrimaryTint">@color/tt_primary_tint</item>
+        <item name="ttColorBackground">@color/tt_background</item>
+        <item name="ttColorSurface">@color/tt_surface</item>
+        <item name="ttColorSurfaceAlt">@color/tt_surface_alt</item>
+        <item name="ttColorTextPrimary">@color/tt_text_primary</item>
+        <item name="ttColorTextSecondary">@color/tt_text_secondary</item>
+        <item name="ttColorTextMuted">@color/tt_text_muted</item>
+        <item name="ttColorBorder">@color/tt_border</item>
     </style>
 
     <style name="Theme.TungTung" parent="Base.Theme.TungTung" />
+
+    <style name="ThemeOverlay_TungTung_Palette_Classic">
+        <item name="colorPrimary">#F97316</item>
+        <item name="colorSurface">#FFFFFF</item>
+        <item name="colorOnSurface">#0F172A</item>
+        <item name="colorSurfaceVariant">#E2E8F0</item>
+        <item name="colorOutline">#E2E8F0</item>
+        <item name="android:colorBackground">#F8FAFC</item>
+        <item name="android:navigationBarColor">#FFFFFF</item>
+        <item name="android:windowBackground">#F8FAFC</item>
+        <item name="ttColorPrimary">#F97316</item>
+        <item name="ttColorPrimaryTint">#FFF7ED</item>
+        <item name="ttColorBackground">#F8FAFC</item>
+        <item name="ttColorSurface">#FFFFFF</item>
+        <item name="ttColorSurfaceAlt">#E2E8F0</item>
+        <item name="ttColorTextPrimary">#0F172A</item>
+        <item name="ttColorTextSecondary">#64748B</item>
+        <item name="ttColorTextMuted">#94A3B8</item>
+        <item name="ttColorBorder">#E2E8F0</item>
+    </style>
+
+    <style name="ThemeOverlay_TungTung_Palette_Ocean">
+        <item name="colorPrimary">#0EA5E9</item>
+        <item name="colorSurface">#FFFFFF</item>
+        <item name="colorOnSurface">#0F172A</item>
+        <item name="colorSurfaceVariant">#DBEAFE</item>
+        <item name="colorOutline">#BFDBFE</item>
+        <item name="android:colorBackground">#F4FAFF</item>
+        <item name="android:navigationBarColor">#FFFFFF</item>
+        <item name="android:windowBackground">#F4FAFF</item>
+        <item name="ttColorPrimary">#0EA5E9</item>
+        <item name="ttColorPrimaryTint">#E0F2FE</item>
+        <item name="ttColorBackground">#F4FAFF</item>
+        <item name="ttColorSurface">#FFFFFF</item>
+        <item name="ttColorSurfaceAlt">#DBEAFE</item>
+        <item name="ttColorTextPrimary">#0F172A</item>
+        <item name="ttColorTextSecondary">#475569</item>
+        <item name="ttColorTextMuted">#94A3B8</item>
+        <item name="ttColorBorder">#BFDBFE</item>
+    </style>
+
+    <style name="ThemeOverlay_TungTung_Palette_Forest">
+        <item name="colorPrimary">#16A34A</item>
+        <item name="colorSurface">#FFFFFF</item>
+        <item name="colorOnSurface">#122018</item>
+        <item name="colorSurfaceVariant">#DCFCE7</item>
+        <item name="colorOutline">#BBF7D0</item>
+        <item name="android:colorBackground">#F5FFF8</item>
+        <item name="android:navigationBarColor">#FFFFFF</item>
+        <item name="android:windowBackground">#F5FFF8</item>
+        <item name="ttColorPrimary">#16A34A</item>
+        <item name="ttColorPrimaryTint">#DCFCE7</item>
+        <item name="ttColorBackground">#F5FFF8</item>
+        <item name="ttColorSurface">#FFFFFF</item>
+        <item name="ttColorSurfaceAlt">#DCFCE7</item>
+        <item name="ttColorTextPrimary">#122018</item>
+        <item name="ttColorTextSecondary">#4B5563</item>
+        <item name="ttColorTextMuted">#9CA3AF</item>
+        <item name="ttColorBorder">#BBF7D0</item>
+    </style>
+
+    <style name="ThemeOverlay_TungTung_Palette_Sunset">
+        <item name="colorPrimary">#E11D48</item>
+        <item name="colorSurface">#FFFFFF</item>
+        <item name="colorOnSurface">#1F172A</item>
+        <item name="colorSurfaceVariant">#FCE7F3</item>
+        <item name="colorOutline">#FBCFE8</item>
+        <item name="android:colorBackground">#FFF7FB</item>
+        <item name="android:navigationBarColor">#FFFFFF</item>
+        <item name="android:windowBackground">#FFF7FB</item>
+        <item name="ttColorPrimary">#E11D48</item>
+        <item name="ttColorPrimaryTint">#FCE7F3</item>
+        <item name="ttColorBackground">#FFF7FB</item>
+        <item name="ttColorSurface">#FFFFFF</item>
+        <item name="ttColorSurfaceAlt">#FCE7F3</item>
+        <item name="ttColorTextPrimary">#1F172A</item>
+        <item name="ttColorTextSecondary">#6B7280</item>
+        <item name="ttColorTextMuted">#9CA3AF</item>
+        <item name="ttColorBorder">#FBCFE8</item>
+    </style>
 </resources>

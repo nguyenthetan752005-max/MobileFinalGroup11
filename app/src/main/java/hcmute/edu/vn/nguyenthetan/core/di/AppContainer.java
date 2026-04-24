@@ -28,6 +28,7 @@ import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteLeaderboardSyncManager;
 import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteLessonSyncManager;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.CheckDictationAnswerUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.comment.GetCommentsUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.comment.SyncSentenceCommentsUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.explore.GetExploreCatalogUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.home.GetHomeDashboardUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.leaderboard.GetLeaderboardUseCase;
@@ -58,6 +59,7 @@ public class AppContainer {
     private final SyncLeaderboardUseCase syncLeaderboardUseCase;
     private final GetProfileUseCase getProfileUseCase;
     private final GetCommentsUseCase getCommentsUseCase;
+    private final SyncSentenceCommentsUseCase syncSentenceCommentsUseCase;
     private final CheckDictationAnswerUseCase checkDictationAnswerUseCase;
     private final SaveSentenceStatusUseCase saveSentenceStatusUseCase;
     private final SaveSpeakingAttemptUseCase saveSpeakingAttemptUseCase;
@@ -132,6 +134,7 @@ public class AppContainer {
         syncLeaderboardUseCase = new SyncLeaderboardUseCase(remoteLeaderboardSyncManager);
         getProfileUseCase = new GetProfileUseCase(profileRepository);
         getCommentsUseCase = new GetCommentsUseCase(commentRepository);
+        syncSentenceCommentsUseCase = new SyncSentenceCommentsUseCase(mobileApiService, database.commentDao());
         checkDictationAnswerUseCase = new CheckDictationAnswerUseCase();
         saveSentenceStatusUseCase = new SaveSentenceStatusUseCase(lessonRepository);
         saveSpeakingAttemptUseCase = new SaveSpeakingAttemptUseCase(lessonRepository);
@@ -196,6 +199,10 @@ public class AppContainer {
 
     public GetCommentsUseCase getCommentsUseCase() {
         return getCommentsUseCase;
+    }
+
+    public SyncSentenceCommentsUseCase getSyncSentenceCommentsUseCase() {
+        return syncSentenceCommentsUseCase;
     }
 
     public CheckDictationAnswerUseCase getCheckDictationAnswerUseCase() {

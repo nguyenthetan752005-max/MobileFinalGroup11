@@ -9,7 +9,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import hcmute.edu.vn.nguyenthetan.ui.common.ThemedActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -19,7 +19,7 @@ import hcmute.edu.vn.nguyenthetan.domain.model.explore.LessonCollection;
 import hcmute.edu.vn.nguyenthetan.ui.auth.AccountLockUiHandler;
 import hcmute.edu.vn.nguyenthetan.ui.lesson.LessonActivity;
 
-public class LessonListActivity extends AppCompatActivity implements LessonSectionAdapter.Listener {
+public class LessonListActivity extends ThemedActivity implements LessonSectionAdapter.Listener {
 
     private static final String EXTRA_CATEGORY_ID = "extra_category_id";
 
@@ -114,3 +114,4 @@ public class LessonListActivity extends AppCompatActivity implements LessonSecti
         binding.textNoLessonResults.setVisibility(showEmptyState ? View.VISIBLE : View.GONE);
     }
 }
+

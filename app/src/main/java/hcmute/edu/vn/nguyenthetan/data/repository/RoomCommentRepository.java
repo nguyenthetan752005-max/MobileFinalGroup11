@@ -45,6 +45,9 @@ public class RoomCommentRepository implements CommentRepository {
 
     private Comment toDomain(CommentEntity entity, List<Comment> replies) {
         return new Comment(
+                entity.id,
+                entity.authorId,
+                entity.sentenceId,
                 entity.author,
                 entity.avatarLabel,
                 entity.timeAgo,

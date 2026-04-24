@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="ttColorPrimary" format="color" />
+    <attr name="ttColorPrimaryTint" format="color" />
+    <attr name="ttColorBackground" format="color" />
+    <attr name="ttColorSurface" format="color" />
+    <attr name="ttColorSurfaceAlt" format="color" />
+    <attr name="ttColorTextPrimary" format="color" />
+    <attr name="ttColorTextSecondary" format="color" />
+    <attr name="ttColorTextMuted" format="color" />
+    <attr name="ttColorBorder" format="color" />
+</resources>

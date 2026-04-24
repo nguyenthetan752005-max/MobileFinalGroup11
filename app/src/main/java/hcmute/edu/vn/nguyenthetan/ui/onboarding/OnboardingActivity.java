@@ -1,21 +1,31 @@
 package hcmute.edu.vn.nguyenthetan.ui.onboarding;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.content.ContextCompat;
+import hcmute.edu.vn.nguyenthetan.ui.common.ThemedActivity;
 
 import hcmute.edu.vn.nguyenthetan.R;
 import hcmute.edu.vn.nguyenthetan.TungTungApplication;
+import hcmute.edu.vn.nguyenthetan.core.DailyReminderScheduler;
 import hcmute.edu.vn.nguyenthetan.core.NetworkUtils;
+import hcmute.edu.vn.nguyenthetan.core.NotificationPreferenceStore;
+import hcmute.edu.vn.nguyenthetan.core.ReminderSettingsStore;
 import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
 import hcmute.edu.vn.nguyenthetan.data.remote.api.MobileApiService;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.AuthResponseDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.GoogleAuthRequestDto;
+import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileReminderSettingsDto;
 import hcmute.edu.vn.nguyenthetan.ui.main.MainActivity;
 import hcmute.edu.vn.nguyenthetan.ui.auth.LoginActivity;
 import hcmute.edu.vn.nguyenthetan.ui.auth.RegisterActivity;
@@ -27,7 +37,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class OnboardingActivity extends AppCompatActivity {
+public class OnboardingActivity extends ThemedActivity {
 
     private static final String TAG = "OnboardingActivity";
 
@@ -36,6 +46,16 @@ public class OnboardingActivity extends AppCompatActivity {
     private UserSessionStore userSessionStore;
     private GoogleAuthSupport googleAuthSupport;
     private TungTungApplication application;
+    private final ActivityResultLauncher<String> notificationPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
+                NotificationPreferenceStore.markPermissionRequested(this);
+                NotificationPreferenceStore.setEnabled(this, granted);
+                if (granted) {
+                    DailyReminderScheduler.apply(this);
+                } else {
+                    DailyReminderScheduler.cancel(this);
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +65,8 @@ public class OnboardingActivity extends AppCompatActivity {
         mobileApiService = application.getAppContainer().getMobileApiService();
         binding = ActivityOnboardingBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        ensureReminderPreferenceInitialized();
+        syncReminderSettings();
         AccountLockUiHandler.attach(this);
         showIncomingMessageIfNeeded();
         googleAuthSupport = new GoogleAuthSupport(this, new GoogleAuthSupport.Callback() {
@@ -87,6 +109,57 @@ public class OnboardingActivity extends AppCompatActivity {
     private void openMain() {
         startActivity(new Intent(this, MainActivity.class));
         finish();
+    }
+
+    private void ensureReminderPreferenceInitialized() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            NotificationPreferenceStore.initializeDefaultEnabledState(this, true);
+            DailyReminderScheduler.apply(this);
+            return;
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                == PackageManager.PERMISSION_GRANTED) {
+            NotificationPreferenceStore.initializeDefaultEnabledState(this, true);
+            NotificationPreferenceStore.markPermissionRequested(this);
+            DailyReminderScheduler.apply(this);
+            return;
+        }
+
+        if (!NotificationPreferenceStore.hasRequestedPermission(this)) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            return;
+        }
+
+        if (!NotificationPreferenceStore.isInitialized(this)) {
+            NotificationPreferenceStore.initializeDefaultEnabledState(this, false);
+        }
+        DailyReminderScheduler.cancel(this);
+    }
+
+    private void syncReminderSettings() {
+        mobileApiService.getReminderSettings().enqueue(new Callback<MobileReminderSettingsDto>() {
+            @Override
+            public void onResponse(Call<MobileReminderSettingsDto> call, Response<MobileReminderSettingsDto> response) {
+                if (!response.isSuccessful() || response.body() == null) {
+                    DailyReminderScheduler.apply(OnboardingActivity.this);
+                    return;
+                }
+                MobileReminderSettingsDto body = response.body();
+                ReminderSettingsStore.save(
+                        OnboardingActivity.this,
+                        body.dailyReminderEnabled,
+                        body.dailyReminderTime,
+                        body.dailyReminderTimezone
+                );
+                DailyReminderScheduler.apply(OnboardingActivity.this);
+            }
+
+            @Override
+            public void onFailure(Call<MobileReminderSettingsDto> call, Throwable throwable) {
+                DailyReminderScheduler.apply(OnboardingActivity.this);
+            }
+        });
     }
 
     private void submitGoogleAuth(@NonNull String idToken) {
@@ -194,3 +267,4 @@ public class OnboardingActivity extends AppCompatActivity {
                 .show();
     }
 }
+

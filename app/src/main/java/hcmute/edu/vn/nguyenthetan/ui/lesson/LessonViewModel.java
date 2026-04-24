@@ -19,6 +19,7 @@ import hcmute.edu.vn.nguyenthetan.domain.model.lesson.LessonSession;
 import hcmute.edu.vn.nguyenthetan.domain.model.lesson.Sentence;
 import hcmute.edu.vn.nguyenthetan.domain.model.lesson.SentenceStatus;
 import hcmute.edu.vn.nguyenthetan.domain.model.lesson.SpeakingAttempt;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.comment.SyncSentenceCommentsUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.CheckDictationAnswerUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.comment.GetCommentsUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.GetLessonProgressUseCase;
@@ -82,6 +83,7 @@ public class LessonViewModel extends ViewModel {
     private final GetLessonSessionUseCase getLessonSessionUseCase;
     private final GetLessonProgressUseCase getLessonProgressUseCase;
     private final GetCommentsUseCase getCommentsUseCase;
+    private final SyncSentenceCommentsUseCase syncSentenceCommentsUseCase;
     private final CheckDictationAnswerUseCase checkDictationAnswerUseCase;
     private final SaveSentenceStatusUseCase saveSentenceStatusUseCase;
     private final SaveSpeakingAttemptUseCase saveSpeakingAttemptUseCase;
@@ -111,6 +113,7 @@ public class LessonViewModel extends ViewModel {
             GetLessonSessionUseCase getLessonSessionUseCase,
             GetLessonProgressUseCase getLessonProgressUseCase,
             GetCommentsUseCase getCommentsUseCase,
+            SyncSentenceCommentsUseCase syncSentenceCommentsUseCase,
             CheckDictationAnswerUseCase checkDictationAnswerUseCase,
             SaveSentenceStatusUseCase saveSentenceStatusUseCase,
             SaveSpeakingAttemptUseCase saveSpeakingAttemptUseCase,
@@ -119,6 +122,7 @@ public class LessonViewModel extends ViewModel {
         this.getLessonSessionUseCase = getLessonSessionUseCase;
         this.getLessonProgressUseCase = getLessonProgressUseCase;
         this.getCommentsUseCase = getCommentsUseCase;
+        this.syncSentenceCommentsUseCase = syncSentenceCommentsUseCase;
         this.checkDictationAnswerUseCase = checkDictationAnswerUseCase;
         this.saveSentenceStatusUseCase = saveSentenceStatusUseCase;
         this.saveSpeakingAttemptUseCase = saveSpeakingAttemptUseCase;
@@ -246,6 +250,18 @@ public class LessonViewModel extends ViewModel {
         selectSentence(currentIndex - 1);
     }
 
+    public void refreshComments() {
+        if (getCurrentSentence() != null) {
+            long currentSentenceId = getCurrentSentence().getId();
+            syncSentenceCommentsUseCase.execute(currentSentenceId, () -> {
+                if (getCurrentSentence() != null && getCurrentSentence().getId() == currentSentenceId) {
+                    comments = getCommentsUseCase.execute(currentSentenceId);
+                    publish();
+                }
+            }, null);
+        }
+    }
+
     public void selectSentence(int index) {
         if (lessonSession == null || index < 0 || index >= lessonSession.getSentences().size()) {
             return;
@@ -254,6 +270,8 @@ public class LessonViewModel extends ViewModel {
         currentIndex = index;
         feedback = null;
         inputText = "";
+        currentAttempt = null;
+        bestAttempt = null;
         if (sentenceStatuses.get(getCurrentSentence().getId()) == SentenceStatus.NOT_STARTED) {
             sentenceStatuses.put(getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
             saveSentenceStatusUseCase.execute(lessonId, getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
@@ -348,6 +366,33 @@ public class LessonViewModel extends ViewModel {
     public void playTranscriptRow(int position) {
         selectSentence(position);
         replay();
+    }
+
+    /**
+     * Populates speaking results from a server API response without persisting to local DB.
+     * Used when navigating to a sentence that already has speaking history on the server.
+     */
+    public void applySpeakingResultsFromServer(int currentScore, String currentTranscript,
+            String currentFeedback, String currentAudioUrl,
+            int bestScore, String bestTranscript,
+            String bestFeedback, String bestAudioUrl) {
+        if (currentScore > 0 || (currentTranscript != null && !currentTranscript.isEmpty())) {
+            currentAttempt = new SpeakingAttempt(
+                    currentScore,
+                    currentTranscript == null ? "" : currentTranscript,
+                    currentFeedback == null ? "" : currentFeedback,
+                    currentAudioUrl == null ? "" : currentAudioUrl
+            );
+        }
+        if (bestScore > 0 || (bestTranscript != null && !bestTranscript.isEmpty())) {
+            bestAttempt = new SpeakingAttempt(
+                    bestScore,
+                    bestTranscript == null ? "" : bestTranscript,
+                    bestFeedback == null ? "" : bestFeedback,
+                    bestAudioUrl == null ? "" : bestAudioUrl
+            );
+        }
+        publish();
     }
 
     private Sentence getCurrentSentence() {
