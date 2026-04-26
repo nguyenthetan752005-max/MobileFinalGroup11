@@ -20,4 +20,16 @@ public interface OfflineActionDao {
 
     @Delete
     void delete(OfflineActionEntity action);
+
+    @Query("SELECT * FROM offline_actions WHERE localFilePath = :syncKey ORDER BY createdAt DESC LIMIT 1")
+    OfflineActionEntity getLatestBySyncKey(String syncKey);
+
+    @Query("DELETE FROM offline_actions WHERE localFilePath = :syncKey")
+    void deleteBySyncKey(String syncKey);
+
+    @Query("DELETE FROM offline_actions WHERE actionType = :actionType")
+    void deleteByActionType(String actionType);
+
+    @Query("DELETE FROM offline_actions")
+    void deleteAll();
 }

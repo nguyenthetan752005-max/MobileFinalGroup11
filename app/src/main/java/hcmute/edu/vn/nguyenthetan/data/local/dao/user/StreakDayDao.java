@@ -17,4 +17,7 @@ public interface StreakDayDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(List<StreakDayEntity> entities);
+
+    @Query("DELETE FROM streak_day_local")
+    void deleteAll();
 }

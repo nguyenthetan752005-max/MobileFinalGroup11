@@ -18,6 +18,7 @@ public class ProfileEntity {
     public int thisWeekStudyMinutes;
     public boolean darkModeEnabled;
     public boolean notificationsEnabled;
+    public String mascotMoodId;
     public String activeMood;
     public String quote;
     public int missedDays;
@@ -34,6 +35,7 @@ public class ProfileEntity {
             int thisWeekStudyMinutes,
             boolean darkModeEnabled,
             boolean notificationsEnabled,
+            String mascotMoodId,
             String activeMood,
             String quote,
             int missedDays,
@@ -49,6 +51,7 @@ public class ProfileEntity {
         this.thisWeekStudyMinutes = thisWeekStudyMinutes;
         this.darkModeEnabled = darkModeEnabled;
         this.notificationsEnabled = notificationsEnabled;
+        this.mascotMoodId = mascotMoodId;
         this.activeMood = activeMood;
         this.quote = quote;
         this.missedDays = missedDays;

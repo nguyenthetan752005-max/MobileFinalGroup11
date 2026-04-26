@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import hcmute.edu.vn.nguyenthetan.core.MascotMoodResolver;
 import hcmute.edu.vn.nguyenthetan.data.local.entity.user.ProfileEntity;
 import hcmute.edu.vn.nguyenthetan.data.local.entity.user.StreakDayEntity;
 import hcmute.edu.vn.nguyenthetan.domain.model.profile.MoodState;
@@ -32,12 +33,13 @@ public final class RepositoryFormatters {
         for (int index = 0; index < streakDays.size(); index++) {
             weekStatus[index] = streakDays.get(index).studied;
         }
+        MascotMoodResolver.Mood mood = MascotMoodResolver.resolve(profile);
 
         return new StreakSummary(
                 profile.currentStreak,
                 profile.missedDays,
                 profile.broken,
-                profile.activeMood,
+                mood,
                 profile.quote,
                 Arrays.asList(
                         weekStatus[0],

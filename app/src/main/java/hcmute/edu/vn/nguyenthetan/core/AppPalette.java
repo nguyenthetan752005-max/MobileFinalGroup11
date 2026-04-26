@@ -9,7 +9,8 @@ public enum AppPalette {
     CLASSIC("classic", R.string.palette_classic, R.style.ThemeOverlay_TungTung_Palette_Classic),
     OCEAN("ocean", R.string.palette_ocean, R.style.ThemeOverlay_TungTung_Palette_Ocean),
     FOREST("forest", R.string.palette_forest, R.style.ThemeOverlay_TungTung_Palette_Forest),
-    SUNSET("sunset", R.string.palette_sunset, R.style.ThemeOverlay_TungTung_Palette_Sunset);
+    SUNSET("sunset", R.string.palette_sunset, R.style.ThemeOverlay_TungTung_Palette_Sunset),
+    SCARY("scary", R.string.palette_scary, R.style.ThemeOverlay_TungTung_Palette_Scary);
 
     private final String id;
     private final int labelResId;

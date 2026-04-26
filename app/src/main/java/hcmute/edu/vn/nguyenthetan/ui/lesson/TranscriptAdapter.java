@@ -14,6 +14,8 @@ import hcmute.edu.vn.nguyenthetan.core.ThemeColorResolver;
 import hcmute.edu.vn.nguyenthetan.databinding.ItemTranscriptSentenceBinding;
 import hcmute.edu.vn.nguyenthetan.domain.model.lesson.SentenceStatus;
 
+import android.view.View;
+
 public class TranscriptAdapter extends RecyclerView.Adapter<TranscriptAdapter.ViewHolder> {
 
     public interface Listener {
@@ -38,9 +40,14 @@ public class TranscriptAdapter extends RecyclerView.Adapter<TranscriptAdapter.Vi
 
     private final Listener listener;
     private final List<Row> items = new ArrayList<>();
+    private boolean showStatus = true;
 
     public TranscriptAdapter(Listener listener) {
         this.listener = listener;
+    }
+
+    public void setShowStatus(boolean showStatus) {
+        this.showStatus = showStatus;
     }
 
     public void submitList(List<Row> rows) {
@@ -58,7 +65,7 @@ public class TranscriptAdapter extends RecyclerView.Adapter<TranscriptAdapter.Vi
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(items.get(position), listener);
+        holder.bind(items.get(position), listener, showStatus);
     }
 
     @Override
@@ -75,10 +82,13 @@ public class TranscriptAdapter extends RecyclerView.Adapter<TranscriptAdapter.Vi
             this.binding = binding;
         }
 
-        void bind(Row row, Listener listener) {
+        void bind(Row row, Listener listener, boolean showStatus) {
             binding.textOrder.setText(String.valueOf(row.order));
             binding.textSentence.setText(row.sentence);
-            binding.textStatus.setText(row.status.name().replace('_', ' '));
+            binding.textStatus.setVisibility(showStatus ? View.VISIBLE : View.GONE);
+            if (showStatus) {
+                binding.textStatus.setText(row.status.name().replace('_', ' '));
+            }
             binding.getRoot().setCardBackgroundColor(row.selected
                     ? ThemeColorResolver.resolveColor(binding.getRoot().getContext(), R.attr.ttColorPrimaryTint)
                     : ThemeColorResolver.resolveColor(binding.getRoot().getContext(), R.attr.ttColorSurface));

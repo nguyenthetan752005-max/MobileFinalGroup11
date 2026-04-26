@@ -9,14 +9,6 @@ import hcmute.edu.vn.nguyenthetan.domain.model.lesson.SentenceStatus;
 
 @Entity(
         tableName = "guest_sentence_progress_local",
-        foreignKeys = {
-                @ForeignKey(
-                        entity = SentenceEntity.class,
-                        parentColumns = "id",
-                        childColumns = "sentenceId",
-                        onDelete = ForeignKey.CASCADE
-                )
-        },
         indices = {
                 @Index("lessonId")
         }

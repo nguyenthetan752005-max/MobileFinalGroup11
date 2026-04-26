@@ -59,7 +59,7 @@ public class RegisterActivity extends ThemedActivity {
         binding.buttonRegister.setOnClickListener(v -> submitRegister());
         binding.buttonGoogleRegister.setOnClickListener(v -> {
             if (ensureNetworkAvailable()) {
-                checkServerAndRun(R.string.loading_checking_server, googleAuthSupport::launch);
+                googleAuthSupport.launch();
             }
         });
         binding.textSignIn.setOnClickListener(v -> {
@@ -96,7 +96,10 @@ public class RegisterActivity extends ThemedActivity {
                             }
                             Toast.makeText(
                                     RegisterActivity.this,
-                                    AuthResponseHelper.resolveErrorMessage(response, "Registration failed"),
+                                    AuthResponseHelper.resolveErrorMessage(
+                                            response,
+                                            getString(R.string.error_auth_register_failed)
+                                    ),
                                     Toast.LENGTH_SHORT
                             ).show();
                             return;
@@ -109,7 +112,7 @@ public class RegisterActivity extends ThemedActivity {
                     @Override
                     public void onFailure(Call<AuthResponseDto> call, Throwable throwable) {
                         setLoading(false, R.string.loading_creating_account);
-                        Toast.makeText(RegisterActivity.this, "Register error: " + throwable.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(RegisterActivity.this, R.string.error_connection_generic, Toast.LENGTH_SHORT).show();
                     }
                 })
         );
@@ -154,7 +157,10 @@ public class RegisterActivity extends ThemedActivity {
                     }
                     Toast.makeText(
                             RegisterActivity.this,
-                            AuthResponseHelper.resolveErrorMessage(response, "Google registration failed"),
+                            AuthResponseHelper.resolveErrorMessage(
+                                    response,
+                                    getString(R.string.error_google_register_failed)
+                            ),
                             Toast.LENGTH_SHORT
                     ).show();
                     return;
@@ -172,7 +178,7 @@ public class RegisterActivity extends ThemedActivity {
             public void onFailure(Call<AuthResponseDto> call, Throwable throwable) {
                 setLoading(false, R.string.loading_creating_account);
                 Log.e(TAG, "Google register network failure.", throwable);
-                Toast.makeText(RegisterActivity.this, "Google register error: " + throwable.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(RegisterActivity.this, R.string.error_connection_generic, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -191,6 +197,7 @@ public class RegisterActivity extends ThemedActivity {
         }
 
         userSessionStore.saveUser(body.userId, body.username, body.email, body.token);
+        application.getAppContainer().refreshCurrentUserProfile();
         Log.d(TAG, "User session saved after register. Navigating to MainActivity.");
         Toast.makeText(this, body.message == null ? "Register successful." : body.message, Toast.LENGTH_SHORT).show();
         startActivity(new Intent(this, MainActivity.class));

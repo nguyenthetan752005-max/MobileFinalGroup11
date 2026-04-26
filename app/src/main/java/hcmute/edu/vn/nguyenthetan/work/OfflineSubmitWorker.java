@@ -4,15 +4,24 @@ import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.work.BackoffPolicy;
+import androidx.work.Constraints;
+import androidx.work.ExistingWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-import hcmute.edu.vn.nguyenthetan.TungTungApplication;
-import hcmute.edu.vn.nguyenthetan.data.local.dao.system.OfflineActionDao;
+import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
+import hcmute.edu.vn.nguyenthetan.core.di.DatabaseModule;
+import hcmute.edu.vn.nguyenthetan.core.di.NetworkModule;
 import hcmute.edu.vn.nguyenthetan.data.local.db.TungTungDatabase;
-import hcmute.edu.vn.nguyenthetan.data.local.entity.system.OfflineActionEntity;
+import hcmute.edu.vn.nguyenthetan.data.remote.api.MobileApiService;
+import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteNotificationSyncManager;
+import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteProgressSyncManager;
 
 /**
  * Worker class that periodically runs when network is connected to submit any
@@ -21,26 +30,53 @@ import hcmute.edu.vn.nguyenthetan.data.local.entity.system.OfflineActionEntity;
 public class OfflineSubmitWorker extends Worker {
 
     private static final String TAG = "OfflineSubmitWorker";
+    private static final String UNIQUE_WORK_NAME = "offline-progress-submit";
 
     public OfflineSubmitWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
+    }
+
+    public static void enqueue(@NonNull Context context) {
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(OfflineSubmitWorker.class)
+                .setConstraints(constraints)
+                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 10, TimeUnit.SECONDS)
+                .build();
+
+        WorkManager.getInstance(context)
+                .enqueueUniqueWork(UNIQUE_WORK_NAME, ExistingWorkPolicy.KEEP, request);
     }
 
     @NonNull
     @Override
     public Result doWork() {
         Log.d(TAG, "Starting offline submission sync...");
-        TungTungApplication application = (TungTungApplication) getApplicationContext();
-        // Assuming DatabaseModule or AppContainer exposes database, but we can query from here:
-        // Or inject via dagger/hilt if we migrate, but simply we would fetch DB here.
-        // For now, this is a placeholder structure to satisfy architectural requirements.
-
-        // TODO: In a real implementation:
-        // 1. Fetch all actions from offlineActionDao.getAllOrdered()
-        // 2. Loop through them and make API requests based on actionType
-        // 3. If successful, offlineActionDao.delete(action)
-        // 4. Return Result.success() or Result.retry()
-
-        return Result.success();
+        TungTungDatabase database = DatabaseModule.createDatabase(getApplicationContext());
+        try {
+            UserSessionStore userSessionStore = new UserSessionStore(getApplicationContext());
+            MobileApiService mobileApiService = NetworkModule.createMobileApiService(userSessionStore);
+            RemoteProgressSyncManager progressSyncManager = new RemoteProgressSyncManager(
+                    getApplicationContext(),
+                    mobileApiService,
+                    database,
+                    userSessionStore
+            );
+            RemoteNotificationSyncManager notificationSyncManager = new RemoteNotificationSyncManager(
+                    getApplicationContext(),
+                    mobileApiService,
+                    database,
+                    userSessionStore
+            );
+            boolean progressSynced = progressSyncManager.flushPendingActions();
+            boolean notificationsSynced = notificationSyncManager.flushPendingReminderDeliveries();
+            return progressSynced && notificationsSynced
+                    ? Result.success()
+                    : Result.retry();
+        } finally {
+            database.close();
+        }
     }
 }

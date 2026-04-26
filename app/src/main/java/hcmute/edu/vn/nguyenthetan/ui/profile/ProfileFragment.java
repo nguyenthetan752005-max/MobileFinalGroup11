@@ -1,12 +1,13 @@
 package hcmute.edu.vn.nguyenthetan.ui.profile;
 
 import android.Manifest;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -29,11 +30,16 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import java.util.Locale;
+import java.util.TimeZone;
+
 import hcmute.edu.vn.nguyenthetan.R;
 import hcmute.edu.vn.nguyenthetan.TungTungApplication;
 import hcmute.edu.vn.nguyenthetan.core.AppPalette;
 import hcmute.edu.vn.nguyenthetan.core.AppearancePreferenceStore;
+import hcmute.edu.vn.nguyenthetan.core.DailyReminderNotificationHelper;
 import hcmute.edu.vn.nguyenthetan.core.DailyReminderScheduler;
+import hcmute.edu.vn.nguyenthetan.core.MascotMoodResolver;
 import hcmute.edu.vn.nguyenthetan.core.NotificationPreferenceStore;
 import hcmute.edu.vn.nguyenthetan.core.ReminderSettingsStore;
 import hcmute.edu.vn.nguyenthetan.core.ThemePreferenceStore;
@@ -41,7 +47,6 @@ import hcmute.edu.vn.nguyenthetan.core.ThemeColorResolver;
 import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
 import hcmute.edu.vn.nguyenthetan.data.remote.api.MobileApiService;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileReminderSettingsDto;
-import hcmute.edu.vn.nguyenthetan.data.remote.dto.UserProfileDto;
 import hcmute.edu.vn.nguyenthetan.databinding.DialogAppearanceSettingsBinding;
 import hcmute.edu.vn.nguyenthetan.databinding.FragmentProfileBinding;
 import hcmute.edu.vn.nguyenthetan.domain.model.home.DailyActivity;
@@ -55,29 +60,36 @@ import retrofit2.Response;
 public class ProfileFragment extends Fragment {
 
     public interface Listener {
-        void onOpenStreakDialog();
     }
 
     private FragmentProfileBinding binding;
     private UserSessionStore userSessionStore;
     private MobileApiService mobileApiService;
-    private String displayedUsername;
+    private ProfileViewModel viewModel;
+    private Boolean lastSyncing;
     private boolean syncingNotificationSwitch;
     private boolean remoteSettingsLoaded;
     private boolean remoteSettingsSyncFailed;
     private Boolean remoteDailyReminderEnabled;
     private String remoteDailyReminderTime;
     private String remoteDailyReminderTimezone;
+    private boolean sendTestReminderAfterPermissionGrant;
     private final ActivityResultLauncher<String> notificationPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
                 if (!isAdded() || binding == null) {
                     return;
                 }
+                boolean shouldSendTestReminder = sendTestReminderAfterPermissionGrant;
+                sendTestReminderAfterPermissionGrant = false;
                 NotificationPreferenceStore.markPermissionRequested(requireContext());
                 if (granted) {
                     NotificationPreferenceStore.setEnabled(requireContext(), true);
                     DailyReminderScheduler.apply(requireContext());
-                    Toast.makeText(requireContext(), R.string.settings_notifications_enabled_toast, Toast.LENGTH_SHORT).show();
+                    if (shouldSendTestReminder) {
+                        sendTestReminderNow();
+                    } else {
+                        Toast.makeText(requireContext(), R.string.settings_notifications_enabled_toast, Toast.LENGTH_SHORT).show();
+                    }
                 } else {
                     NotificationPreferenceStore.setEnabled(requireContext(), false);
                     DailyReminderScheduler.cancel(requireContext());
@@ -109,11 +121,17 @@ public class ProfileFragment extends Fragment {
         userSessionStore = application.getAppContainer().getUserSessionStore();
         mobileApiService = application.getAppContainer().getMobileApiService();
         ProfileViewModelFactory factory = new ProfileViewModelFactory(application.getAppContainer().getProfileUseCase());
-        ProfileViewModel viewModel = new ViewModelProvider(this, factory).get(ProfileViewModel.class);
+        viewModel = new ViewModelProvider(this, factory).get(ProfileViewModel.class);
         viewModel.getProfileState().observe(getViewLifecycleOwner(), this::render);
         viewModel.getLoadingState().observe(getViewLifecycleOwner(), loading ->
                 binding.progressProfileLoad.setVisibility(Boolean.TRUE.equals(loading) ? View.VISIBLE : View.GONE)
         );
+        application.getAppContainer().getIsSyncing().observe(getViewLifecycleOwner(), syncing -> {
+            if (Boolean.TRUE.equals(lastSyncing) && !Boolean.TRUE.equals(syncing) && viewModel != null) {
+                viewModel.forceLoad();
+            }
+            lastSyncing = syncing;
+        });
         viewModel.load();
 
         binding.textThemeLight.setOnClickListener(v ->
@@ -122,13 +140,6 @@ public class ProfileFragment extends Fragment {
         binding.textThemeDark.setOnClickListener(v ->
                 ThemePreferenceStore.setThemeMode(requireContext(), AppCompatDelegate.MODE_NIGHT_YES)
         );
-        binding.cardMood.setOnClickListener(v -> {
-            if (userSessionStore != null && userSessionStore.isLoggedIn()) {
-                showStreakDialog(getParentFragmentManager(), false);
-            } else {
-                promptLoginRequired();
-            }
-        });
         binding.buttonSessionAction.setOnClickListener(v -> handleSessionAction());
         binding.buttonGuestProfileCreateAccount.setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), OnboardingActivity.class))
@@ -142,15 +153,10 @@ public class ProfileFragment extends Fragment {
             }
         });
 
-        binding.actionMyComments.setOnClickListener(v -> {
-            if (userSessionStore != null && userSessionStore.isLoggedIn()) {
-                startActivity(new Intent(requireContext(), MyCommentsActivity.class));
-            } else {
-                promptLoginRequired();
-            }
-        });
         binding.rowNotificationSettings.setOnClickListener(v -> binding.switchNotifications.performClick());
         binding.switchNotifications.setOnCheckedChangeListener((buttonView, isChecked) -> onNotificationToggleChanged(isChecked));
+        binding.buttonReminderTime.setOnClickListener(v -> showReminderTimePicker());
+        binding.buttonNotificationTest.setOnClickListener(v -> sendTestReminder());
         binding.rowAppearanceSettings.setOnClickListener(v -> showAppearanceDialog());
         binding.textAppearancePreview.setOnClickListener(v -> showAppearanceDialog());
         loadReminderSettingsFromStore();
@@ -160,19 +166,15 @@ public class ProfileFragment extends Fragment {
     private void render(ProfileData profileData) {
         boolean guestMode = isGuestMode();
         String nameToDisplay = guestMode ? getString(R.string.guest_display_name) : profileData.getName();
-        displayedUsername = nameToDisplay;
         binding.textAvatar.setText(guestMode ? "GU" : buildAvatar(profileData.getName()));
         binding.textName.setText(nameToDisplay);
         binding.textEmail.setText(guestMode ? getString(R.string.guest_profile_hint) : profileData.getEmail());
         binding.textCurrentStreak.setText(guestMode ? "--" : String.valueOf(profileData.getCurrentStreak()));
         binding.textLongestStreak.setText(guestMode ? "--" : String.valueOf(profileData.getLongestStreak()));
         binding.textTotalStudy.setText(guestMode ? "--" : profileData.getTotalStudyTime());
-        binding.textMood.setText(guestMode
-                ? getString(R.string.guest_profile_cta)
-                : profileData.getStreakSummary().getActiveMood() + " mood");
         binding.layoutProfileStats.setVisibility(guestMode ? View.GONE : View.VISIBLE);
         binding.cardWeeklyActivity.setVisibility(guestMode ? View.GONE : View.VISIBLE);
-        binding.cardMood.setVisibility(guestMode ? View.GONE : View.VISIBLE);
+        binding.cardMood.setVisibility(View.GONE);
         binding.cardAccountActions.setVisibility(guestMode ? View.GONE : View.VISIBLE);
         binding.cardGuestProfilePromo.setVisibility(guestMode ? View.VISIBLE : View.GONE);
         binding.textGuestProfileTitle.setText(R.string.guest_profile_title);
@@ -184,37 +186,16 @@ public class ProfileFragment extends Fragment {
         }
         renderThemeMode();
         renderSettingsState();
-        renderSessionCard(profileData);
+        renderSessionCard();
     }
 
-    private void renderSessionCard(ProfileData profileData) {
+    private void renderSessionCard() {
         if (userSessionStore != null && userSessionStore.isLoggedIn()) {
+            binding.textSessionStatus.setVisibility(View.VISIBLE);
             binding.textSessionStatus.setText(getString(R.string.session_logged_in, userSessionStore.getUsername()));
             binding.buttonSessionAction.setText(R.string.button_logout);
-            long userId = userSessionStore.getUserId();
-            if (userId > 0L && mobileApiService != null) {
-                mobileApiService.getProfile(userId).enqueue(new Callback<UserProfileDto>() {
-                    @Override
-                    public void onResponse(Call<UserProfileDto> call, Response<UserProfileDto> response) {
-                        if (!isAdded() || response.body() == null || !response.isSuccessful()) {
-                            return;
-                        }
-                        UserProfileDto body = response.body();
-                        binding.textAvatar.setText(buildAvatar(body.username));
-                        binding.textName.setText(body.username);
-                        binding.textEmail.setText(body.email);
-                        binding.textSessionStatus.setText(getString(R.string.session_backend_connected, body.username));
-                    }
-
-                    @Override
-                    public void onFailure(Call<UserProfileDto> call, Throwable throwable) {
-                        if (isAdded()) {
-                            binding.textSessionStatus.setText(getString(R.string.session_backend_failed, throwable.getMessage()));
-                        }
-                    }
-                });
-            }
         } else {
+            binding.textSessionStatus.setVisibility(View.VISIBLE);
             binding.textSessionStatus.setText(R.string.session_guest_mode);
             binding.buttonSessionAction.setText(R.string.button_sign_in);
         }
@@ -288,9 +269,9 @@ public class ProfileFragment extends Fragment {
         }
         String[] parts = value.trim().split("\\s+");
         if (parts.length == 1) {
-            return parts[0].substring(0, Math.min(2, parts[0].length())).toUpperCase();
+            return parts[0].substring(0, Math.min(2, parts[0].length())).toUpperCase(Locale.US);
         }
-        return (parts[0].substring(0, 1) + parts[parts.length - 1].substring(0, 1)).toUpperCase();
+        return (parts[0].substring(0, 1) + parts[parts.length - 1].substring(0, 1)).toUpperCase(Locale.US);
     }
 
     private void renderThemeMode() {
@@ -309,8 +290,27 @@ public class ProfileFragment extends Fragment {
         }
         boolean guestMode = isGuestMode();
         boolean notificationsEnabled = NotificationPreferenceStore.isEnabled(requireContext());
+        boolean hasLocalTimeOverride = ReminderSettingsStore.hasLocalTimeOverride(requireContext());
+        String reminderTime = remoteDailyReminderTime == null
+                ? ReminderSettingsStore.getDailyReminderTime(requireContext())
+                : remoteDailyReminderTime;
+        String reminderTimezone = remoteDailyReminderTimezone == null
+                ? ReminderSettingsStore.getDailyReminderTimezone(requireContext())
+                : remoteDailyReminderTimezone;
         AppPalette palette = AppearancePreferenceStore.getPalette(requireContext());
-        binding.textAppearanceSummary.setText(getString(R.string.settings_palette_summary, getString(palette.getLabelResId())));
+        if (AppearancePreferenceStore.isScaryMoodActive(requireContext())) {
+            binding.textAppearanceSummary.setText(R.string.settings_palette_scary_summary);
+        } else {
+            binding.textAppearanceSummary.setText(getString(R.string.settings_palette_summary, getString(palette.getLabelResId())));
+        }
+        binding.textReminderTimeValue.setText(getString(
+                hasLocalTimeOverride
+                        ? R.string.settings_reminder_time_value_device_override
+                        : R.string.settings_reminder_time_value,
+                reminderTime,
+                formatReminderTimezone(reminderTimezone)
+        ));
+        renderReminderPreview();
         binding.textSettingsGuestHint.setVisibility(guestMode ? View.VISIBLE : View.GONE);
         binding.textSettingsGuestHint.setText(R.string.settings_guest_device_hint);
         binding.rowNotificationSettings.setAlpha(1f);
@@ -333,10 +333,14 @@ public class ProfileFragment extends Fragment {
         if (hasRemoteReminderSchedule()) {
             binding.textNotificationSummary.setText(getString(
                     notificationsEnabled
-                            ? R.string.settings_notifications_enabled_with_schedule
-                            : R.string.settings_notifications_disabled_with_schedule,
-                    remoteDailyReminderTime,
-                    remoteDailyReminderTimezone
+                            ? (hasLocalTimeOverride
+                            ? R.string.settings_notifications_enabled_with_device_schedule
+                            : R.string.settings_notifications_enabled_with_schedule)
+                            : (hasLocalTimeOverride
+                            ? R.string.settings_notifications_disabled_with_device_schedule
+                            : R.string.settings_notifications_disabled_with_schedule),
+                    reminderTime,
+                    formatReminderTimezone(reminderTimezone)
             ));
             return;
         }
@@ -362,7 +366,49 @@ public class ProfileFragment extends Fragment {
         persistNotificationPreference(isChecked);
     }
 
+    private void showReminderTimePicker() {
+        String reminderTime = remoteDailyReminderTime == null
+                ? ReminderSettingsStore.getDailyReminderTime(requireContext())
+                : remoteDailyReminderTime;
+        int[] parsedTime = parseReminderTime(reminderTime);
+        TimePickerDialog timePickerDialog = new TimePickerDialog(
+                requireContext(),
+                (view, hourOfDay, minute) -> {
+                    String selectedTime = String.format(Locale.US, "%02d:%02d", hourOfDay, minute);
+                    ReminderSettingsStore.saveLocalTimeOverride(
+                            requireContext(),
+                            selectedTime,
+                            TimeZone.getDefault().getID()
+                    );
+                    loadReminderSettingsFromStore();
+                    DailyReminderScheduler.apply(requireContext());
+                    renderSettingsState();
+                    Toast.makeText(requireContext(), R.string.settings_notification_time_saved, Toast.LENGTH_SHORT).show();
+                },
+                parsedTime[0],
+                parsedTime[1],
+                DateFormat.is24HourFormat(requireContext())
+        );
+        timePickerDialog.show();
+    }
+
+    private void sendTestReminder() {
+        if (!hasNotificationPermission()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                sendTestReminderAfterPermissionGrant = true;
+                NotificationPreferenceStore.markPermissionRequested(requireContext());
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+            return;
+        }
+        sendTestReminderNow();
+    }
+
     private void showAppearanceDialog() {
+        if (AppearancePreferenceStore.isScaryMoodActive(requireContext())) {
+            Toast.makeText(requireContext(), R.string.scary_palette_locked, Toast.LENGTH_SHORT).show();
+            return;
+        }
         DialogAppearanceSettingsBinding dialogBinding = DialogAppearanceSettingsBinding.inflate(LayoutInflater.from(requireContext()));
         dialogBinding.textAppearanceDialogSummary.setText(R.string.settings_palette_dialog_message);
 
@@ -530,6 +576,41 @@ public class ProfileFragment extends Fragment {
         loadReminderSettingsFromStore();
     }
 
+    private void renderReminderPreview() {
+        MascotMoodResolver.Mood mood = DailyReminderNotificationHelper.resolveCurrentMood(requireContext());
+        binding.imageReminderPreviewMascot.setImageResource(mood.getDrawableRes());
+        binding.textReminderPreviewTitle.setText(getString(MascotMoodResolver.getReminderTitleRes(mood)));
+        binding.textReminderPreviewBody.setText(getString(MascotMoodResolver.getReminderBodyRes(mood)));
+    }
+
+    private void sendTestReminderNow() {
+        DailyReminderNotificationHelper.showReminderNotification(requireContext());
+        Toast.makeText(requireContext(), R.string.settings_notification_test_sent, Toast.LENGTH_SHORT).show();
+    }
+
+    private int[] parseReminderTime(String reminderTime) {
+        int hour = 19;
+        int minute = 0;
+        if (reminderTime != null && reminderTime.matches("^([01]\\d|2[0-3]):[0-5]\\d$")) {
+            String[] parts = reminderTime.split(":");
+            try {
+                hour = Integer.parseInt(parts[0]);
+                minute = Integer.parseInt(parts[1]);
+            } catch (NumberFormatException ignored) {
+                hour = 19;
+                minute = 0;
+            }
+        }
+        return new int[]{hour, minute};
+    }
+
+    private String formatReminderTimezone(String reminderTimezone) {
+        if (reminderTimezone == null || reminderTimezone.trim().isEmpty()) {
+            return TimeZone.getDefault().getID().replace('_', ' ');
+        }
+        return reminderTimezone.trim().replace('_', ' ');
+    }
+
     private boolean isGuestMode() {
         return userSessionStore == null || !userSessionStore.isLoggedIn();
     }
@@ -543,23 +624,22 @@ public class ProfileFragment extends Fragment {
         renderSettingsState();
         refreshReminderSettings();
         DailyReminderScheduler.apply(requireContext());
-        if (userSessionStore.isLoggedIn()) {
-            String currentUsername = userSessionStore.getUsername();
-            if (currentUsername != null && !currentUsername.equals(displayedUsername)) {
-                displayedUsername = currentUsername;
-                binding.textAvatar.setText(buildAvatar(currentUsername));
-                binding.textName.setText(currentUsername);
+        if (viewModel != null) {
+            if (viewModel.getProfileState().getValue() == null) {
+                viewModel.load();
+            } else {
+                viewModel.forceLoad();
             }
-            renderSessionCard(null);
         } else {
-            binding.textSessionStatus.setText(R.string.session_guest_mode);
-            binding.buttonSessionAction.setText(R.string.button_sign_in);
+            renderSessionCard();
         }
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        lastSyncing = null;
+        sendTestReminderAfterPermissionGrant = false;
         binding = null;
     }
 }

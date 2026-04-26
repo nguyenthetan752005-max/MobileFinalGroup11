@@ -28,12 +28,13 @@ public final class NetworkModule {
                 .addInterceptor(chain -> {
                     okhttp3.Request original = chain.request();
                     String token = userSessionStore.getToken();
+                    okhttp3.Request.Builder builder = original.newBuilder()
+                            .header("ngrok-skip-browser-warning", "69420");
+                    
                     if (token != null && !token.isEmpty()) {
-                        okhttp3.Request.Builder builder = original.newBuilder()
-                                .header("Authorization", "Bearer " + token);
-                        return chain.proceed(builder.build());
+                        builder.header("Authorization", "Bearer " + token);
                     }
-                    return chain.proceed(original);
+                    return chain.proceed(builder.build());
                 })
                 .addInterceptor(new hcmute.edu.vn.nguyenthetan.core.NetworkResilienceInterceptor())
                 .addInterceptor(new AccountLockInterceptor(userSessionStore))

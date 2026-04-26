@@ -1,0 +1,7 @@
+<resources>
+    <plurals name="lesson_comments_count">
+        <item quantity="zero">0 comment</item>
+        <item quantity="one">1 comment</item>
+        <item quantity="other">%d comments</item>
+    </plurals>
+</resources>

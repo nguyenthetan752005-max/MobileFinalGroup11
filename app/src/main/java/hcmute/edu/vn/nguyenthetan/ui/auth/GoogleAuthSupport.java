@@ -18,6 +18,7 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 
 import hcmute.edu.vn.nguyenthetan.BuildConfig;
+import hcmute.edu.vn.nguyenthetan.R;
 
 public final class GoogleAuthSupport {
 
@@ -63,7 +64,7 @@ public final class GoogleAuthSupport {
                     } catch (ApiException exception) {
                         callback.onGoogleAuthLoadingChanged(false);
                         Log.e(TAG, "Google sign-in failed with statusCode=" + exception.getStatusCode(), exception);
-                        Toast.makeText(activity, "Google login failed: " + exception.getStatusCode(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(activity, R.string.error_google_login_failed, Toast.LENGTH_SHORT).show();
                     }
                 }
         );
@@ -73,7 +74,7 @@ public final class GoogleAuthSupport {
         if (BuildConfig.TUNGTUNG_GOOGLE_WEB_CLIENT_ID == null
                 || BuildConfig.TUNGTUNG_GOOGLE_WEB_CLIENT_ID.trim().isEmpty()) {
             Log.e(TAG, "Missing Google Web Client ID in BuildConfig.");
-            Toast.makeText(activity, "Google Web Client ID is not configured for Android app.", Toast.LENGTH_LONG).show();
+            Toast.makeText(activity, R.string.error_google_login_failed, Toast.LENGTH_LONG).show();
             return;
         }
 

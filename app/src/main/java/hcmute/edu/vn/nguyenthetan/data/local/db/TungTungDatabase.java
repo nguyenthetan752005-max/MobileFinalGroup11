@@ -52,7 +52,7 @@ import hcmute.edu.vn.nguyenthetan.data.local.entity.system.SyncStateEntity;
                 SyncStateEntity.class,
                 OfflineActionEntity.class
         },
-        version = 7,
+        version = 9,
         exportSchema = false
 )
 @TypeConverters(RoomConverters.class)

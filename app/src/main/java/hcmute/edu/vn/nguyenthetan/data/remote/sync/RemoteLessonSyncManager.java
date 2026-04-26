@@ -30,9 +30,9 @@ public class RemoteLessonSyncManager {
         try {
             Response<MobileLessonDetailDto> response = RetryUtil.retryWithBackoff(
                     () -> mobileApiService.getLessonDetail(lessonId).execute(),
-                    3,
-                    700L,
-                    2500L,
+                    2,
+                    300L,
+                    1000L,
                     2.0
             );
             if (!response.isSuccessful() || response.body() == null) {

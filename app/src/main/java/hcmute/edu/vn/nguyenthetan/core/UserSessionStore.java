@@ -11,10 +11,12 @@ public class UserSessionStore {
     private static final String KEY_EMAIL = "email";
     private static final String KEY_TOKEN = "jwt_token";
 
+    private final Context appContext;
     private final SharedPreferences preferences;
 
     public UserSessionStore(Context context) {
-        preferences = context.getApplicationContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        appContext = context.getApplicationContext();
+        preferences = appContext.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
 
     public void saveUser(Long userId, String username, String email, String token) {
@@ -48,5 +50,6 @@ public class UserSessionStore {
 
     public void clear() {
         preferences.edit().clear().apply();
+        AppearancePreferenceStore.clearSessionOverride(appContext);
     }
 }

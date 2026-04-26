@@ -8,6 +8,7 @@ import hcmute.edu.vn.nguyenthetan.domain.model.lesson.SpeakingAttempt;
 public interface LessonRepository {
 
     void syncLessonContent(long lessonId);
+    void syncLessonProgress(long lessonId);
 
     boolean hasLessonContent(long lessonId);
 

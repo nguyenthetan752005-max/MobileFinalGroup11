@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import hcmute.edu.vn.nguyenthetan.core.AppDefaults;
+import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
 import hcmute.edu.vn.nguyenthetan.data.local.dao.catalog.CategoryDao;
 import hcmute.edu.vn.nguyenthetan.data.local.dao.lesson.GuestProgressDao;
 import hcmute.edu.vn.nguyenthetan.data.local.dao.lesson.LessonDao;
@@ -27,19 +28,22 @@ public class RoomCatalogRepository implements CatalogRepository {
     private final LessonDao lessonDao;
     private final GuestProgressDao guestProgressDao;
     private final RemoteCategorySyncManager remoteCategorySyncManager;
+    private final UserSessionStore userSessionStore;
 
     public RoomCatalogRepository(
             CategoryDao categoryDao,
             SectionDao sectionDao,
             LessonDao lessonDao,
             GuestProgressDao guestProgressDao,
-            RemoteCategorySyncManager remoteCategorySyncManager
+            RemoteCategorySyncManager remoteCategorySyncManager,
+            UserSessionStore userSessionStore
     ) {
         this.categoryDao = categoryDao;
         this.sectionDao = sectionDao;
         this.lessonDao = lessonDao;
         this.guestProgressDao = guestProgressDao;
         this.remoteCategorySyncManager = remoteCategorySyncManager;
+        this.userSessionStore = userSessionStore;
     }
 
     @Override
@@ -65,14 +69,19 @@ public class RoomCatalogRepository implements CatalogRepository {
     @Override
     public List<ExploreCategory> getExploreCategories() {
         List<ExploreCategory> categories = new ArrayList<>();
+        boolean hasAuthenticatedUser = userSessionStore != null && userSessionStore.isLoggedIn();
         for (CategoryEntity category : categoryDao.getAllOrdered()) {
             List<LessonEntity> lessons = getLessonsForCategory(category.id);
             int completedLessons = 0;
             boolean hasProgress = false;
 
             for (LessonEntity lesson : lessons) {
-                int completedSentences = guestProgressDao.getCompletedCountForLesson(lesson.id);
-                int touchedSentences = guestProgressDao.getTouchedCountForLesson(lesson.id);
+                int completedSentences = hasAuthenticatedUser
+                        ? guestProgressDao.getCompletedCountForLesson(lesson.id)
+                        : 0;
+                int touchedSentences = hasAuthenticatedUser
+                        ? guestProgressDao.getTouchedCountForLesson(lesson.id)
+                        : 0;
                 if (completedSentences >= lesson.totalSentences && lesson.totalSentences > 0) {
                     completedLessons++;
                 }
@@ -101,6 +110,7 @@ public class RoomCatalogRepository implements CatalogRepository {
     @Override
     public LessonCollection getLessonCollection(String categorySlug) {
         CategoryEntity category = categoryDao.getBySlug(categorySlug);
+        boolean hasAuthenticatedUser = userSessionStore != null && userSessionStore.isLoggedIn();
         if (category == null) {
             category = categoryDao.getBySlug(AppDefaults.DEFAULT_CATEGORY_SLUG);
         }
@@ -115,8 +125,12 @@ public class RoomCatalogRepository implements CatalogRepository {
         for (SectionEntity section : sectionDao.getByCategoryId(category.id)) {
             List<LessonSummary> lessonSummaries = new ArrayList<>();
             for (LessonEntity lesson : lessonDao.getBySectionId(section.id)) {
-                int completedSentences = guestProgressDao.getCompletedCountForLesson(lesson.id);
-                int touchedSentences = guestProgressDao.getTouchedCountForLesson(lesson.id);
+                int completedSentences = hasAuthenticatedUser
+                        ? guestProgressDao.getCompletedCountForLesson(lesson.id)
+                        : 0;
+                int touchedSentences = hasAuthenticatedUser
+                        ? guestProgressDao.getTouchedCountForLesson(lesson.id)
+                        : 0;
                 lessonSummaries.add(new LessonSummary(
                         lesson.id,
                         lesson.title,

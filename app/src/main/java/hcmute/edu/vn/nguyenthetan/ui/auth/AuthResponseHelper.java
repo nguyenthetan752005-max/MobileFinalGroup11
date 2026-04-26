@@ -60,7 +60,7 @@ public final class AuthResponseHelper {
         if (errorDto != null && errorDto.message != null && !errorDto.message.trim().isEmpty()) {
             return errorDto.message;
         }
-        return fallbackMessage + ": HTTP " + response.code();
+        return fallbackMessage;
     }
 
     public static boolean isAccountLocked(@NonNull Response<?> response) {

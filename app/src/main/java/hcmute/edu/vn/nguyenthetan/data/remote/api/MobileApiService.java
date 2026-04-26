@@ -17,7 +17,11 @@ import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileBootstrapCommentDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileCategoryDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileLeaderboardDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileLessonDetailDto;
+import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileNotificationFeedDto;
+import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileNotificationSummaryDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileReminderSettingsDto;
+import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileReminderDeliveryRequestDto;
+import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileSentenceProgressDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.NotificationPreferenceRequestDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.ProgressUpdateRequestDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.RegisterRequestDto;
@@ -65,6 +69,21 @@ public interface MobileApiService {
     @GET("api/mobile/app-settings/reminder")
     Call<MobileReminderSettingsDto> getReminderSettings();
 
+    @GET("api/mobile/notifications")
+    Call<MobileNotificationFeedDto> getNotifications(@Query("limit") int limit);
+
+    @GET("api/mobile/notifications/summary")
+    Call<MobileNotificationSummaryDto> getNotificationSummary();
+
+    @PUT("api/mobile/notifications/{notificationId}/read")
+    Call<GenericApiResponseDto> markNotificationRead(@Path("notificationId") long notificationId);
+
+    @PUT("api/mobile/notifications/read-all")
+    Call<GenericApiResponseDto> markAllNotificationsRead();
+
+    @POST("api/mobile/notifications/reminder-deliveries")
+    Call<GenericApiResponseDto> recordReminderDelivery(@Body MobileReminderDeliveryRequestDto request);
+
     @POST("api/mobile/auth/login")
     Call<AuthResponseDto> login(@Body LoginRequestDto request);
 
@@ -109,6 +128,9 @@ public interface MobileApiService {
 
     @GET("api/mobile/progress/in-progress")
     Call<List<InProgressLessonDto>> getInProgressLessons(@Query("userId") long userId);
+
+    @GET("api/mobile/progress/snapshot")
+    Call<List<MobileSentenceProgressDto>> getProgressSnapshot(@Query("lessonId") Long lessonId);
 
     @POST("api/mobile/tracking/time")
     Call<GenericApiResponseDto> trackTime(@Body TimeTrackingRequestDto request);

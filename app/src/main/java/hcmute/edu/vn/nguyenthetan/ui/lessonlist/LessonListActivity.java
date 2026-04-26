@@ -92,6 +92,14 @@ public class LessonListActivity extends ThemedActivity implements LessonSectionA
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (viewModel != null) {
+            viewModel.refreshLocal();
+        }
+    }
+
+    @Override
     public void onSectionToggled(long sectionId) {
         viewModel.toggleSection(sectionId);
     }

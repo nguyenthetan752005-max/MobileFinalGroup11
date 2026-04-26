@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import hcmute.edu.vn.nguyenthetan.core.AppDefaults;
+import hcmute.edu.vn.nguyenthetan.core.MascotMoodResolver;
 import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
 import hcmute.edu.vn.nguyenthetan.data.local.dao.user.AppSettingsDao;
 import hcmute.edu.vn.nguyenthetan.data.local.dao.lesson.GuestProgressDao;
@@ -76,6 +77,7 @@ public class RoomHomeRepository implements HomeRepository {
                     0,
                     false,
                     true,
+                    MascotMoodResolver.Mood.ORIGIN.getId(),
                     "Calm",
                     "",
                     0,
@@ -90,16 +92,19 @@ public class RoomHomeRepository implements HomeRepository {
                 ? "Guest"
                 : profile.name.split(" ")[0]);
         LessonEntity currentLessonEntity = resolveCurrentLesson(settings);
-        CategoryEntity currentCategory = resolveCategoryForLesson(currentLessonEntity);
-        int completedSentences = guestMode ? 0 : guestProgressDao.getCompletedCountForLesson(currentLessonEntity.id);
-        CurrentLesson currentLesson = new CurrentLesson(
-                currentLessonEntity.id,
-                currentLessonEntity.title,
-                completedSentences,
-                currentLessonEntity.totalSentences,
-                RepositoryFormatters.formatPracticeType(currentCategory == null ? null : currentCategory.practiceType),
-                RepositoryFormatters.formatContentType(currentLessonEntity.contentType)
-        );
+        CurrentLesson currentLesson = null;
+        if (currentLessonEntity != null) {
+            CategoryEntity currentCategory = resolveCategoryForLesson(currentLessonEntity);
+            int completedSentences = guestMode ? 0 : guestProgressDao.getCompletedCountForLesson(currentLessonEntity.id);
+            currentLesson = new CurrentLesson(
+                    currentLessonEntity.id,
+                    currentLessonEntity.title,
+                    completedSentences,
+                    currentLessonEntity.totalSentences,
+                    RepositoryFormatters.formatPracticeType(currentCategory == null ? null : currentCategory.practiceType),
+                    RepositoryFormatters.formatContentType(currentLessonEntity.contentType)
+            );
+        }
 
         List<Recommendation> recommendations = new ArrayList<>();
         for (RecommendationEntity entity : recommendationDao.getAllOrdered()) {
@@ -114,7 +119,7 @@ public class RoomHomeRepository implements HomeRepository {
         return new HomeDashboard(
                 guestMode ? "Welcome, Guest" : "Good morning, " + firstName,
                 guestMode ? "Listen freely now. Create an account to save progress and join the community."
-                        : "Keep your streak going.",
+                        : "",
                 RepositoryFormatters.buildStreakSummary(guestMode ? buildGuestProfile() : profile, streakDayDao.getAllOrdered()),
                 currentLesson,
                 new StudyStats(
@@ -144,18 +149,8 @@ public class RoomHomeRepository implements HomeRepository {
             return lessons.get(0);
         }
 
-        return new LessonEntity(
-                AppDefaults.DEFAULT_LESSON_ID,
-                0L,
-                "Loading lesson...",
-                "Beginner",
-                "Listening",
-                "AUDIO",
-                0,
-                70,
-                null,
-                0
-        );
+        // No lesson found, return null instead of a dummy lesson
+        return null;
     }
 
     private CategoryEntity resolveCategoryForLesson(LessonEntity lesson) {
@@ -197,6 +192,7 @@ public class RoomHomeRepository implements HomeRepository {
                 0,
                 false,
                 true,
+                MascotMoodResolver.Mood.ORIGIN.getId(),
                 "Guest mode",
                 "",
                 0,

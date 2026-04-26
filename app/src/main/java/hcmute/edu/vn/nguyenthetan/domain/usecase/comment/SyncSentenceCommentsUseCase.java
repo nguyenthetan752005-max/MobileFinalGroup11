@@ -2,6 +2,7 @@ package hcmute.edu.vn.nguyenthetan.domain.usecase.comment;
 
 import androidx.annotation.NonNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import hcmute.edu.vn.nguyenthetan.data.local.dao.community.CommentDao;
@@ -29,8 +30,26 @@ public class SyncSentenceCommentsUseCase {
             public void onResponse(@NonNull Call<List<MobileBootstrapCommentDto>> call, @NonNull Response<List<MobileBootstrapCommentDto>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     new Thread(() -> {
-                        List<CommentEntity> entities = RemoteEntityMapper.toCommentEntities(response.body());
-                        commentDao.insertAll(entities);
+                        List<MobileBootstrapCommentDto> allComments = new ArrayList<>(response.body());
+                        for (MobileBootstrapCommentDto topLevelComment : response.body()) {
+                            long commentId = RemoteEntityMapper.resolveId(topLevelComment.id);
+                            if (commentId <= 0L) {
+                                continue;
+                            }
+                            try {
+                                Response<List<MobileBootstrapCommentDto>> repliesResponse =
+                                        apiService.getCommentReplies(commentId).execute();
+                                if (repliesResponse.isSuccessful() && repliesResponse.body() != null) {
+                                    allComments.addAll(repliesResponse.body());
+                                }
+                            } catch (Exception ignored) {
+                            }
+                        }
+                        List<CommentEntity> entities = RemoteEntityMapper.toCommentEntities(allComments);
+                        commentDao.deleteBySentenceId(sentenceId);
+                        if (!entities.isEmpty()) {
+                            commentDao.insertAll(entities);
+                        }
                         if (onSuccess != null) {
                             onSuccess.run();
                         }

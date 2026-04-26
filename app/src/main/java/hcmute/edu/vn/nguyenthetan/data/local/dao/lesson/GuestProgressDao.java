@@ -18,6 +18,9 @@ public interface GuestProgressDao {
     @Query("SELECT * FROM guest_sentence_progress_local WHERE sentenceId = :sentenceId LIMIT 1")
     GuestSentenceProgressEntity getBySentenceId(long sentenceId);
 
+    @Query("SELECT * FROM guest_sentence_progress_local ORDER BY lastAccessedAt DESC, sentenceId")
+    List<GuestSentenceProgressEntity> getAll();
+
     @Query("SELECT COUNT(*) FROM guest_sentence_progress_local WHERE lessonId = :lessonId AND status = 'COMPLETED'")
     int getCompletedCountForLesson(long lessonId);
 
@@ -29,4 +32,10 @@ public interface GuestProgressDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void upsert(GuestSentenceProgressEntity entity);
+
+    @Query("DELETE FROM guest_sentence_progress_local WHERE lessonId = :lessonId")
+    void deleteByLessonId(long lessonId);
+
+    @Query("DELETE FROM guest_sentence_progress_local")
+    void deleteAll();
 }

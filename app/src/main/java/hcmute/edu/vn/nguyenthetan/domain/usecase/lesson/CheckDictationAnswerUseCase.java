@@ -1,10 +1,8 @@
 package hcmute.edu.vn.nguyenthetan.domain.usecase.lesson;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 import hcmute.edu.vn.nguyenthetan.domain.model.lesson.DictationFeedback;
 import hcmute.edu.vn.nguyenthetan.domain.model.lesson.Sentence;
@@ -13,20 +11,18 @@ public class CheckDictationAnswerUseCase {
 
     public DictationFeedback execute(Sentence sentence, String userAnswer) {
         String[] expectedWords = splitPreservingCase(sentence.getContent());
-        String[] normalizedExpected = normalize(sentence.getContent());
-        String[] normalizedAnswer = normalize(userAnswer);
+        String[] answerWords = splitPreservingCase(userAnswer);
 
         int matchedPrefixCount = 0;
-        int maxWords = Math.min(normalizedExpected.length, normalizedAnswer.length);
+        int maxWords = Math.min(expectedWords.length, answerWords.length);
         while (matchedPrefixCount < maxWords
-                && normalizedExpected[matchedPrefixCount].equals(normalizedAnswer[matchedPrefixCount])) {
+                && normalizeWord(expectedWords[matchedPrefixCount]).equals(normalizeWord(answerWords[matchedPrefixCount]))) {
             matchedPrefixCount++;
         }
 
-        boolean exactMatch = normalizedExpected.length == normalizedAnswer.length
-                && matchedPrefixCount == normalizedExpected.length;
+        boolean correct = matchedPrefixCount == expectedWords.length;
 
-        if (exactMatch) {
+        if (correct) {
             return new DictationFeedback(
                     true,
                     "Correct! Well done.",
@@ -37,18 +33,16 @@ public class CheckDictationAnswerUseCase {
             );
         }
 
-        String hint = sentence.getHintText();
-        if ((hint == null || hint.isEmpty()) && matchedPrefixCount < expectedWords.length) {
-            hint = expectedWords[matchedPrefixCount];
-        }
+        int revealCount = Math.min(matchedPrefixCount + 1, expectedWords.length);
+        String visibleHint = joinWords(expectedWords, 0, revealCount);
 
         return new DictationFeedback(
                 false,
-                "Almost there. Use the hint and try again.",
+                "Incorrect. Try again.",
                 sentence.getContent(),
                 joinWords(expectedWords, 0, matchedPrefixCount),
-                hint == null ? "" : hint,
-                buildMaskedWords(expectedWords, matchedPrefixCount, hint)
+                visibleHint,
+                buildMaskedWords(expectedWords, revealCount)
         );
     }
 
@@ -56,13 +50,13 @@ public class CheckDictationAnswerUseCase {
         return value == null || value.trim().isEmpty() ? new String[0] : value.trim().split("\\s+");
     }
 
-    private String[] normalize(String value) {
-        String sanitized = value == null ? "" : value
+    private String normalizeWord(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replaceAll("[.,?!;:'\"-]", "")
                 .toLowerCase(Locale.US)
-                .replaceAll("[^a-z0-9' ]", " ")
-                .replaceAll("\\s+", " ")
                 .trim();
-        return sanitized.isEmpty() ? new String[0] : sanitized.split(" ");
     }
 
     private String joinWords(String[] words, int start, int end) {
@@ -76,18 +70,9 @@ public class CheckDictationAnswerUseCase {
         return builder.toString();
     }
 
-    private String buildMaskedWords(String[] words, int matchedPrefixCount, String hint) {
-        Set<String> hintWords = new HashSet<>();
-        for (String normalizedHintWord : normalize(hint)) {
-            hintWords.add(normalizedHintWord);
-        }
-
+    private String buildMaskedWords(String[] words, int revealedCount) {
         List<String> masked = new ArrayList<>();
-        for (int index = matchedPrefixCount; index < words.length; index++) {
-            String[] normalized = normalize(words[index]);
-            if (normalized.length > 0 && hintWords.contains(normalized[0])) {
-                continue;
-            }
+        for (int index = revealedCount; index < words.length; index++) {
             masked.add(maskWord(words[index]));
         }
 

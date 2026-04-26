@@ -91,7 +91,7 @@ public class OnboardingActivity extends ThemedActivity {
         });
         binding.buttonGoogle.setOnClickListener(v -> {
             if (ensureNetworkAvailable()) {
-                checkServerAndRun(R.string.loading_checking_server, googleAuthSupport::launch);
+                googleAuthSupport.launch();
             }
         });
         binding.buttonSignIn.setOnClickListener(v -> {
@@ -200,6 +200,7 @@ public class OnboardingActivity extends ThemedActivity {
                 }
 
                 userSessionStore.saveUser(body.userId, body.username, body.email, body.token);
+                application.getAppContainer().refreshCurrentUserProfile();
                 Log.d(TAG, "User session saved from onboarding. Opening MainActivity.");
                 Toast.makeText(OnboardingActivity.this, body.message == null ? "Login successful." : body.message, Toast.LENGTH_SHORT).show();
                 openMain();
@@ -209,7 +210,7 @@ public class OnboardingActivity extends ThemedActivity {
             public void onFailure(Call<AuthResponseDto> call, Throwable throwable) {
                 setLoading(false, R.string.loading_signing_in);
                 Log.e(TAG, "Onboarding Google auth network failure.", throwable);
-                Toast.makeText(OnboardingActivity.this, "Google login error: " + throwable.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(OnboardingActivity.this, R.string.error_connection_generic, Toast.LENGTH_SHORT).show();
             }
         });
     }

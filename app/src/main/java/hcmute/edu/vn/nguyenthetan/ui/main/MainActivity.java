@@ -1,28 +1,20 @@
 package hcmute.edu.vn.nguyenthetan.ui.main;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-
 import androidx.fragment.app.Fragment;
+
+import android.view.View;
 
 import hcmute.edu.vn.nguyenthetan.R;
 import hcmute.edu.vn.nguyenthetan.TungTungApplication;
 import hcmute.edu.vn.nguyenthetan.core.AppDefaults;
-import hcmute.edu.vn.nguyenthetan.core.DailyReminderScheduler;
-import hcmute.edu.vn.nguyenthetan.core.NetworkUtils;
-import hcmute.edu.vn.nguyenthetan.core.ReminderSettingsStore;
-import hcmute.edu.vn.nguyenthetan.data.remote.api.MobileApiService;
-import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileReminderSettingsDto;
 import hcmute.edu.vn.nguyenthetan.databinding.ActivityMainBinding;
-import hcmute.edu.vn.nguyenthetan.ui.auth.AccountLockUiHandler;
 import hcmute.edu.vn.nguyenthetan.ui.common.ThemedActivity;
 import hcmute.edu.vn.nguyenthetan.ui.explore.ExploreFragment;
 import hcmute.edu.vn.nguyenthetan.ui.home.HomeFragment;
 import hcmute.edu.vn.nguyenthetan.ui.leaderboard.LeaderboardFragment;
 import hcmute.edu.vn.nguyenthetan.ui.lesson.LessonActivity;
 import hcmute.edu.vn.nguyenthetan.ui.lessonlist.LessonListActivity;
-import hcmute.edu.vn.nguyenthetan.ui.onboarding.OnboardingActivity;
 import hcmute.edu.vn.nguyenthetan.ui.profile.ProfileFragment;
 
 public class MainActivity extends ThemedActivity implements
@@ -31,80 +23,103 @@ public class MainActivity extends ThemedActivity implements
         ProfileFragment.Listener {
 
     private ActivityMainBinding binding;
-    private boolean serverReady;
-    private MobileApiService mobileApiService;
+
+    private HomeFragment homeFragment;
+    private ExploreFragment exploreFragment;
+    private LeaderboardFragment leaderboardFragment;
+    private ProfileFragment profileFragment;
+    private Fragment activeFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        AccountLockUiHandler.attach(this);
 
-        NetworkUtils.getNetworkLiveData(this).observe(this, isAvailable -> {
-            binding.offlineBanner.setVisibility(isAvailable ? View.GONE : View.VISIBLE);
-        });
-
-        TungTungApplication application = (TungTungApplication) getApplication();
-        mobileApiService = application.getAppContainer().getMobileApiService();
-        syncReminderSettings();
-        DailyReminderScheduler.apply(this);
-        if (!NetworkUtils.isNetworkAvailable(this)) {
-            startActivity(new Intent(this, OnboardingActivity.class));
-            finish();
-            return;
+        if (savedInstanceState != null) {
+            homeFragment = (HomeFragment) getSupportFragmentManager().findFragmentByTag("HOME");
+            exploreFragment = (ExploreFragment) getSupportFragmentManager().findFragmentByTag("EXPLORE");
+            leaderboardFragment = (LeaderboardFragment) getSupportFragmentManager().findFragmentByTag("LEADERBOARD");
+            profileFragment = (ProfileFragment) getSupportFragmentManager().findFragmentByTag("PROFILE");
+            if (homeFragment == null) homeFragment = HomeFragment.newInstance();
+            if (exploreFragment == null) exploreFragment = ExploreFragment.newInstance();
+            if (leaderboardFragment == null) leaderboardFragment = LeaderboardFragment.newInstance();
+            if (profileFragment == null) profileFragment = ProfileFragment.newInstance();
+            for (Fragment f : getSupportFragmentManager().getFragments()) {
+                if (f != null && f.isVisible()) {
+                    activeFragment = f;
+                    break;
+                }
+            }
         }
-        final boolean shouldSelectHome = savedInstanceState == null;
-        binding.progressSync.setVisibility(View.VISIBLE);
-        application.getAppContainer().checkServerAvailability((available, message) -> {
-            if (!available) {
-                startActivity(new Intent(this, OnboardingActivity.class));
-                finish();
-                return;
-            }
-            serverReady = true;
-            binding.progressSync.setVisibility(View.GONE);
-            if (shouldSelectHome) {
-                binding.bottomNavigation.setSelectedItemId(R.id.navigation_home);
-            }
-        });
 
         binding.bottomNavigation.setOnItemSelectedListener(item -> {
-            if (!serverReady) {
-                return false;
-            }
             int itemId = item.getItemId();
-            Fragment fragment;
+            Fragment targetFragment;
+            String tag;
+
             if (itemId == R.id.navigation_home) {
-                fragment = HomeFragment.newInstance();
+                if (homeFragment == null) homeFragment = HomeFragment.newInstance();
+                targetFragment = homeFragment;
+                tag = "HOME";
             } else if (itemId == R.id.navigation_explore) {
-                fragment = ExploreFragment.newInstance();
+                if (exploreFragment == null) exploreFragment = ExploreFragment.newInstance();
+                targetFragment = exploreFragment;
+                tag = "EXPLORE";
             } else if (itemId == R.id.navigation_leaderboard) {
-                fragment = LeaderboardFragment.newInstance();
+                if (leaderboardFragment == null) leaderboardFragment = LeaderboardFragment.newInstance();
+                targetFragment = leaderboardFragment;
+                tag = "LEADERBOARD";
             } else {
-                fragment = ProfileFragment.newInstance();
+                if (profileFragment == null) profileFragment = ProfileFragment.newInstance();
+                targetFragment = profileFragment;
+                tag = "PROFILE";
             }
 
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragmentContainer, fragment)
-                    .commit();
+            if (targetFragment == activeFragment) {
+                return true;
+            }
+
+            if (targetFragment.isAdded()) {
+                getSupportFragmentManager().beginTransaction()
+                        .hide(activeFragment != null ? activeFragment : targetFragment)
+                        .show(targetFragment)
+                        .commit();
+            } else {
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.fragmentContainer, targetFragment, tag)
+                        .hide(activeFragment != null ? activeFragment : targetFragment)
+                        .show(targetFragment)
+                        .commit();
+            }
+
+            activeFragment = targetFragment;
             return true;
         });
 
-        application.getAppContainer().getIsSyncing().observe(this, syncing -> {
-            binding.progressSync.setVisibility(syncing ? View.VISIBLE : View.GONE);
-            binding.fragmentContainer.setEnabled(!syncing);
-            if (syncing) {
-                binding.layoutSyncError.setVisibility(View.GONE);
-            }
-        });
-        application.getAppContainer().getSyncErrorMessage().observe(this, message -> {
-            if (message != null && !message.trim().isEmpty()) {
-                binding.textSyncError.setText(message);
-                binding.layoutSyncError.setVisibility(View.VISIBLE);
+        if (savedInstanceState == null) {
+            binding.bottomNavigation.setSelectedItemId(R.id.navigation_home);
+        } else if (activeFragment != null && activeFragment.isAdded()) {
+            String tag = activeFragment.getTag();
+            if ("HOME".equals(tag)) {
+                binding.bottomNavigation.setSelectedItemId(R.id.navigation_home);
+            } else if ("EXPLORE".equals(tag)) {
+                binding.bottomNavigation.setSelectedItemId(R.id.navigation_explore);
+            } else if ("LEADERBOARD".equals(tag)) {
+                binding.bottomNavigation.setSelectedItemId(R.id.navigation_leaderboard);
             } else {
-                binding.layoutSyncError.setVisibility(View.GONE);
+                binding.bottomNavigation.setSelectedItemId(R.id.navigation_profile);
+            }
+        }
+
+        TungTungApplication application = (TungTungApplication) getApplication();
+        hcmute.edu.vn.nguyenthetan.core.AppPalette initialPalette = hcmute.edu.vn.nguyenthetan.core.AppearancePreferenceStore.getPalette(this);
+        application.getAppContainer().getIsSyncing().observe(this, syncing -> {
+            boolean syncingNow = Boolean.TRUE.equals(syncing);
+            binding.progressSync.setVisibility(syncingNow ? View.VISIBLE : View.GONE);
+            binding.fragmentContainer.animate().alpha(syncingNow ? 0.3f : 1.0f).setDuration(200);
+            if (!syncingNow && hcmute.edu.vn.nguyenthetan.core.AppearancePreferenceStore.getPalette(this) != initialPalette) {
+                recreate();
             }
         });
     }
@@ -118,49 +133,4 @@ public class MainActivity extends ThemedActivity implements
     public void onOpenCategory(String categoryId) {
         startActivity(LessonListActivity.newIntent(this, categoryId == null ? AppDefaults.DEFAULT_CATEGORY_SLUG : categoryId));
     }
-
-    @Override
-    public void onOpenStreakDialog() {
-        ProfileFragment.showStreakDialog(getSupportFragmentManager(), false);
-    }
-
-    @Override
-    public void onOpenSettings() {
-        binding.bottomNavigation.setSelectedItemId(R.id.navigation_profile);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        DailyReminderScheduler.apply(this);
-    }
-
-    private void syncReminderSettings() {
-        if (mobileApiService == null) {
-            return;
-        }
-        mobileApiService.getReminderSettings().enqueue(new retrofit2.Callback<MobileReminderSettingsDto>() {
-            @Override
-            public void onResponse(retrofit2.Call<MobileReminderSettingsDto> call, retrofit2.Response<MobileReminderSettingsDto> response) {
-                if (!response.isSuccessful() || response.body() == null) {
-                    DailyReminderScheduler.apply(MainActivity.this);
-                    return;
-                }
-                MobileReminderSettingsDto body = response.body();
-                ReminderSettingsStore.save(
-                        MainActivity.this,
-                        body.dailyReminderEnabled,
-                        body.dailyReminderTime,
-                        body.dailyReminderTimezone
-                );
-                DailyReminderScheduler.apply(MainActivity.this);
-            }
-
-            @Override
-            public void onFailure(retrofit2.Call<MobileReminderSettingsDto> call, Throwable throwable) {
-                DailyReminderScheduler.apply(MainActivity.this);
-            }
-        });
-    }
 }
-

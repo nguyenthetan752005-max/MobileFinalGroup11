@@ -10,6 +10,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -141,18 +142,21 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         LessonViewModelFactory factory = new LessonViewModelFactory(
                 application.getAppContainer().getLessonSessionUseCase(),
                 application.getAppContainer().getLessonProgressUseCase(),
+                application.getAppContainer().getSyncLessonProgressUseCase(),
                 application.getAppContainer().getCommentsUseCase(),
                 application.getAppContainer().getSyncSentenceCommentsUseCase(),
                 application.getAppContainer().getCheckDictationAnswerUseCase(),
                 application.getAppContainer().getSaveSentenceStatusUseCase(),
                 application.getAppContainer().getSaveSpeakingAttemptUseCase(),
-                lessonId
+                lessonId,
+                userSessionStore != null && userSessionStore.isLoggedIn()
         );
         viewModel = new ViewModelProvider(this, factory).get(LessonViewModel.class);
 
         initializeManagers();
 
         transcriptAdapter = new TranscriptAdapter(this);
+        transcriptAdapter.setShowStatus(userSessionStore != null && userSessionStore.isLoggedIn());
         commentsAdapter = new CommentsAdapter();
         commentsAdapter.setCurrentUserId(userSessionStore.getUserId());
         commentsAdapter.setActionListener(commentActionListener);
@@ -282,6 +286,10 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
             releaseLessonMedia(true, false);
             submitDictationSkip();
         });
+        binding.buttonPrevious.setOnClickListener(v -> {
+            releaseLessonMedia(true, false);
+            viewModel.previousSentence();
+        });
         binding.buttonNext.setOnClickListener(v -> {
             releaseLessonMedia(true, false);
             viewModel.nextSentence();
@@ -296,6 +304,10 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
             viewModel.nextSentence();
         });
         binding.buttonSpeakingPlay.setOnClickListener(v -> handlePrimaryMediaAction(false));
+        binding.buttonSpeakingPrevious.setOnClickListener(v -> {
+            releaseLessonMedia(true, false);
+            viewModel.previousSentence();
+        });
         binding.buttonRecord.setOnClickListener(v -> handleRecordAction());
         binding.buttonPlayBestAudio.setOnClickListener(v -> {
             if (latestState != null) audioPlaybackManager.playUserAudio(latestState.bestAudioUrl);
@@ -351,14 +363,22 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         binding.textLessonTitle.setText(state.title);
         binding.textLessonSubtitle.setText(state.subtitle);
         binding.chipSentenceCounter.setText(state.sentenceCounter);
-        binding.progressLesson.setProgressCompat(state.progressPercent, true);
-        applyStatusChip(state.currentStatus);
+        if (viewModel.isLoggedIn()) {
+            binding.progressLesson.setVisibility(View.VISIBLE);
+            binding.progressLesson.setProgressCompat(state.progressPercent, true);
+            binding.chipStatus.setVisibility(View.VISIBLE);
+            applyStatusChip(state.currentStatus);
+        } else {
+            binding.progressLesson.setVisibility(View.GONE);
+            binding.chipStatus.setVisibility(View.GONE);
+        }
 
         binding.textHint.setText(state.hint);
-        binding.textSpeakingHint.setText(state.hint);
-        binding.textSpeakingHint.setVisibility(state.hint != null && !state.hint.isEmpty() ? View.VISIBLE : View.GONE);
+        binding.textHint.setVisibility(state.hint != null && !state.hint.isEmpty() ? View.VISIBLE : View.GONE);
         binding.textMediaSummary.setText(state.mediaSummary);
+        binding.textMediaSummary.setVisibility(state.mediaSummary != null && !state.mediaSummary.isEmpty() ? View.VISIBLE : View.GONE);
         binding.textTranscriptMediaSummary.setText(state.mediaSummary);
+        binding.textTranscriptMediaSummary.setVisibility(state.mediaSummary != null && !state.mediaSummary.isEmpty() ? View.VISIBLE : View.GONE);
         
         if (!safeInput().equals(state.inputText)) {
             binding.inputDictation.setText(state.inputText);
@@ -369,9 +389,10 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         
         binding.cardFeedback.setVisibility(state.showFeedback ? View.VISIBLE : View.GONE);
         binding.textFeedbackTitle.setText(state.feedbackTitle);
-        binding.textCorrectWords.setText(state.correctWords);
-        binding.textNewHint.setText(state.newHint);
-        binding.textMaskedWords.setText(state.maskedWords);
+        setTextOrHide(binding.textCorrectWords, state.correctWords);
+        setTextOrHide(binding.textNewHint, state.newHint);
+        setTextOrHide(binding.textMaskedWords, state.maskedWords);
+        binding.buttonPrevious.setVisibility(state.hasPreviousSentence && state.selectedTab == LessonViewModel.TAB_DICTATION ? View.VISIBLE : View.GONE);
         binding.buttonNext.setVisibility(state.showNextButton && state.selectedTab == LessonViewModel.TAB_DICTATION ? View.VISIBLE : View.GONE);
 
         binding.textTranscriptSentence.setText(state.transcriptSentence);
@@ -383,6 +404,8 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         binding.progressTranscript.setVisibility(state.videoLesson ? View.GONE : View.VISIBLE);
         binding.buttonReplay.setVisibility(state.videoLesson ? View.GONE : View.VISIBLE);
         binding.videoPlayerCard.setVisibility(state.videoLesson && youtubePlaybackManager.supportsEmbeddedYoutubePlayback() ? View.VISIBLE : View.GONE);
+        binding.buttonTranscriptPrev.setVisibility(state.hasPreviousSentence ? View.VISIBLE : View.INVISIBLE);
+        binding.buttonTranscriptNext.setVisibility(state.hasNextSentence ? View.VISIBLE : View.INVISIBLE);
         
         binding.buttonPlay.setImageResource(state.playing ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
         binding.buttonTranscriptPlay.setImageResource(state.playing ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
@@ -405,9 +428,17 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         binding.textCurrentScore.setText(state.currentScore);
         binding.buttonPlayCurrentAudio.setVisibility(state.currentUserAudioUrl != null && !state.currentUserAudioUrl.trim().isEmpty() ? View.VISIBLE : View.GONE);
         binding.textCurrentTranscript.setText(state.currentTranscript);
+        binding.buttonSpeakingPrevious.setVisibility(state.hasPreviousSentence ? View.VISIBLE : View.GONE);
         binding.buttonTryAgain.setVisibility(state.showSpeakingActions ? View.VISIBLE : View.GONE);
-        binding.buttonSpeakingNext.setVisibility(state.showSpeakingActions ? View.VISIBLE : View.GONE);
+        binding.buttonSpeakingNext.setVisibility(state.showSpeakingActions && state.hasNextSentence ? View.VISIBLE : View.GONE);
         binding.buttonSpeakingNext.setEnabled(state.speakingNextEnabled);
+        binding.textCommentsTitle.setText(state.commentCount == 0
+                ? getString(R.string.lesson_comments_zero)
+                : getResources().getQuantityString(
+                R.plurals.lesson_comments_count,
+                state.commentCount,
+                state.commentCount
+        ));
         binding.buttonWriteComment.setText(userSessionStore.isLoggedIn() ? R.string.label_write_comment : R.string.label_sign_in_to_comment);
         commentsAdapter.submitList(state.comments);
 
@@ -415,6 +446,14 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         binding.transcriptContainer.setVisibility(state.selectedTab == LessonViewModel.TAB_TRANSCRIPT ? View.VISIBLE : View.GONE);
         binding.speakingContainer.setVisibility(state.selectedTab == LessonViewModel.TAB_SPEAKING ? View.VISIBLE : View.GONE);
         binding.commentsCard.setVisibility(state.selectedTab == LessonViewModel.TAB_SPEAKING ? View.GONE : View.VISIBLE);
+    }
+
+    private void setTextOrHide(@NonNull TextView view, String value) {
+        boolean visible = value != null && !value.trim().isEmpty();
+        view.setVisibility(visible ? View.VISIBLE : View.GONE);
+        if (visible) {
+            view.setText(value);
+        }
     }
 
     private void applyStatusChip(SentenceStatus status) {
@@ -814,7 +853,7 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
     }
 
     private void submitComment(long sentenceId, Long parentCommentId, String content) {
-        CreateCommentRequestDto request = new CreateCommentRequestDto(sentenceId, parentCommentId, content, userSessionStore.getUserId());
+        CreateCommentRequestDto request = new CreateCommentRequestDto(sentenceId, userSessionStore.getUserId(), content, parentCommentId);
         mobileApiService.addComment(request).enqueue(new Callback<MobileBootstrapCommentDto>() {
             @Override
             public void onResponse(@NonNull Call<MobileBootstrapCommentDto> call, @NonNull Response<MobileBootstrapCommentDto> response) {

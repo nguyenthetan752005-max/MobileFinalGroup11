@@ -34,6 +34,8 @@ public class ExploreFragment extends Fragment implements CategoryAdapter.Listene
 
     private FragmentExploreBinding binding;
     private Listener listener;
+    private ExploreViewModel viewModel;
+    private Boolean lastSyncing;
 
     public static ExploreFragment newInstance() {
         return new ExploreFragment();
@@ -64,7 +66,7 @@ public class ExploreFragment extends Fragment implements CategoryAdapter.Listene
 
         TungTungApplication application = (TungTungApplication) requireActivity().getApplication();
         ExploreViewModelFactory factory = new ExploreViewModelFactory(application.getAppContainer().getExploreCatalogUseCase());
-        ExploreViewModel viewModel = new ViewModelProvider(this, factory).get(ExploreViewModel.class);
+        viewModel = new ViewModelProvider(this, factory).get(ExploreViewModel.class);
 
         binding.inputSearch.addTextChangedListener(new TextWatcher() {
             @Override
@@ -105,9 +107,10 @@ public class ExploreFragment extends Fragment implements CategoryAdapter.Listene
         });
 
         application.getAppContainer().getIsSyncing().observe(getViewLifecycleOwner(), syncing -> {
-            if (!syncing) {
+            if (Boolean.TRUE.equals(lastSyncing) && !Boolean.TRUE.equals(syncing) && viewModel != null) {
                 viewModel.forceLoad();
             }
+            lastSyncing = syncing;
         });
 
         viewModel.load();
@@ -156,8 +159,17 @@ public class ExploreFragment extends Fragment implements CategoryAdapter.Listene
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (viewModel != null) {
+            viewModel.forceLoad();
+        }
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
+        lastSyncing = null;
         binding = null;
     }
 }

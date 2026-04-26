@@ -31,12 +31,6 @@
                 android:scaleType="centerCrop"
                 android:visibility="gone" />
 
-            <ImageView
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_nav_explore"
-                android:tint="?attr/ttColorPrimary" />
         </com.google.android.material.card.MaterialCardView>
 
         <LinearLayout

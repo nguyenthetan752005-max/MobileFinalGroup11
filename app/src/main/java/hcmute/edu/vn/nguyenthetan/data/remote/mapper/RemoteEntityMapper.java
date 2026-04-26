@@ -114,6 +114,30 @@ public final class RemoteEntityMapper {
         return entities;
     }
 
+    public static List<LessonEntity> toLessonEntities(List<MobileLessonDto> dtos, String fallbackSectionId) {
+        List<LessonEntity> entities = new ArrayList<>();
+        if (dtos == null) {
+            return entities;
+        }
+        long resolvedFallbackSectionId = resolveId(fallbackSectionId);
+        for (MobileLessonDto dto : dtos) {
+            long resolvedSectionId = resolveId(dto.sectionId);
+            entities.add(new LessonEntity(
+                    resolveId(dto.id),
+                    resolvedSectionId > 0L ? resolvedSectionId : resolvedFallbackSectionId,
+                    dto.title,
+                    dto.level,
+                    resolveLessonPracticeType(dto),
+                    normalizeContentType(dto.contentType),
+                    dto.totalSentences,
+                    dto.passThreshold > 0 ? dto.passThreshold : 70,
+                    dto.youtubeVideoId,
+                    dto.orderIndex
+            ));
+        }
+        return entities;
+    }
+
     public static List<LessonEntity> toLessonEntities(List<MobileLessonDto> dtos, List<SectionEntity> sections, List<CategoryEntity> categories) {
         List<LessonEntity> entities = new ArrayList<>();
         if (dtos == null) {
@@ -358,7 +382,7 @@ public final class RemoteEntityMapper {
         }
     }
 
-    private static long resolveId(String rawId) {
+    public static long resolveId(String rawId) {
         if (rawId == null || rawId.trim().isEmpty()) {
             return 0L;
         }

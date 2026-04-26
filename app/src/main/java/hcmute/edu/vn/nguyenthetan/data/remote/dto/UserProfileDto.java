@@ -30,6 +30,18 @@ public class UserProfileDto {
     @SerializedName(value = "activeTime30d", alternate = {"active_time_30d"})
     public int activeTime30d;
 
+    @SerializedName(value = "currentStreak", alternate = {"current_streak"})
+    public int currentStreak;
+
+    @SerializedName(value = "longestStreak", alternate = {"longest_streak"})
+    public int longestStreak;
+
+    @SerializedName(value = "missedDays", alternate = {"missed_days"})
+    public Integer missedDays;
+
+    @SerializedName(value = "weeklyActivity", alternate = {"weekly_activity"})
+    public java.util.List<Integer> weeklyActivity;
+
     @SerializedName(value = "notificationsEnabled", alternate = {"notifications_enabled"})
     public Boolean notificationsEnabled;
 

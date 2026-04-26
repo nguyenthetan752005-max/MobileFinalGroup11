@@ -34,9 +34,9 @@ public class RemoteCategorySyncManager {
         try {
             Response<List<MobileCategoryDto>> response = RetryUtil.retryWithBackoff(
                     () -> mobileApiService.getCategories().execute(),
-                    3,
-                    700L,
-                    2500L,
+                    2,
+                    300L,
+                    1000L,
                     2.0
             );
             if (!response.isSuccessful() || response.body() == null) {
@@ -60,9 +60,9 @@ public class RemoteCategorySyncManager {
         try {
             Response<MobileCategoryCollectionDto> response = RetryUtil.retryWithBackoff(
                     () -> mobileApiService.getCategoryCollection(categorySlug).execute(),
-                    3,
-                    700L,
-                    2500L,
+                    2,
+                    300L,
+                    1000L,
                     2.0
             );
             if (!response.isSuccessful() || response.body() == null) {
@@ -82,7 +82,7 @@ public class RemoteCategorySyncManager {
             if (collection.sections != null) {
                 for (MobileCategoryCollectionSectionDto sectionDto : collection.sections) {
                     if (sectionDto.lessons != null) {
-                        lessons.addAll(RemoteEntityMapper.toLessonEntities(sectionDto.lessons));
+                        lessons.addAll(RemoteEntityMapper.toLessonEntities(sectionDto.lessons, sectionDto.id));
                     }
                 }
             }
@@ -101,9 +101,9 @@ public class RemoteCategorySyncManager {
         try {
             Response<List<hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileLessonDto>> response = RetryUtil.retryWithBackoff(
                     () -> mobileApiService.getSectionLessons(sectionId).execute(),
-                    3,
-                    700L,
-                    2500L,
+                    2,
+                    300L,
+                    1000L,
                     2.0
             );
             if (!response.isSuccessful() || response.body() == null) {
@@ -111,7 +111,7 @@ public class RemoteCategorySyncManager {
                 return;
             }
 
-            List<LessonEntity> lessons = RemoteEntityMapper.toLessonEntities(response.body());
+            List<LessonEntity> lessons = RemoteEntityMapper.toLessonEntities(response.body(), String.valueOf(sectionId));
             if (lessons.isEmpty()) return;
 
             database.runInTransaction(() -> {

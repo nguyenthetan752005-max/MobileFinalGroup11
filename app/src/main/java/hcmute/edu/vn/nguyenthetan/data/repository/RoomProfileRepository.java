@@ -3,6 +3,7 @@ package hcmute.edu.vn.nguyenthetan.data.repository;
 import java.util.ArrayList;
 import java.util.List;
 
+import hcmute.edu.vn.nguyenthetan.core.MascotMoodResolver;
 import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
 import hcmute.edu.vn.nguyenthetan.data.local.dao.user.DailyActivityDao;
 import hcmute.edu.vn.nguyenthetan.data.local.dao.user.ProfileDao;
@@ -49,6 +50,7 @@ public class RoomProfileRepository implements ProfileRepository {
                     0,
                     false,
                     false,
+                    MascotMoodResolver.Mood.ORIGIN.getId(),
                     "Guest mode",
                     "",
                     0,

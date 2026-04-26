@@ -17,4 +17,7 @@ public interface DailyActivityDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(List<DailyActivityEntity> entities);
+
+    @Query("DELETE FROM daily_activity_local")
+    void deleteAll();
 }

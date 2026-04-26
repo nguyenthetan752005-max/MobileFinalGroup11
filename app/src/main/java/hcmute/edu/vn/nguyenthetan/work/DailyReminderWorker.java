@@ -1,27 +1,26 @@
 package hcmute.edu.vn.nguyenthetan.work;
 
 import android.Manifest;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
-import hcmute.edu.vn.nguyenthetan.R;
+import hcmute.edu.vn.nguyenthetan.core.DailyReminderNotificationHelper;
 import hcmute.edu.vn.nguyenthetan.core.DailyReminderScheduler;
 import hcmute.edu.vn.nguyenthetan.core.NotificationPreferenceStore;
 import hcmute.edu.vn.nguyenthetan.core.ReminderSettingsStore;
-import hcmute.edu.vn.nguyenthetan.ui.main.MainActivity;
+import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
+import hcmute.edu.vn.nguyenthetan.core.di.DatabaseModule;
+import hcmute.edu.vn.nguyenthetan.core.di.NetworkModule;
+import hcmute.edu.vn.nguyenthetan.data.local.db.TungTungDatabase;
+import hcmute.edu.vn.nguyenthetan.data.remote.api.MobileApiService;
+import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteNotificationSyncManager;
 
 public class DailyReminderWorker extends Worker {
-
-    private static final int NOTIFICATION_ID = 1107;
 
     public DailyReminderWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -48,32 +47,45 @@ public class DailyReminderWorker extends Worker {
             return Result.success();
         }
 
-        showNotification(context);
+        DailyReminderNotificationHelper.ReminderNotificationRecord reminderRecord =
+                DailyReminderNotificationHelper.showReminderNotification(context);
+        recordReminderDelivery(context, reminderTime, reminderTimezone, reminderRecord);
 
         DailyReminderScheduler.schedule(context, reminderTime, reminderTimezone);
         return Result.success();
     }
 
-    private void showNotification(Context context) {
-        Intent openAppIntent = new Intent(context, MainActivity.class)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(
-                context,
-                0,
-                openAppIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
+    private void recordReminderDelivery(
+            @NonNull Context context,
+            String reminderTime,
+            String reminderTimezone,
+            DailyReminderNotificationHelper.ReminderNotificationRecord reminderRecord
+    ) {
+        UserSessionStore userSessionStore = new UserSessionStore(context);
+        if (!userSessionStore.isLoggedIn() || reminderRecord == null) {
+            return;
+        }
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, DailyReminderScheduler.CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle(context.getString(R.string.app_name))
-                .setContentText(context.getString(R.string.daily_reminder_notification_body))
-                .setStyle(new NotificationCompat.BigTextStyle()
-                        .bigText(context.getString(R.string.daily_reminder_notification_body)))
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setAutoCancel(true)
-                .setContentIntent(pendingIntent);
-
-        NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, builder.build());
+        TungTungDatabase database = DatabaseModule.createDatabase(context);
+        try {
+            MobileApiService mobileApiService = NetworkModule.createMobileApiService(userSessionStore);
+            RemoteNotificationSyncManager notificationSyncManager = new RemoteNotificationSyncManager(
+                    context,
+                    mobileApiService,
+                    database,
+                    userSessionStore
+            );
+            notificationSyncManager.recordReminderDelivery(
+                    reminderRecord.title,
+                    reminderRecord.body,
+                    reminderTime,
+                    reminderTimezone,
+                    reminderRecord.lessonId,
+                    reminderRecord.lessonTitle,
+                    System.currentTimeMillis()
+            );
+        } finally {
+            database.close();
+        }
     }
 }

@@ -13,6 +13,8 @@ import java.util.concurrent.Executors;
 
 public class LeaderboardViewModel extends ViewModel {
 
+    private static final String GENERIC_ERROR = "Could not load leaderboard. Please try again.";
+
     private final GetLeaderboardUseCase getLeaderboardUseCase;
     private final SyncLeaderboardUseCase syncLeaderboardUseCase;
     private final ExecutorService ioExecutor = Executors.newSingleThreadExecutor();
@@ -35,6 +37,11 @@ public class LeaderboardViewModel extends ViewModel {
         refreshInternal(false);
     }
 
+    public void forceLoad() {
+        loaded = false;
+        load();
+    }
+
     public void refresh() {
         refreshInternal(true);
     }
@@ -45,21 +52,43 @@ public class LeaderboardViewModel extends ViewModel {
         }
         uiState.postValue(LeaderboardUiState.loading());
         ioExecutor.execute(() -> {
+            Exception syncFailure = null;
             try {
                 if (forceReload) {
                     syncLeaderboardUseCase.execute();
                 }
+            } catch (Exception exception) {
+                syncFailure = exception;
+            }
+
+            try {
                 LeaderboardData data = getLeaderboardUseCase.execute();
                 boolean hasWeekly = data.getWeeklyEntries() != null && !data.getWeeklyEntries().isEmpty();
                 boolean hasMonthly = data.getMonthlyEntries() != null && !data.getMonthlyEntries().isEmpty();
+
+                if (!hasWeekly && !hasMonthly && !forceReload && syncFailure == null) {
+                    try {
+                        syncLeaderboardUseCase.execute();
+                        data = getLeaderboardUseCase.execute();
+                        hasWeekly = data.getWeeklyEntries() != null && !data.getWeeklyEntries().isEmpty();
+                        hasMonthly = data.getMonthlyEntries() != null && !data.getMonthlyEntries().isEmpty();
+                    } catch (Exception retryException) {
+                        syncFailure = retryException;
+                    }
+                }
+
                 if (!hasWeekly && !hasMonthly) {
-                    uiState.postValue(LeaderboardUiState.empty());
+                    if (syncFailure != null) {
+                        uiState.postValue(LeaderboardUiState.error(GENERIC_ERROR));
+                    } else {
+                        uiState.postValue(LeaderboardUiState.empty());
+                    }
                 } else {
                     uiState.postValue(LeaderboardUiState.success(data));
                     loaded = true;
                 }
             } catch (Exception exception) {
-                uiState.postValue(LeaderboardUiState.error(exception.getMessage()));
+                uiState.postValue(LeaderboardUiState.error(GENERIC_ERROR));
             }
         });
     }

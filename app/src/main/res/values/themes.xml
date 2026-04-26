@@ -105,4 +105,24 @@
         <item name="ttColorTextMuted">#9CA3AF</item>
         <item name="ttColorBorder">#FBCFE8</item>
     </style>
+
+    <style name="ThemeOverlay_TungTung_Palette_Scary">
+        <item name="colorPrimary">#EF4444</item>
+        <item name="colorSurface">#1A1A1A</item>
+        <item name="colorOnSurface">#E0E0E0</item>
+        <item name="colorSurfaceVariant">#262626</item>
+        <item name="colorOutline">#333333</item>
+        <item name="android:colorBackground">#0A0A0A</item>
+        <item name="android:navigationBarColor">#1A1A1A</item>
+        <item name="android:windowBackground">#0A0A0A</item>
+        <item name="ttColorPrimary">#EF4444</item>
+        <item name="ttColorPrimaryTint">#3B1010</item>
+        <item name="ttColorBackground">#0A0A0A</item>
+        <item name="ttColorSurface">#1A1A1A</item>
+        <item name="ttColorSurfaceAlt">#262626</item>
+        <item name="ttColorTextPrimary">#E0E0E0</item>
+        <item name="ttColorTextSecondary">#8A8A8A</item>
+        <item name="ttColorTextMuted">#5C5C5C</item>
+        <item name="ttColorBorder">#333333</item>
+    </style>
 </resources>

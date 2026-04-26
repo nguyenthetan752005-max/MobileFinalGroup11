@@ -2,48 +2,45 @@ package hcmute.edu.vn.nguyenthetan.ui.home;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
 
-import java.util.List;
 import java.util.Locale;
 
 import hcmute.edu.vn.nguyenthetan.R;
 import hcmute.edu.vn.nguyenthetan.TungTungApplication;
-import hcmute.edu.vn.nguyenthetan.core.ThemeColorResolver;
+import hcmute.edu.vn.nguyenthetan.core.MascotMoodResolver;
 import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
+import hcmute.edu.vn.nguyenthetan.data.remote.api.MobileApiService;
+import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileNotificationSummaryDto;
 import hcmute.edu.vn.nguyenthetan.databinding.FragmentHomeBinding;
 import hcmute.edu.vn.nguyenthetan.domain.model.home.HomeDashboard;
+import hcmute.edu.vn.nguyenthetan.ui.notification.NotificationCenterActivity;
 import hcmute.edu.vn.nguyenthetan.ui.onboarding.OnboardingActivity;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class HomeFragment extends Fragment {
 
     public interface Listener {
         void onContinueLearning(long lessonId);
-
-        void onOpenStreakDialog();
-
-        void onOpenSettings();
     }
 
     private FragmentHomeBinding binding;
-    private RecommendationAdapter recommendationAdapter;
     private Listener listener;
     private long currentLessonId;
     private UserSessionStore userSessionStore;
+    private MobileApiService mobileApiService;
+    private HomeViewModel viewModel;
+    private Boolean lastSyncing;
 
     public static HomeFragment newInstance() {
         return new HomeFragment();
@@ -68,32 +65,25 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        recommendationAdapter = new RecommendationAdapter();
-        binding.recyclerRecommendations.setLayoutManager(
-                new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        );
-        binding.recyclerRecommendations.setAdapter(recommendationAdapter);
-
         TungTungApplication application = (TungTungApplication) requireActivity().getApplication();
         userSessionStore = application.getAppContainer().getUserSessionStore();
+        mobileApiService = application.getAppContainer().getMobileApiService();
+        
         HomeViewModelFactory factory = new HomeViewModelFactory(application.getAppContainer().getHomeDashboardUseCase());
-        HomeViewModel viewModel = new ViewModelProvider(this, factory).get(HomeViewModel.class);
+        viewModel = new ViewModelProvider(this, factory).get(HomeViewModel.class);
+        
         viewModel.getDashboardState().observe(getViewLifecycleOwner(), this::render);
         viewModel.getLoadingState().observe(getViewLifecycleOwner(), loading ->
                 binding.progressHomeLoad.setVisibility(Boolean.TRUE.equals(loading) ? View.VISIBLE : View.GONE)
         );
-        application.getAppContainer().getSyncErrorMessage().observe(getViewLifecycleOwner(), message -> {
-            if (message != null && !message.trim().isEmpty()) {
-                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
-            }
-        });
         
         application.getAppContainer().getIsSyncing().observe(getViewLifecycleOwner(), syncing -> {
-            if (!syncing) {
+            if (Boolean.TRUE.equals(lastSyncing) && !Boolean.TRUE.equals(syncing)) {
                 viewModel.forceLoad();
             }
+            lastSyncing = syncing;
         });
-        
+
         viewModel.load();
 
         binding.buttonContinue.setOnClickListener(v -> {
@@ -104,97 +94,114 @@ public class HomeFragment extends Fragment {
         binding.buttonGuestCreateAccount.setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), OnboardingActivity.class))
         );
-        binding.cardStreak.setOnClickListener(v -> openStreakDialog());
-        binding.buttonStreak.setOnClickListener(v -> openStreakDialog());
-        binding.buttonNotification.setOnClickListener(v -> openSettings());
+        binding.buttonNotification.setOnClickListener(v ->
+                startActivity(new Intent(requireContext(), NotificationCenterActivity.class))
+        );
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        refreshNotificationBadge();
     }
 
     private void render(HomeDashboard dashboard) {
         boolean guestMode = userSessionStore == null || !userSessionStore.isLoggedIn();
-        currentLessonId = dashboard.getCurrentLesson().getLessonId();
+        
         binding.textGreeting.setText(dashboard.getGreeting());
-        binding.textSubtitle.setText(dashboard.getSubtitle());
+        String subtitle = dashboard.getSubtitle();
+        boolean hasSubtitle = subtitle != null && !subtitle.trim().isEmpty();
+        binding.textSubtitle.setVisibility(hasSubtitle ? View.VISIBLE : View.GONE);
+        binding.textSubtitle.setText(hasSubtitle ? subtitle : "");
+        
         binding.cardGuestPromo.setVisibility(guestMode ? View.VISIBLE : View.GONE);
         binding.textGuestPromoTitle.setText(R.string.home_guest_promo_title);
         binding.textGuestPromoBody.setText(R.string.home_guest_promo_body);
-        binding.textStreakValue.setText(guestMode
-                ? getString(R.string.home_guest_streak_value)
-                : String.format(Locale.US, "%d days", dashboard.getStreakSummary().getCurrentDays()));
-        binding.textMood.setText(guestMode
-                ? getString(R.string.home_guest_mood)
-                : dashboard.getStreakSummary().getActiveMood());
-        binding.textCurrentLessonTitle.setText(dashboard.getCurrentLesson().getTitle());
-        binding.progressCurrentLesson.setMax(Math.max(1, dashboard.getCurrentLesson().getTotalSentences()));
-        binding.progressCurrentLesson.setProgressCompat(guestMode ? 0 : dashboard.getCurrentLesson().getCompletedSentences(), true);
-        binding.textLessonProgress.setText(guestMode
-                ? getString(R.string.home_guest_progress)
-                : getString(
-                R.string.lesson_progress_format,
-                dashboard.getCurrentLesson().getCompletedSentences(),
-                dashboard.getCurrentLesson().getTotalSentences()
-        ));
-        binding.chipPrimaryMode.setText(guestMode ? getString(R.string.home_guest_streak_title) : dashboard.getCurrentLesson().getPrimaryMode());
-        binding.chipSecondaryMode.setText(guestMode ? getString(R.string.button_create_account) : dashboard.getCurrentLesson().getSecondaryMode());
-        binding.textTodayValue.setText(guestMode ? getString(R.string.home_guest_today) : dashboard.getStudyStats().getToday());
-        binding.textWeekValue.setText(guestMode ? getString(R.string.home_guest_week) : dashboard.getStudyStats().getThisWeek());
-        binding.textBestValue.setText(guestMode ? getString(R.string.home_guest_best) : String.valueOf(dashboard.getStudyStats().getBestStreak()));
-        renderStreakDots(guestMode ? java.util.Collections.emptyList() : dashboard.getStreakSummary().getWeekStatus());
-        binding.buttonContinue.setText(guestMode ? R.string.button_start_listening : R.string.button_continue);
-        recommendationAdapter.submitList(dashboard.getRecommendations());
-    }
+        
+        binding.cardStreak.setVisibility(guestMode ? View.GONE : View.VISIBLE);
+        binding.textStreakValue.setText(String.format(Locale.US, "%d days", dashboard.getStreakSummary().getCurrentDays()));
 
-    private void renderStreakDots(List<Boolean> statuses) {
-        binding.streakDotsContainer.removeAllViews();
-        int dotSize = dp(18);
-        int marginEnd = dp(8);
-        for (boolean studied : statuses) {
-            View dot = new View(requireContext());
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(dotSize, dotSize);
-            params.setMarginEnd(marginEnd);
-            dot.setLayoutParams(params);
+        MascotMoodResolver.Mood activeMood = dashboard.getStreakSummary().getActiveMood();
+        binding.textMood.setText(dashboard.getStreakSummary().getActiveMoodLabel());
 
-            GradientDrawable background = new GradientDrawable();
-            background.setShape(GradientDrawable.OVAL);
-            background.setColor(studied
-                    ? ThemeColorResolver.resolveColor(requireContext(), R.attr.ttColorPrimary)
-                    : ThemeColorResolver.resolveColor(requireContext(), R.attr.ttColorSurface));
-            background.setStroke(dp(2), studied
-                    ? ThemeColorResolver.resolveColor(requireContext(), R.attr.ttColorPrimary)
-                    : ThemeColorResolver.resolveColor(requireContext(), R.attr.ttColorBorder));
-            dot.setBackground(background);
+        if (!guestMode && dashboard.getCurrentLesson() != null) {
+            binding.layoutContinueLearning.setVisibility(View.VISIBLE);
+            currentLessonId = dashboard.getCurrentLesson().getLessonId();
+            binding.textCurrentLessonTitle.setText(dashboard.getCurrentLesson().getTitle());
+            binding.progressCurrentLesson.setMax(Math.max(1, dashboard.getCurrentLesson().getTotalSentences()));
+            binding.progressCurrentLesson.setProgressCompat(dashboard.getCurrentLesson().getCompletedSentences(), true);
 
-            binding.streakDotsContainer.addView(dot);
+            binding.textLessonProgress.setText(getString(
+                    R.string.lesson_progress_format,
+                    dashboard.getCurrentLesson().getCompletedSentences(),
+                    dashboard.getCurrentLesson().getTotalSentences()
+            ));
+
+            binding.chipPrimaryMode.setText(dashboard.getCurrentLesson().getPrimaryMode());
+            binding.chipSecondaryMode.setText(dashboard.getCurrentLesson().getSecondaryMode());
+            binding.buttonContinue.setText(R.string.button_continue);
+        } else {
+            binding.layoutContinueLearning.setVisibility(View.GONE);
         }
+
+        binding.layoutStudyStats.setVisibility(guestMode ? View.GONE : View.VISIBLE);
+
+        binding.textTodayValue.setText(dashboard.getStudyStats().getToday());
+        binding.textWeekValue.setText(dashboard.getStudyStats().getThisWeek());
+        binding.textBestValue.setText(String.valueOf(dashboard.getStudyStats().getBestStreak()));
+
+        if (activeMood != null) {
+            binding.imageMascot.setImageResource(activeMood.getDrawableRes());
+            binding.textMood.setText(activeMood.getLabel());
+        }
+
+        binding.layoutHomeContent.setVisibility(View.VISIBLE);
     }
 
-    private void openStreakDialog() {
-        if (userSessionStore == null || !userSessionStore.isLoggedIn()) {
-            Toast.makeText(requireContext(), R.string.guest_sign_in_prompt, Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(requireContext(), OnboardingActivity.class));
+    private void refreshNotificationBadge() {
+        if (binding == null) {
             return;
         }
-        if (listener != null) {
-            listener.onOpenStreakDialog();
+        if (userSessionStore == null || !userSessionStore.isLoggedIn()) {
+            renderNotificationBadge(0L);
+            return;
         }
+        mobileApiService.getNotificationSummary().enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<MobileNotificationSummaryDto> call, @NonNull Response<MobileNotificationSummaryDto> response) {
+                if (!isAdded() || binding == null) {
+                    return;
+                }
+                MobileNotificationSummaryDto summary = response.body();
+                long unreadCount = !response.isSuccessful() || summary == null ? 0L : summary.unreadCount;
+                renderNotificationBadge(unreadCount);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<MobileNotificationSummaryDto> call, @NonNull Throwable throwable) {
+                if (binding != null) {
+                    renderNotificationBadge(0L);
+                }
+            }
+        });
     }
 
-    private void openSettings() {
-        if (listener != null) {
-            listener.onOpenSettings();
+    private void renderNotificationBadge(long unreadCount) {
+        if (binding == null) {
+            return;
         }
-    }
-
-    private int dp(int value) {
-        return (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                value,
-                getResources().getDisplayMetrics()
-        );
+        if (unreadCount <= 0L) {
+            binding.textNotificationBadge.setVisibility(View.GONE);
+            return;
+        }
+        binding.textNotificationBadge.setVisibility(View.VISIBLE);
+        binding.textNotificationBadge.setText(unreadCount > 9L ? "9+" : String.valueOf(unreadCount));
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        lastSyncing = null;
         binding = null;
     }
 }

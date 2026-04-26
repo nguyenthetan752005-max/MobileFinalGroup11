@@ -42,6 +42,11 @@ public class ProfileViewModel extends ViewModel {
         loaded = true;
     }
 
+    public void forceLoad() {
+        loaded = false;
+        load();
+    }
+
     @Override
     protected void onCleared() {
         executorService.shutdownNow();

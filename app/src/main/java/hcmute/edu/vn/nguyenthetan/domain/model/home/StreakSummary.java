@@ -2,6 +2,7 @@ package hcmute.edu.vn.nguyenthetan.domain.model.home;
 
 import java.util.Collections;
 import java.util.List;
+import hcmute.edu.vn.nguyenthetan.core.MascotMoodResolver;
 import hcmute.edu.vn.nguyenthetan.domain.model.profile.MoodState;
 
 
@@ -10,7 +11,7 @@ public class StreakSummary {
     private final int currentDays;
     private final int missedDays;
     private final boolean broken;
-    private final String activeMood;
+    private final MascotMoodResolver.Mood activeMood;
     private final String quote;
     private final List<Boolean> weekStatus;
     private final List<MoodState> moods;
@@ -19,7 +20,7 @@ public class StreakSummary {
             int currentDays,
             int missedDays,
             boolean broken,
-            String activeMood,
+            MascotMoodResolver.Mood activeMood,
             String quote,
             List<Boolean> weekStatus,
             List<MoodState> moods
@@ -45,8 +46,12 @@ public class StreakSummary {
         return broken;
     }
 
-    public String getActiveMood() {
+    public MascotMoodResolver.Mood getActiveMood() {
         return activeMood;
+    }
+
+    public String getActiveMoodLabel() {
+        return activeMood == null ? "" : activeMood.getLabel();
     }
 
     public String getQuote() {

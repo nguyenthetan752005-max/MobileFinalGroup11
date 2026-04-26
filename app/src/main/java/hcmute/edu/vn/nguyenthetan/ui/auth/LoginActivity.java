@@ -59,7 +59,7 @@ public class LoginActivity extends ThemedActivity {
         binding.buttonLogin.setOnClickListener(v -> submitLogin());
         binding.buttonGoogleLogin.setOnClickListener(v -> {
             if (ensureNetworkAvailable()) {
-                checkServerAndRun(R.string.loading_checking_server, googleAuthSupport::launch);
+                googleAuthSupport.launch();
             }
         });
         binding.textCreateAccount.setOnClickListener(v -> {
@@ -82,8 +82,8 @@ public class LoginActivity extends ThemedActivity {
             return;
         }
 
-        checkServerAndRun(R.string.loading_signing_in, () ->
-                mobileApiService.login(new LoginRequestDto(username, password)).enqueue(new Callback<AuthResponseDto>() {
+        setLoading(true, R.string.loading_signing_in);
+        mobileApiService.login(new LoginRequestDto(username, password)).enqueue(new Callback<AuthResponseDto>() {
                     @Override
                     public void onResponse(Call<AuthResponseDto> call, Response<AuthResponseDto> response) {
                         setLoading(false, R.string.loading_signing_in);
@@ -93,7 +93,10 @@ public class LoginActivity extends ThemedActivity {
                             }
                             Toast.makeText(
                                     LoginActivity.this,
-                                    AuthResponseHelper.resolveErrorMessage(response, "Login failed"),
+                                    AuthResponseHelper.resolveErrorMessage(
+                                            response,
+                                            getString(R.string.error_auth_login_failed)
+                                    ),
                                     Toast.LENGTH_SHORT
                             ).show();
                             return;
@@ -106,10 +109,9 @@ public class LoginActivity extends ThemedActivity {
                     @Override
                     public void onFailure(Call<AuthResponseDto> call, Throwable throwable) {
                         setLoading(false, R.string.loading_signing_in);
-                        Toast.makeText(LoginActivity.this, "Login error: " + throwable.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LoginActivity.this, R.string.error_connection_generic, Toast.LENGTH_SHORT).show();
                     }
-                })
-        );
+                });
     }
 
     private void setLoading(boolean loading, int messageRes) {
@@ -145,7 +147,10 @@ public class LoginActivity extends ThemedActivity {
                     }
                     Toast.makeText(
                             LoginActivity.this,
-                            AuthResponseHelper.resolveErrorMessage(response, "Google login failed"),
+                            AuthResponseHelper.resolveErrorMessage(
+                                    response,
+                                    getString(R.string.error_google_login_failed)
+                            ),
                             Toast.LENGTH_SHORT
                     ).show();
                     return;
@@ -163,7 +168,7 @@ public class LoginActivity extends ThemedActivity {
             public void onFailure(Call<AuthResponseDto> call, Throwable throwable) {
                 setLoading(false, R.string.loading_signing_in);
                 Log.e(TAG, "Google auth network failure.", throwable);
-                Toast.makeText(LoginActivity.this, "Google login error: " + throwable.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(LoginActivity.this, R.string.error_connection_generic, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -182,6 +187,7 @@ public class LoginActivity extends ThemedActivity {
         }
 
         userSessionStore.saveUser(body.userId, body.username, body.email, body.token);
+        application.getAppContainer().refreshCurrentUserProfile();
         Log.d(TAG, "User session saved. Navigating to MainActivity.");
         Toast.makeText(this, body.message == null ? "Login successful." : body.message, Toast.LENGTH_SHORT).show();
         startActivity(new Intent(this, MainActivity.class));

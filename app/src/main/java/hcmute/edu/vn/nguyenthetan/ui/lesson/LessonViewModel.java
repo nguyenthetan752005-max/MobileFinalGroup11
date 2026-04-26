@@ -23,6 +23,7 @@ import hcmute.edu.vn.nguyenthetan.domain.usecase.comment.SyncSentenceCommentsUse
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.CheckDictationAnswerUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.comment.GetCommentsUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.GetLessonProgressUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncLessonProgressUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.GetLessonSessionUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SaveSentenceStatusUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SaveSpeakingAttemptUseCase;
@@ -40,6 +41,8 @@ public class LessonViewModel extends ViewModel {
         public String mediaSummary;
         public String sentenceCounter;
         public SentenceStatus currentStatus;
+        public boolean hasPreviousSentence;
+        public boolean hasNextSentence;
         public int progressPercent;
         public String hint;
         public String inputText;
@@ -77,17 +80,20 @@ public class LessonViewModel extends ViewModel {
         public String currentUserAudioUrl;
         public boolean showSpeakingActions;
         public boolean speakingNextEnabled;
+        public int commentCount;
         public List<Comment> comments;
     }
 
     private final GetLessonSessionUseCase getLessonSessionUseCase;
     private final GetLessonProgressUseCase getLessonProgressUseCase;
+    private final SyncLessonProgressUseCase syncLessonProgressUseCase;
     private final GetCommentsUseCase getCommentsUseCase;
     private final SyncSentenceCommentsUseCase syncSentenceCommentsUseCase;
     private final CheckDictationAnswerUseCase checkDictationAnswerUseCase;
     private final SaveSentenceStatusUseCase saveSentenceStatusUseCase;
     private final SaveSpeakingAttemptUseCase saveSpeakingAttemptUseCase;
     private final long lessonId;
+    private final boolean loggedIn;
     private final MutableLiveData<UiState> uiState = new MutableLiveData<>();
     private final MutableLiveData<Boolean> loadingState = new MutableLiveData<>(false);
     private final Map<Long, SentenceStatus> sentenceStatuses = new LinkedHashMap<>();
@@ -112,21 +118,25 @@ public class LessonViewModel extends ViewModel {
     public LessonViewModel(
             GetLessonSessionUseCase getLessonSessionUseCase,
             GetLessonProgressUseCase getLessonProgressUseCase,
+            SyncLessonProgressUseCase syncLessonProgressUseCase,
             GetCommentsUseCase getCommentsUseCase,
             SyncSentenceCommentsUseCase syncSentenceCommentsUseCase,
             CheckDictationAnswerUseCase checkDictationAnswerUseCase,
             SaveSentenceStatusUseCase saveSentenceStatusUseCase,
             SaveSpeakingAttemptUseCase saveSpeakingAttemptUseCase,
-            long lessonId
+            long lessonId,
+            boolean loggedIn
     ) {
         this.getLessonSessionUseCase = getLessonSessionUseCase;
         this.getLessonProgressUseCase = getLessonProgressUseCase;
+        this.syncLessonProgressUseCase = syncLessonProgressUseCase;
         this.getCommentsUseCase = getCommentsUseCase;
         this.syncSentenceCommentsUseCase = syncSentenceCommentsUseCase;
         this.checkDictationAnswerUseCase = checkDictationAnswerUseCase;
         this.saveSentenceStatusUseCase = saveSentenceStatusUseCase;
         this.saveSpeakingAttemptUseCase = saveSpeakingAttemptUseCase;
         this.lessonId = lessonId;
+        this.loggedIn = loggedIn;
     }
 
     public LiveData<UiState> getUiState() {
@@ -156,13 +166,13 @@ public class LessonViewModel extends ViewModel {
                 loadingState.postValue(false);
                 return;
             }
-            if (sentenceStatuses.get(getCurrentSentence().getId()) == SentenceStatus.NOT_STARTED) {
-                sentenceStatuses.put(getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
-                saveSentenceStatusUseCase.execute(lessonId, getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
+            if (loggedIn) {
+                updateSentenceStatus(getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
             }
             comments = getCommentsUseCase.execute(getCurrentSentence().getId());
             loaded = true;
             publish();
+            syncCommentsForSentence(getCurrentSentence().getId());
             loadingState.postValue(false);
         });
     }
@@ -225,19 +235,16 @@ public class LessonViewModel extends ViewModel {
         }
         feedback = checkDictationAnswerUseCase.execute(getCurrentSentence(), inputText);
         if (feedback.isCorrect()) {
-            sentenceStatuses.put(getCurrentSentence().getId(), SentenceStatus.COMPLETED);
-            saveSentenceStatusUseCase.execute(lessonId, getCurrentSentence().getId(), SentenceStatus.COMPLETED);
+            updateSentenceStatus(getCurrentSentence().getId(), SentenceStatus.COMPLETED);
             inputText = feedback.getFullAnswer();
         } else {
-            sentenceStatuses.put(getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
-            saveSentenceStatusUseCase.execute(lessonId, getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
+            updateSentenceStatus(getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
         }
         publish();
     }
 
     public void skip() {
-        sentenceStatuses.put(getCurrentSentence().getId(), SentenceStatus.SKIPPED);
-        saveSentenceStatusUseCase.execute(lessonId, getCurrentSentence().getId(), SentenceStatus.SKIPPED);
+        updateSentenceStatus(getCurrentSentence().getId(), SentenceStatus.SKIPPED);
         feedback = new DictationFeedback(false, "Skipped. Review the answer before moving on.", getCurrentSentence().getContent(), "", "", "");
         publish();
     }
@@ -252,13 +259,7 @@ public class LessonViewModel extends ViewModel {
 
     public void refreshComments() {
         if (getCurrentSentence() != null) {
-            long currentSentenceId = getCurrentSentence().getId();
-            syncSentenceCommentsUseCase.execute(currentSentenceId, () -> {
-                if (getCurrentSentence() != null && getCurrentSentence().getId() == currentSentenceId) {
-                    comments = getCommentsUseCase.execute(currentSentenceId);
-                    publish();
-                }
-            }, null);
+            syncCommentsForSentence(getCurrentSentence().getId());
         }
     }
 
@@ -272,27 +273,23 @@ public class LessonViewModel extends ViewModel {
         inputText = "";
         currentAttempt = null;
         bestAttempt = null;
-        if (sentenceStatuses.get(getCurrentSentence().getId()) == SentenceStatus.NOT_STARTED) {
-            sentenceStatuses.put(getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
-            saveSentenceStatusUseCase.execute(lessonId, getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
+        if (loggedIn) {
+            updateSentenceStatus(getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
         }
         comments = getCommentsUseCase.execute(getCurrentSentence().getId());
         publish();
+        syncCommentsForSentence(getCurrentSentence().getId());
     }
-
 
     public void applyDictationFeedback(DictationFeedback result, boolean markCompleted, boolean markSkipped) {
         feedback = result;
         if (result != null && result.isCorrect() && markCompleted) {
-            sentenceStatuses.put(getCurrentSentence().getId(), SentenceStatus.COMPLETED);
-            saveSentenceStatusUseCase.execute(lessonId, getCurrentSentence().getId(), SentenceStatus.COMPLETED);
+            updateSentenceStatus(getCurrentSentence().getId(), SentenceStatus.COMPLETED);
             inputText = result.getFullAnswer();
         } else if (markSkipped) {
-            sentenceStatuses.put(getCurrentSentence().getId(), SentenceStatus.SKIPPED);
-            saveSentenceStatusUseCase.execute(lessonId, getCurrentSentence().getId(), SentenceStatus.SKIPPED);
+            updateSentenceStatus(getCurrentSentence().getId(), SentenceStatus.SKIPPED);
         } else {
-            sentenceStatuses.put(getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
-            saveSentenceStatusUseCase.execute(lessonId, getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
+            updateSentenceStatus(getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
         }
         publish();
     }
@@ -337,9 +334,9 @@ public class LessonViewModel extends ViewModel {
         }
         saveSpeakingAttemptUseCase.execute(lessonId, getCurrentSentence().getId(), currentAttempt, lessonSession.getPassThreshold());
         if (score >= lessonSession.getPassThreshold()) {
-            sentenceStatuses.put(getCurrentSentence().getId(), SentenceStatus.COMPLETED);
+            updateSentenceStatus(getCurrentSentence().getId(), SentenceStatus.COMPLETED);
         } else {
-            sentenceStatuses.put(getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
+            updateSentenceStatus(getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
         }
         publish();
     }
@@ -395,6 +392,22 @@ public class LessonViewModel extends ViewModel {
         publish();
     }
 
+    public boolean isLoggedIn() {
+        return loggedIn;
+    }
+
+    private void updateSentenceStatus(long sentenceId, SentenceStatus requestedStatus) {
+        if (!loggedIn) {
+            return;
+        }
+        SentenceStatus currentStatus = sentenceStatuses.get(sentenceId);
+        if (currentStatus == SentenceStatus.COMPLETED) {
+            return;
+        }
+        sentenceStatuses.put(sentenceId, requestedStatus);
+        saveSentenceStatusUseCase.execute(lessonId, sentenceId, requestedStatus);
+    }
+
     private Sentence getCurrentSentence() {
         return lessonSession.getSentences().get(currentIndex);
     }
@@ -421,6 +434,8 @@ public class LessonViewModel extends ViewModel {
         state.mediaSummary = buildMediaSummary(videoLesson, current);
         state.sentenceCounter = String.format(Locale.US, "%d/%d", currentIndex + 1, lessonSession.getSentences().size());
         state.currentStatus = sentenceStatuses.get(current.getId());
+        state.hasPreviousSentence = currentIndex > 0;
+        state.hasNextSentence = currentIndex < lessonSession.getSentences().size() - 1;
         state.progressPercent = calculateProgressPercent();
         state.hint = resolveHintText(current);
         state.inputText = inputText;
@@ -429,7 +444,8 @@ public class LessonViewModel extends ViewModel {
         state.correctWords = feedback != null ? feedback.getCorrectWords() : "";
         state.newHint = feedback != null ? feedback.getNewHint() : "";
         state.maskedWords = feedback != null ? feedback.getMaskedWords() : "";
-        state.showNextButton = feedback != null && currentIndex < lessonSession.getSentences().size() - 1;
+        boolean currentCompleted = state.currentStatus == SentenceStatus.COMPLETED;
+        state.showNextButton = (feedback != null || currentCompleted) && state.hasNextSentence;
         state.transcriptSentence = current.getContent();
         state.transcriptRows = buildTranscriptRows();
         state.playbackTime = formatTime(playbackPosition) + " / " + formatTime(effectiveDuration);
@@ -476,6 +492,7 @@ public class LessonViewModel extends ViewModel {
                 : null;
         state.showSpeakingActions = currentAttempt != null;
         state.speakingNextEnabled = !speakingBusy && currentAttempt != null && currentAttempt.getScore() >= lessonSession.getPassThreshold();
+        state.commentCount = countComments(comments);
         state.comments = comments;
         uiState.postValue(state);
     }
@@ -569,10 +586,7 @@ public class LessonViewModel extends ViewModel {
             }
             return "Video clip from YouTube";
         }
-        if (currentSentence.getAudioUrl() != null && !currentSentence.getAudioUrl().trim().isEmpty()) {
-            return "Audio sentence ready";
-        }
-        return "No media source for this sentence";
+        return "";
     }
 
     private String resolveHintText(Sentence current) {
@@ -590,12 +604,30 @@ public class LessonViewModel extends ViewModel {
                     formatted.add(pn.substring(0, 1).toUpperCase() + pn.substring(1));
                 }
             }
-            hint.append("Proper Nouns: ").append(android.text.TextUtils.join(", ", formatted));
-        }
-        if (hint.length() == 0) {
-            hint.append("No hints available for this sentence.");
+            hint.append("Hint: ").append(android.text.TextUtils.join(", ", formatted));
         }
         return hint.toString();
+    }
+
+    private void syncCommentsForSentence(long sentenceId) {
+        syncSentenceCommentsUseCase.execute(sentenceId, () -> {
+            if (getCurrentSentence() != null && getCurrentSentence().getId() == sentenceId) {
+                comments = getCommentsUseCase.execute(sentenceId);
+                publish();
+            }
+        }, null);
+    }
+
+    private int countComments(List<Comment> items) {
+        if (items == null || items.isEmpty()) {
+            return 0;
+        }
+        int total = 0;
+        for (Comment comment : items) {
+            total++;
+            total += countComments(comment.getReplies());
+        }
+        return total;
     }
 
     private void resetPlaybackInternal() {

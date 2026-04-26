@@ -6,10 +6,12 @@
     android:background="?attr/ttColorBackground">
 
     <LinearLayout
+        android:id="@+id/layoutHomeContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="@dimen/screen_padding">
+        android:padding="@dimen/screen_padding"
+        android:visibility="invisible">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -26,24 +28,36 @@
                 android:textSize="28sp"
                 android:textStyle="bold" />
 
-            <ImageButton
-                android:id="@+id/buttonNotification"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/settings_notifications_title"
-                android:src="@drawable/ic_notification"
-                android:tint="?attr/ttColorTextSecondary" />
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
 
-            <ImageButton
-                android:id="@+id/buttonStreak"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginStart="8dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@null"
-                android:src="@drawable/ic_streak_fire"
-                android:tint="?attr/ttColorPrimary" />
+                <ImageButton
+                    android:id="@+id/buttonNotification"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/settings_notifications_title"
+                    android:src="@drawable/ic_notification"
+                    android:tint="?attr/ttColorTextSecondary" />
+
+                <TextView
+                    android:id="@+id/textNotificationBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|end"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginEnd="1dp"
+                    android:background="@drawable/bg_notification_badge"
+                    android:gravity="center"
+                    android:minWidth="18dp"
+                    android:paddingHorizontal="5dp"
+                    android:paddingVertical="1dp"
+                    android:textColor="@android:color/white"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+            </FrameLayout>
         </LinearLayout>
 
         <TextView
@@ -159,115 +173,129 @@
                         android:textSize="30sp"
                         android:textStyle="bold" />
 
-                    <LinearLayout
-                        android:id="@+id/streakDotsContainer"
+                    <!-- Mood speech bubble -->
+                    <TextView
+                        android:id="@+id/textMood"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:orientation="horizontal" />
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/textMood"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="?attr/ttColorPrimaryTint"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="8dp"
-                    android:textColor="?attr/ttColorPrimary"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Continue Learning"
-            android:textColor="?attr/ttColorTextPrimary"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            app:cardBackgroundColor="?attr/ttColorSurface"
-            app:cardCornerRadius="@dimen/card_radius"
-            app:cardElevation="@dimen/elevation_md"
-            app:strokeColor="?attr/ttColorBorder"
-            app:strokeWidth="1dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <TextView
-                    android:id="@+id/textCurrentLessonTitle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textColor="?attr/ttColorTextPrimary"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
-
-                <com.google.android.material.progressindicator.LinearProgressIndicator
-                    android:id="@+id/progressCurrentLesson"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    app:indicatorColor="?attr/ttColorPrimary"
-                    app:trackColor="?attr/ttColorBorder" />
-
-                <TextView
-                    android:id="@+id/textLessonProgress"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:textColor="?attr/ttColorTextSecondary"
-                    android:textSize="13sp" />
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:orientation="horizontal">
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipPrimaryMode"
-                        style="@style/Widget.Material3.Chip.Assist"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:background="?attr/ttColorPrimaryTint"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
                         android:textColor="?attr/ttColorPrimary"
-                        app:chipBackgroundColor="?attr/ttColorPrimaryTint" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipSecondaryMode"
-                        style="@style/Widget.Material3.Chip.Assist"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:textColor="?attr/ttColorTextSecondary"
-                        app:chipBackgroundColor="?attr/ttColorBorder" />
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/buttonContinue"
-                    style="@style/Widget.Material3.Button"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="@string/button_continue"
-                    android:textAllCaps="false"
-                    app:backgroundTint="?attr/ttColorPrimary"
-                    app:cornerRadius="@dimen/button_radius" />
+                <!-- Mascot image -->
+                <ImageView
+                    android:id="@+id/imageMascot"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:layout_marginStart="8dp"
+                    android:scaleType="fitCenter"
+                    android:contentDescription="Mascot" />
             </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>
 
         <LinearLayout
+            android:id="@+id/layoutContinueLearning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Continue Learning"
+                android:textColor="?attr/ttColorTextPrimary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="?attr/ttColorSurface"
+                app:cardCornerRadius="@dimen/card_radius"
+                app:cardElevation="@dimen/elevation_md"
+                app:strokeColor="?attr/ttColorBorder"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/textCurrentLessonTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="?attr/ttColorTextPrimary"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.progressindicator.LinearProgressIndicator
+                        android:id="@+id/progressCurrentLesson"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        app:indicatorColor="?attr/ttColorPrimary"
+                        app:trackColor="?attr/ttColorBorder" />
+
+                    <TextView
+                        android:id="@+id/textLessonProgress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:textColor="?attr/ttColorTextSecondary"
+                        android:textSize="13sp" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipPrimaryMode"
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="?attr/ttColorPrimary"
+                            app:chipBackgroundColor="?attr/ttColorPrimaryTint" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipSecondaryMode"
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:textColor="?attr/ttColorTextSecondary"
+                            app:chipBackgroundColor="?attr/ttColorBorder" />
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonContinue"
+                        style="@style/Widget.Material3.Button"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="@string/button_continue"
+                        android:textAllCaps="false"
+                        app:backgroundTint="?attr/ttColorPrimary"
+                        app:cornerRadius="@dimen/button_radius" />
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layoutStudyStats"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
@@ -382,24 +410,6 @@
 
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Recommended"
-            android:textColor="?attr/ttColorTextPrimary"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerRecommendations"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:clipToPadding="false"
-            android:nestedScrollingEnabled="false"
-            android:paddingBottom="24dp" />
 
     </LinearLayout>
 

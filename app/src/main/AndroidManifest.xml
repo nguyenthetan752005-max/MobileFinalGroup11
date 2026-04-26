@@ -34,7 +34,7 @@
             android:name=".ui.profile.EditProfileActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.profile.MyCommentsActivity"
+            android:name=".ui.notification.NotificationCenterActivity"
             android:exported="false" />
         <activity
             android:name=".ui.lessonlist.LessonListActivity"

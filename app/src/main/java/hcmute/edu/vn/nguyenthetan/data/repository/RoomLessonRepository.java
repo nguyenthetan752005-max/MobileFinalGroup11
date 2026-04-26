@@ -23,6 +23,7 @@ import hcmute.edu.vn.nguyenthetan.data.local.entity.lesson.LessonEntity;
 import hcmute.edu.vn.nguyenthetan.data.local.entity.catalog.SectionEntity;
 import hcmute.edu.vn.nguyenthetan.data.local.entity.lesson.SentenceEntity;
 import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteLessonSyncManager;
+import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteProgressSyncManager;
 import hcmute.edu.vn.nguyenthetan.data.repository.support.RepositoryFormatters;
 import hcmute.edu.vn.nguyenthetan.domain.model.lesson.LessonProgress;
 import hcmute.edu.vn.nguyenthetan.domain.model.lesson.LessonSession;
@@ -40,6 +41,7 @@ public class RoomLessonRepository implements LessonRepository {
     private final SectionDao sectionDao;
     private final CategoryDao categoryDao;
     private final RemoteLessonSyncManager remoteLessonSyncManager;
+    private final RemoteProgressSyncManager remoteProgressSyncManager;
     private final UserSessionStore userSessionStore;
 
     public RoomLessonRepository(
@@ -50,6 +52,7 @@ public class RoomLessonRepository implements LessonRepository {
             SectionDao sectionDao,
             CategoryDao categoryDao,
             RemoteLessonSyncManager remoteLessonSyncManager,
+            RemoteProgressSyncManager remoteProgressSyncManager,
             UserSessionStore userSessionStore
     ) {
         this.lessonDao = lessonDao;
@@ -59,6 +62,7 @@ public class RoomLessonRepository implements LessonRepository {
         this.sectionDao = sectionDao;
         this.categoryDao = categoryDao;
         this.remoteLessonSyncManager = remoteLessonSyncManager;
+        this.remoteProgressSyncManager = remoteProgressSyncManager;
         this.userSessionStore = userSessionStore;
     }
 
@@ -66,6 +70,13 @@ public class RoomLessonRepository implements LessonRepository {
     public void syncLessonContent(long lessonId) {
         if (remoteLessonSyncManager != null) {
             remoteLessonSyncManager.syncLesson(lessonId);
+        }
+    }
+
+    @Override
+    public void syncLessonProgress(long lessonId) {
+        if (shouldPersistProgress() && remoteProgressSyncManager != null) {
+            remoteProgressSyncManager.syncLessonProgress(lessonId);
         }
     }
 
@@ -109,7 +120,7 @@ public class RoomLessonRepository implements LessonRepository {
         }
 
         SpeakingAttempt bestAttempt = RepositoryFormatters.defaultBestAttempt();
-        if (shouldPersistGuestProgress()) {
+        if (shouldPersistProgress()) {
             for (GuestSentenceProgressEntity progress : guestProgressDao.getByLessonId(lessonId)) {
                 if (progress.bestSpeakingScore != null && progress.bestSpeakingScore > bestAttempt.getScore()) {
                     bestAttempt = new SpeakingAttempt(
@@ -142,7 +153,7 @@ public class RoomLessonRepository implements LessonRepository {
     @Override
     public LessonProgress getLessonProgress(long lessonId) {
         List<SentenceEntity> sentences = sentenceDao.getByLessonId(lessonId);
-        List<GuestSentenceProgressEntity> progressEntries = shouldPersistGuestProgress()
+        List<GuestSentenceProgressEntity> progressEntries = shouldPersistProgress()
                 ? guestProgressDao.getByLessonId(lessonId)
                 : new ArrayList<>();
 
@@ -162,15 +173,16 @@ public class RoomLessonRepository implements LessonRepository {
 
     @Override
     public void saveSentenceStatus(long lessonId, long sentenceId, SentenceStatus status) {
-        if (!shouldPersistGuestProgress()) {
+        if (!shouldPersistProgress()) {
             return;
         }
         GuestSentenceProgressEntity existing = guestProgressDao.getBySentenceId(sentenceId);
         long now = System.currentTimeMillis();
+        SentenceStatus resolvedStatus = resolvePersistedStatus(existing == null ? null : existing.status, status);
         GuestSentenceProgressEntity updated = new GuestSentenceProgressEntity(
                 sentenceId,
                 lessonId,
-                status,
+                resolvedStatus,
                 existing == null ? null : existing.bestSpeakingScore,
                 existing == null ? null : existing.bestSpeakingTranscript,
                 existing == null ? null : existing.bestSpeakingFeedback,
@@ -183,22 +195,26 @@ public class RoomLessonRepository implements LessonRepository {
         );
         guestProgressDao.upsert(updated);
         saveLastOpened(lessonId, sentenceId);
+        if (remoteProgressSyncManager != null && resolvedStatus != (existing == null ? null : existing.status)) {
+            remoteProgressSyncManager.submitProgressAsync(lessonId, sentenceId, resolvedStatus);
+        }
     }
 
     @Override
     public void saveSpeakingAttempt(long lessonId, long sentenceId, SpeakingAttempt attempt, int passThreshold) {
-        if (!shouldPersistGuestProgress()) {
+        if (!shouldPersistProgress()) {
             return;
         }
         GuestSentenceProgressEntity existing = guestProgressDao.getBySentenceId(sentenceId);
         int bestScore = existing != null && existing.bestSpeakingScore != null ? existing.bestSpeakingScore : Integer.MIN_VALUE;
         boolean updateBest = attempt.getScore() >= bestScore;
         SentenceStatus nextStatus = attempt.getScore() >= passThreshold ? SentenceStatus.COMPLETED : SentenceStatus.IN_PROGRESS;
+        SentenceStatus resolvedStatus = resolvePersistedStatus(existing == null ? null : existing.status, nextStatus);
 
         GuestSentenceProgressEntity updated = new GuestSentenceProgressEntity(
                 sentenceId,
                 lessonId,
-                nextStatus,
+                resolvedStatus,
                 updateBest ? attempt.getScore() : (existing == null ? null : existing.bestSpeakingScore),
                 updateBest ? attempt.getTranscript() : (existing == null ? null : existing.bestSpeakingTranscript),
                 updateBest ? attempt.getFeedback() : (existing == null ? null : existing.bestSpeakingFeedback),
@@ -211,9 +227,16 @@ public class RoomLessonRepository implements LessonRepository {
         );
         guestProgressDao.upsert(updated);
         saveLastOpened(lessonId, sentenceId);
+        if (remoteProgressSyncManager != null && resolvedStatus != (existing == null ? null : existing.status)) {
+            remoteProgressSyncManager.submitProgressAsync(lessonId, sentenceId, resolvedStatus);
+        }
     }
 
     private int resolveCurrentSentenceIndex(List<SentenceEntity> sentences, Map<Long, SentenceStatus> statuses) {
+        if (!shouldPersistProgress()) {
+            return 0;
+        }
+        
         AppSettingsEntity settings = appSettingsDao.getSettings();
         if (settings != null && settings.lastOpenedSentenceId != null) {
             for (int index = 0; index < sentences.size(); index++) {
@@ -262,7 +285,7 @@ public class RoomLessonRepository implements LessonRepository {
     }
 
     private void saveLastOpened(long lessonId, long sentenceId) {
-        if (!shouldPersistGuestProgress()) {
+        if (!shouldPersistProgress()) {
             return;
         }
         AppSettingsEntity settings = appSettingsDao.getSettings();
@@ -359,7 +382,14 @@ public class RoomLessonRepository implements LessonRepository {
         return null;
     }
 
-    private boolean shouldPersistGuestProgress() {
+    private SentenceStatus resolvePersistedStatus(SentenceStatus existingStatus, SentenceStatus requestedStatus) {
+        if (existingStatus == SentenceStatus.COMPLETED || requestedStatus == SentenceStatus.COMPLETED) {
+            return SentenceStatus.COMPLETED;
+        }
+        return requestedStatus == null ? existingStatus : requestedStatus;
+    }
+
+    private boolean shouldPersistProgress() {
         return userSessionStore != null && userSessionStore.isLoggedIn();
     }
 }

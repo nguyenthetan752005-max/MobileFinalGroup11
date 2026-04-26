@@ -49,20 +49,25 @@ public class LessonListViewModel extends ViewModel {
         if (loaded) {
             return;
         }
+        loaded = true;
         loadingState.setValue(true);
         executorService.execute(() -> {
-            syncCategoryCollectionUseCase.execute(categoryId);
-            LessonCollection collection = getLessonCollectionUseCase.execute(categoryId);
-            expandedSectionIds.clear();
-            for (int index = 0; index < collection.getSections().size(); index++) {
-                if (index == 0) {
-                    expandedSectionIds.add(collection.getSections().get(index).getId());
-                }
+            // Show cached data immediately
+            LessonCollection cached = getLessonCollectionUseCase.execute(categoryId);
+            if (cached != null && !cached.getSections().isEmpty()) {
+                // Auto-expand first section
+                expandedSectionIds.add(cached.getSections().get(0).getId());
+                collectionState.postValue(cached);
             }
-            collectionState.postValue(collection);
+            // Sync in background and refresh
+            syncCategoryCollectionUseCase.execute(categoryId);
+            LessonCollection fresh = getLessonCollectionUseCase.execute(categoryId);
+            if (fresh != null && !fresh.getSections().isEmpty() && expandedSectionIds.isEmpty()) {
+                expandedSectionIds.add(fresh.getSections().get(0).getId());
+            }
+            collectionState.postValue(fresh);
             loadingState.postValue(false);
         });
-        loaded = true;
     }
 
     public boolean isExpanded(long sectionId) {
@@ -83,6 +88,15 @@ public class LessonListViewModel extends ViewModel {
                 loadingState.postValue(false);
             });
         }
+    }
+
+    public void refreshLocal() {
+        executorService.execute(() -> {
+            LessonCollection cached = getLessonCollectionUseCase.execute(categoryId);
+            if (cached != null) {
+                collectionState.postValue(cached);
+            }
+        });
     }
 
     @Override
