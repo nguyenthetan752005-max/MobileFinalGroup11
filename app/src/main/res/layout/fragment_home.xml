@@ -24,9 +24,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="TungTung"
-                android:textColor="?attr/ttColorPrimary"
-                android:textSize="28sp"
-                android:textStyle="bold" />
+                android:textAppearance="@style/TextAppearance.TungTung.HeadlineLarge" />
 
             <FrameLayout
                 android:layout_width="wrap_content"
@@ -53,9 +51,8 @@
                     android:minWidth="18dp"
                     android:paddingHorizontal="5dp"
                     android:paddingVertical="1dp"
+                    android:textAppearance="@style/TextAppearance.TungTung.LabelSmall"
                     android:textColor="@android:color/white"
-                    android:textSize="10sp"
-                    android:textStyle="bold"
                     android:visibility="gone" />
             </FrameLayout>
         </LinearLayout>
@@ -65,17 +62,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
-            android:textColor="?attr/ttColorTextPrimary"
-            android:textSize="22sp"
-            android:textStyle="bold" />
+            android:textAppearance="@style/TextAppearance.TungTung.HeadlineMedium" />
 
         <TextView
             android:id="@+id/textSubtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:textColor="?attr/ttColorTextSecondary"
-            android:textSize="14sp" />
+            android:textAppearance="@style/TextAppearance.TungTung.BodyMedium" />
 
         <ProgressBar
             android:id="@+id/progressHomeLoad"
@@ -107,17 +101,14 @@
                     android:id="@+id/textGuestPromoTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="?attr/ttColorTextPrimary"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:textAppearance="@style/TextAppearance.TungTung.TitleLarge" />
 
                 <TextView
                     android:id="@+id/textGuestPromoBody"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:textColor="?attr/ttColorTextSecondary"
-                    android:textSize="14sp" />
+                    android:textAppearance="@style/TextAppearance.TungTung.BodyMedium" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonGuestCreateAccount"
@@ -161,17 +152,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Study streak"
-                        android:textColor="?attr/ttColorTextSecondary"
-                        android:textSize="13sp" />
+                        android:textAppearance="@style/TextAppearance.TungTung.BodySmall" />
 
                     <TextView
                         android:id="@+id/textStreakValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:textColor="?attr/ttColorPrimary"
-                        android:textSize="30sp"
-                        android:textStyle="bold" />
+                        android:textAppearance="@style/TextAppearance.TungTung.DisplaySmall" />
 
                     <!-- Mood speech bubble -->
                     <TextView
@@ -182,9 +170,7 @@
                         android:background="?attr/ttColorPrimaryTint"
                         android:paddingHorizontal="12dp"
                         android:paddingVertical="6dp"
-                        android:textColor="?attr/ttColorPrimary"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
+                        android:textAppearance="@style/TextAppearance.TungTung.BodySmall" />
                 </LinearLayout>
 
                 <!-- Mascot image -->
@@ -211,9 +197,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:text="Continue Learning"
-                android:textColor="?attr/ttColorTextPrimary"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textAppearance="@style/TextAppearance.TungTung.TitleLarge" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -235,9 +219,7 @@
                         android:id="@+id/textCurrentLessonTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColor="?attr/ttColorTextPrimary"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
+                        android:textAppearance="@style/TextAppearance.TungTung.TitleLarge" />
 
                     <com.google.android.material.progressindicator.LinearProgressIndicator
                         android:id="@+id/progressCurrentLesson"
@@ -252,8 +234,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:textColor="?attr/ttColorTextSecondary"
-                        android:textSize="13sp" />
+                        android:textAppearance="@style/TextAppearance.TungTung.BodySmall" />
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -322,17 +303,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Today"
-                        android:textColor="?attr/ttColorTextSecondary"
-                        android:textSize="12sp" />
+                        android:textAppearance="@style/TextAppearance.TungTung.LabelSmall" />
 
                     <TextView
                         android:id="@+id/textTodayValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:textColor="?attr/ttColorPrimary"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
+                        android:textAppearance="@style/TextAppearance.TungTung.DisplayMedium" />
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
@@ -359,17 +337,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="This Week"
-                        android:textColor="?attr/ttColorTextSecondary"
-                        android:textSize="12sp" />
+                        android:textAppearance="@style/TextAppearance.TungTung.LabelSmall" />
 
                     <TextView
                         android:id="@+id/textWeekValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:textColor="?attr/ttColorPrimary"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
+                        android:textAppearance="@style/TextAppearance.TungTung.DisplayMedium" />
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
@@ -395,17 +370,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Best Streak"
-                        android:textColor="?attr/ttColorTextSecondary"
-                        android:textSize="12sp" />
+                        android:textAppearance="@style/TextAppearance.TungTung.LabelSmall" />
 
                     <TextView
                         android:id="@+id/textBestValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:textColor="?attr/ttColorPrimary"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
+                        android:textAppearance="@style/TextAppearance.TungTung.DisplayMedium" />
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
