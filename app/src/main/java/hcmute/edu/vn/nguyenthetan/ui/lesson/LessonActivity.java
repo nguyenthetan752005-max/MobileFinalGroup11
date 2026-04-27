@@ -430,7 +430,7 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         binding.textCurrentTranscript.setText(state.currentTranscript);
         binding.buttonSpeakingPrevious.setVisibility(state.hasPreviousSentence ? View.VISIBLE : View.GONE);
         binding.buttonTryAgain.setVisibility(state.showSpeakingActions ? View.VISIBLE : View.GONE);
-        binding.buttonSpeakingNext.setVisibility(state.showSpeakingActions && state.hasNextSentence ? View.VISIBLE : View.GONE);
+        binding.buttonSpeakingNext.setVisibility(state.showSpeakingActions && state.hasNextSentence && state.speakingNextEnabled ? View.VISIBLE : View.GONE);
         binding.buttonSpeakingNext.setEnabled(state.speakingNextEnabled);
         binding.textCommentsTitle.setText(state.commentCount == 0
                 ? getString(R.string.lesson_comments_zero)
