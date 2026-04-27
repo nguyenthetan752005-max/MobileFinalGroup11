@@ -429,7 +429,6 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         binding.buttonPlayCurrentAudio.setVisibility(state.currentUserAudioUrl != null && !state.currentUserAudioUrl.trim().isEmpty() ? View.VISIBLE : View.GONE);
         binding.textCurrentTranscript.setText(state.currentTranscript);
         binding.buttonSpeakingPrevious.setVisibility(state.hasPreviousSentence ? View.VISIBLE : View.GONE);
-        binding.buttonTryAgain.setVisibility(state.showSpeakingActions ? View.VISIBLE : View.GONE);
         binding.buttonSpeakingNext.setVisibility(state.showSpeakingActions && state.hasNextSentence && state.speakingNextEnabled ? View.VISIBLE : View.GONE);
         binding.buttonSpeakingNext.setEnabled(state.speakingNextEnabled);
         binding.textCommentsTitle.setText(state.commentCount == 0
@@ -905,4 +904,6 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         });
     }
 }
+
+
 
