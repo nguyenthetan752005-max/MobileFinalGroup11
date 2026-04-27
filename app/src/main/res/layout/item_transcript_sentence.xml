@@ -4,11 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
-    app:cardBackgroundColor="?attr/ttColorSurface"
-    app:cardCornerRadius="@dimen/card_radius"
-    app:cardElevation="@dimen/elevation_sm"
-    app:strokeColor="?attr/ttColorBorder"
-    app:strokeWidth="1dp">
+    style="@style/Widget.TungTung.Card">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -45,8 +41,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:textColor="?attr/ttColorTextSecondary"
-                android:textSize="12sp"
+                android:textAppearance="@style/TextAppearance.TungTung.LabelSmall"
                 android:textStyle="bold" />
         </LinearLayout>
 

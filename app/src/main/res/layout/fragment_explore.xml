@@ -14,10 +14,8 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Explore"
-            android:textColor="?attr/ttColorTextPrimary"
-            android:textSize="28sp"
-            android:textStyle="bold" />
+            android:text="@string/explore_title"
+            android:textAppearance="@style/TextAppearance.TungTung.HeadlineLarge" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"

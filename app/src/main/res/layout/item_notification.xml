@@ -7,11 +7,7 @@
     android:layout_marginTop="12dp"
     android:clickable="true"
     android:focusable="true"
-    app:cardBackgroundColor="?attr/ttColorSurface"
-    app:cardCornerRadius="@dimen/card_radius"
-    app:cardElevation="@dimen/elevation_sm"
-    app:strokeColor="?attr/ttColorBorder"
-    app:strokeWidth="1dp">
+    style="@style/Widget.TungTung.Card">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -53,9 +49,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textColor="?attr/ttColorTextPrimary"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
+                    android:textAppearance="@style/TextAppearance.TungTung.TitleMedium" />
 
                 <View
                     android:id="@+id/viewNotificationUnread"
@@ -70,16 +64,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:textColor="?attr/ttColorTextSecondary"
-                android:textSize="13sp" />
+                android:textAppearance="@style/TextAppearance.TungTung.BodySmall" />
 
             <TextView
                 android:id="@+id/textNotificationMeta"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
+                android:textAppearance="@style/TextAppearance.TungTung.LabelSmall"
                 android:textColor="?attr/ttColorPrimary"
-                android:textSize="12sp"
                 android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>

@@ -4,9 +4,14 @@ import android.Manifest;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.format.DateFormat;
 import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
@@ -24,12 +29,17 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -73,6 +83,7 @@ public class ProfileFragment extends Fragment {
     private Boolean remoteDailyReminderEnabled;
     private String remoteDailyReminderTime;
     private String remoteDailyReminderTimezone;
+    private Uri cameraPhotoUri;
     private boolean sendTestReminderAfterPermissionGrant;
     private final ActivityResultLauncher<String> notificationPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
@@ -96,6 +107,29 @@ public class ProfileFragment extends Fragment {
                     Toast.makeText(requireContext(), R.string.settings_notifications_permission_denied, Toast.LENGTH_LONG).show();
                 }
                 renderSettingsState();
+            });
+    private final ActivityResultLauncher<String> cameraPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
+                if (!isAdded() || binding == null) return;
+                if (granted) {
+                    openCamera();
+                } else {
+                    Toast.makeText(requireContext(), R.string.avatar_camera_permission_denied, Toast.LENGTH_SHORT).show();
+                }
+            });
+    private final ActivityResultLauncher<Intent> cameraLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (!isAdded() || binding == null) return;
+                if (result.getResultCode() == android.app.Activity.RESULT_OK && cameraPhotoUri != null) {
+                    handleAvatarResult(cameraPhotoUri);
+                }
+            });
+    private final ActivityResultLauncher<Intent> galleryLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (!isAdded() || binding == null) return;
+                if (result.getResultCode() == android.app.Activity.RESULT_OK && result.getData() != null && result.getData().getData() != null) {
+                    handleAvatarResult(result.getData().getData());
+                }
             });
 
     public static ProfileFragment newInstance() {
@@ -153,6 +187,9 @@ public class ProfileFragment extends Fragment {
             }
         });
 
+        binding.buttonChangeAvatar.setOnClickListener(v -> showAvatarPickerDialog());
+        loadSavedAvatar();
+
         binding.rowNotificationSettings.setOnClickListener(v -> binding.switchNotifications.performClick());
         binding.switchNotifications.setOnCheckedChangeListener((buttonView, isChecked) -> onNotificationToggleChanged(isChecked));
         binding.buttonReminderTime.setOnClickListener(v -> showReminderTimePicker());
@@ -176,6 +213,7 @@ public class ProfileFragment extends Fragment {
         binding.cardWeeklyActivity.setVisibility(guestMode ? View.GONE : View.VISIBLE);
         binding.cardMood.setVisibility(View.GONE);
         binding.cardAccountActions.setVisibility(guestMode ? View.GONE : View.VISIBLE);
+        binding.buttonChangeAvatar.setVisibility(guestMode ? View.GONE : View.VISIBLE);
         binding.cardGuestProfilePromo.setVisibility(guestMode ? View.VISIBLE : View.GONE);
         binding.textGuestProfileTitle.setText(R.string.guest_profile_title);
         binding.textGuestProfileBody.setText(R.string.guest_profile_body);
@@ -613,6 +651,117 @@ public class ProfileFragment extends Fragment {
 
     private boolean isGuestMode() {
         return userSessionStore == null || !userSessionStore.isLoggedIn();
+    }
+
+    // ── Avatar helpers ──────────────────────────────────────────────
+
+    private void showAvatarPickerDialog() {
+        String[] options = {
+                getString(R.string.avatar_option_camera),
+                getString(R.string.avatar_option_gallery)
+        };
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.avatar_picker_title)
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) {
+                        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+                                == PackageManager.PERMISSION_GRANTED) {
+                            openCamera();
+                        } else {
+                            cameraPermissionLauncher.launch(Manifest.permission.CAMERA);
+                        }
+                    } else {
+                        openGallery();
+                    }
+                })
+                .show();
+    }
+
+    private void openCamera() {
+        try {
+            File photoFile = new File(requireContext().getFilesDir(), "avatar_temp.jpg");
+            cameraPhotoUri = FileProvider.getUriForFile(
+                    requireContext(),
+                    requireContext().getPackageName() + ".fileprovider",
+                    photoFile
+            );
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, cameraPhotoUri);
+            cameraLauncher.launch(intent);
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), R.string.avatar_camera_failed, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void openGallery() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        intent.setType("image/*");
+        galleryLauncher.launch(intent);
+    }
+
+    private void handleAvatarResult(Uri sourceUri) {
+        try {
+            Bitmap bitmap;
+            if (sourceUri.getScheme() != null && sourceUri.getScheme().equals("content")) {
+                InputStream inputStream = requireContext().getContentResolver().openInputStream(sourceUri);
+                bitmap = BitmapFactory.decodeStream(inputStream);
+                if (inputStream != null) inputStream.close();
+            } else {
+                bitmap = BitmapFactory.decodeFile(sourceUri.getPath());
+            }
+            if (bitmap == null) {
+                Toast.makeText(requireContext(), R.string.avatar_load_failed, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            bitmap = compressBitmap(bitmap, 800);
+            saveAvatarImage(bitmap);
+            binding.imageAvatar.setImageBitmap(bitmap);
+            binding.imageAvatar.setVisibility(View.VISIBLE);
+            binding.textAvatar.setVisibility(View.GONE);
+            Toast.makeText(requireContext(), R.string.avatar_saved, Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), R.string.avatar_load_failed, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void saveAvatarImage(Bitmap bitmap) {
+        try {
+            File file = getAvatarFile();
+            FileOutputStream fos = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fos);
+            fos.flush();
+            fos.close();
+        } catch (IOException ignored) {
+        }
+    }
+
+    private void loadSavedAvatar() {
+        File file = getAvatarFile();
+        if (file.exists()) {
+            Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+            if (bitmap != null) {
+                binding.imageAvatar.setImageBitmap(bitmap);
+                binding.imageAvatar.setVisibility(View.VISIBLE);
+                binding.textAvatar.setVisibility(View.GONE);
+                return;
+            }
+        }
+        binding.imageAvatar.setVisibility(View.GONE);
+        binding.textAvatar.setVisibility(View.VISIBLE);
+    }
+
+    private File getAvatarFile() {
+        return new File(requireContext().getFilesDir(), "user_avatar.jpg");
+    }
+
+    private Bitmap compressBitmap(Bitmap source, int maxSize) {
+        int width = source.getWidth();
+        int height = source.getHeight();
+        if (width <= maxSize && height <= maxSize) return source;
+        float ratio = Math.min((float) maxSize / width, (float) maxSize / height);
+        int newWidth = Math.round(width * ratio);
+        int newHeight = Math.round(height * ratio);
+        return Bitmap.createScaledBitmap(source, newWidth, newHeight, true);
     }
 
     @Override

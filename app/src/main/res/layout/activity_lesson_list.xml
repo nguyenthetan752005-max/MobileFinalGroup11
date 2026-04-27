@@ -30,7 +30,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:text="Explore"
+                android:text="@string/explore_title"
                 android:textColor="?attr/ttColorPrimary"
                 android:textStyle="bold" />
 
@@ -54,11 +54,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:cardBackgroundColor="?attr/ttColorSurface"
-            app:cardCornerRadius="@dimen/card_radius"
-            app:cardElevation="@dimen/elevation_sm"
-            app:strokeColor="?attr/ttColorBorder"
-            app:strokeWidth="1dp">
+            style="@style/Widget.TungTung.Card">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -70,17 +66,15 @@
                     android:id="@+id/textCategoryTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="?attr/ttColorTextPrimary"
-                    android:textSize="22sp"
-                    android:textStyle="bold" />
+                    android:textAppearance="@style/TextAppearance.TungTung.HeadlineMedium" />
 
                 <TextView
                     android:id="@+id/textCategoryDescription"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:textColor="?attr/ttColorTextSecondary"
-                    android:textSize="14sp" />
+                    android:textAppearance="@style/TextAppearance.TungTung.BodyMedium"
+                    android:textColor="?attr/ttColorTextSecondary" />
 
                 <TextView
                     android:id="@+id/textTotalLessons"

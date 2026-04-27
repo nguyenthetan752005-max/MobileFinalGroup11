@@ -12,9 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:textColor="?attr/ttColorTextPrimary"
-        android:textSize="26sp"
-        android:textStyle="bold" />
+        android:textAppearance="@style/TextAppearance.TungTung.HeadlineLarge" />
 
     <TextView
         android:id="@+id/textSubtitle"

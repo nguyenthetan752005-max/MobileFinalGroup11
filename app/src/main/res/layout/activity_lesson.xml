@@ -18,6 +18,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/cd_go_back"
             android:src="@drawable/ic_arrow_back"
             android:tint="?attr/ttColorTextPrimary" />
 
@@ -31,16 +32,13 @@
                 android:id="@+id/textLessonTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="?attr/ttColorTextPrimary"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textAppearance="@style/TextAppearance.TungTung.TitleLarge" />
 
             <TextView
                 android:id="@+id/textLessonSubtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="?attr/ttColorTextSecondary"
-                android:textSize="13sp" />
+                android:textAppearance="@style/TextAppearance.TungTung.BodySmall" />
         </LinearLayout>
 
         <com.google.android.material.chip.Chip
@@ -100,11 +98,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:visibility="gone"
-                app:cardBackgroundColor="?attr/ttColorSurface"
-                app:cardCornerRadius="@dimen/card_radius"
-                app:cardElevation="@dimen/elevation_sm"
-                app:strokeColor="?attr/ttColorBorder"
-                app:strokeWidth="1dp">
+                style="@style/Widget.TungTung.Card">
 
                 <com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
                     android:id="@+id/youtubePlayerView"
@@ -165,6 +159,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:background="?attr/selectableItemBackgroundBorderless"
+                                android:contentDescription="@string/cd_replay_audio"
                                 android:src="@drawable/ic_replay"
                                 android:tint="?attr/ttColorTextSecondary" />
                         </LinearLayout>
@@ -184,8 +179,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
-                            android:textColor="?attr/ttColorTextSecondary"
-                            android:textSize="13sp" />
+                            android:textAppearance="@style/TextAppearance.TungTung.BodySmall" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -203,7 +197,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:hint="Type what you hear"
+                    android:hint="@string/lesson_dictation_hint"
                     app:boxBackgroundColor="?attr/ttColorSurface">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -293,16 +287,15 @@
                             android:id="@+id/textFeedbackTitle"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textSize="15sp"
-                            android:textStyle="bold" />
+                            android:textAppearance="@style/TextAppearance.TungTung.TitleMedium" />
 
                         <TextView
                             android:id="@+id/textCorrectWords"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
+                            android:textAppearance="@style/TextAppearance.TungTung.BodyMedium"
                             android:textColor="?attr/ttColorPrimary"
-                            android:textSize="14sp"
                             android:textStyle="bold" />
 
                         <TextView
@@ -310,8 +303,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
+                            android:textAppearance="@style/TextAppearance.TungTung.BodyMedium"
                             android:textColor="@color/tt_success"
-                            android:textSize="14sp"
                             android:textStyle="bold" />
 
                         <TextView
@@ -319,8 +312,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
+                            android:textAppearance="@style/TextAppearance.TungTung.BodyMedium"
                             android:textColor="@color/tt_error"
-                            android:textSize="14sp"
                             android:textStyle="bold" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -333,7 +326,15 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
-                <TextView android:id="@+id/textTranscriptSentence" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="?attr/ttColorTextPrimary" android:textSize="18sp" android:textStyle="bold" />
+                <TextView android:id="@+id/textTranscriptSentence" android:layout_width="match_parent" android:layout_height="wrap_content" android:textAppearance="@style/TextAppearance.TungTung.TitleLarge" />
+
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/checkboxRepeat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/lesson_repeat"
+                    android:textColor="?attr/ttColorTextPrimary" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -342,9 +343,8 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
-                    <ImageButton android:id="@+id/buttonTranscriptPrev" android:layout_width="40dp" android:layout_height="40dp" android:background="?attr/selectableItemBackgroundBorderless" android:src="@drawable/ic_skip_prev" />
-                    <ImageButton android:id="@+id/buttonTranscriptPlay" android:layout_width="52dp" android:layout_height="52dp" android:layout_marginStart="8dp" android:backgroundTint="?attr/ttColorPrimary" android:src="@drawable/ic_play" android:tint="@color/white" />
-                    <ImageButton android:id="@+id/buttonTranscriptNext" android:layout_width="40dp" android:layout_height="40dp" android:layout_marginStart="8dp" android:background="?attr/selectableItemBackgroundBorderless" android:src="@drawable/ic_skip_next" />
+                    <ImageButton android:id="@+id/buttonTranscriptPrev" android:layout_width="40dp" android:layout_height="40dp" android:background="?attr/selectableItemBackgroundBorderless" android:contentDescription="@string/cd_skip_prev" android:src="@drawable/ic_skip_prev" />
+                    <ImageButton android:id="@+id/buttonTranscriptNext" android:layout_width="40dp" android:layout_height="40dp" android:layout_marginStart="8dp" android:background="?attr/selectableItemBackgroundBorderless" android:contentDescription="@string/cd_skip_next" android:src="@drawable/ic_skip_next" />
                     <TextView android:id="@+id/textTranscriptPlaybackTime" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:layout_weight="1" android:textColor="?attr/ttColorTextSecondary" android:textStyle="bold" />
                 </LinearLayout>
 
@@ -363,8 +363,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:textColor="?attr/ttColorTextSecondary"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.TungTung.BodySmall" />
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recyclerTranscript"
@@ -405,9 +404,8 @@
                             android:layout_height="wrap_content"
                             android:gravity="center"
                             android:lineSpacingExtra="4dp"
-                            android:textColor="?attr/ttColorTextPrimary"
-                            android:textSize="20sp"
-                            android:textStyle="bold" />
+                            android:textAppearance="@style/TextAppearance.TungTung.DisplayMedium"
+                            android:textColor="?attr/ttColorTextPrimary" />
 
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -469,8 +467,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/speaking_best_attempt"
-                                android:textColor="?attr/ttColorTextSecondary"
-                                android:textSize="12sp"
+                                android:textAppearance="@style/TextAppearance.TungTung.LabelSmall"
                                 android:textStyle="bold" />
 
                             <LinearLayout
@@ -504,8 +501,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
-                                android:textColor="?attr/ttColorTextSecondary"
-                                android:textSize="13sp" />
+                                android:textAppearance="@style/TextAppearance.TungTung.BodySmall" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
@@ -529,8 +525,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/speaking_current_attempt"
-                                android:textColor="?attr/ttColorTextSecondary"
-                                android:textSize="12sp"
+                                android:textAppearance="@style/TextAppearance.TungTung.LabelSmall"
                                 android:textStyle="bold" />
 
                             <LinearLayout
@@ -564,8 +559,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
-                                android:textColor="?attr/ttColorTextSecondary"
-                                android:textSize="13sp" />
+                                android:textAppearance="@style/TextAppearance.TungTung.BodySmall" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
@@ -594,18 +588,6 @@
                         app:strokeColor="?attr/ttColorPrimary" />
 
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonTryAgain"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:layout_weight="1"
-                        android:text="@string/lesson_try_again"
-                        android:textAllCaps="false"
-                        android:textColor="?attr/ttColorPrimary"
-                        app:strokeColor="?attr/ttColorPrimary" />
-
-                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/buttonSpeakingNext"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -622,11 +604,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                app:cardBackgroundColor="?attr/ttColorSurface"
-                app:cardCornerRadius="@dimen/card_radius"
-                app:cardElevation="@dimen/elevation_sm"
-                app:strokeColor="?attr/ttColorBorder"
-                app:strokeWidth="1dp">
+                style="@style/Widget.TungTung.Card">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -634,7 +612,7 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView android:id="@+id/textCommentsTitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/label_comments" android:textColor="?attr/ttColorTextPrimary" android:textSize="18sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/textCommentsTitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/label_comments" android:textAppearance="@style/TextAppearance.TungTung.TitleLarge" />
                     <com.google.android.material.button.MaterialButton android:id="@+id/buttonWriteComment" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="@string/label_write_comment" android:textAllCaps="false" android:textColor="?attr/ttColorPrimary" app:strokeColor="?attr/ttColorPrimary" />
                     <androidx.recyclerview.widget.RecyclerView android:id="@+id/recyclerComments" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:nestedScrollingEnabled="false" />
                 </LinearLayout>

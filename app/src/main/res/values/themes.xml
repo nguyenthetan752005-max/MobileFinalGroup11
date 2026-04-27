@@ -22,6 +22,9 @@
         <item name="ttColorTextSecondary">@color/tt_text_secondary</item>
         <item name="ttColorTextMuted">@color/tt_text_muted</item>
         <item name="ttColorBorder">@color/tt_border</item>
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.TungTung.Button</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.TungTung.Card</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.TungTung.Modal</item>
     </style>
 
     <style name="Theme.TungTung" parent="Base.Theme.TungTung" />

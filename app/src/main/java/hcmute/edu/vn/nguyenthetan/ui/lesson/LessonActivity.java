@@ -211,6 +211,7 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
             @Override
             public void onPlaybackCompleted(long duration) {
                 viewModel.completePlayback(duration);
+                handleTranscriptAutoPlay();
             }
             @Override
             public void onPlaybackError(int errorMessageResId) {
@@ -250,6 +251,7 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
             @Override
             public void onCompletePlayback(long durationMillis) {
                 viewModel.completePlayback(durationMillis);
+                handleTranscriptAutoPlay();
             }
         });
         youtubePlaybackManager.initialize();
@@ -298,7 +300,6 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
             releaseLessonMedia(true, false);
             viewModel.previousSentence();
         });
-        binding.buttonTranscriptPlay.setOnClickListener(v -> handlePrimaryMediaAction(false));
         binding.buttonTranscriptNext.setOnClickListener(v -> {
             releaseLessonMedia(true, false);
             viewModel.nextSentence();
@@ -315,7 +316,6 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         binding.buttonPlayCurrentAudio.setOnClickListener(v -> {
             if (latestState != null) audioPlaybackManager.playUserAudio(latestState.currentUserAudioUrl);
         });
-        binding.buttonTryAgain.setOnClickListener(v -> viewModel.retrySpeaking());
         binding.buttonSpeakingNext.setOnClickListener(v -> {
             releaseLessonMedia(true, false);
             viewModel.nextSentence();
@@ -327,6 +327,8 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
             }
             showCommentComposer(null, null);
         });
+        binding.checkboxRepeat.setOnCheckedChangeListener((buttonView, isChecked) ->
+                viewModel.setRepeatTranscriptMode(isChecked));
     }
 
     private void setupTextWatchers() {
@@ -408,11 +410,9 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         binding.buttonTranscriptNext.setVisibility(state.hasNextSentence ? View.VISIBLE : View.INVISIBLE);
         
         binding.buttonPlay.setImageResource(state.playing ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
-        binding.buttonTranscriptPlay.setImageResource(state.playing ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
         binding.buttonSpeakingPlay.setImageResource(state.playing ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
         binding.buttonPlay.setEnabled(state.videoLesson || state.canPlayAudio);
         binding.buttonReplay.setEnabled(state.canPlayAudio);
-        binding.buttonTranscriptPlay.setEnabled(state.videoLesson || state.canPlayAudio);
         binding.buttonSpeakingPlay.setEnabled(state.videoLesson || state.canPlayAudio);
         
         scheduleAudioPrefetchIfNeeded(state);
@@ -429,8 +429,8 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         binding.buttonPlayCurrentAudio.setVisibility(state.currentUserAudioUrl != null && !state.currentUserAudioUrl.trim().isEmpty() ? View.VISIBLE : View.GONE);
         binding.textCurrentTranscript.setText(state.currentTranscript);
         binding.buttonSpeakingPrevious.setVisibility(state.hasPreviousSentence ? View.VISIBLE : View.GONE);
-        binding.buttonSpeakingNext.setVisibility(state.showSpeakingActions && state.hasNextSentence && state.speakingNextEnabled ? View.VISIBLE : View.GONE);
-        binding.buttonSpeakingNext.setEnabled(state.speakingNextEnabled);
+        binding.buttonSpeakingNext.setVisibility(state.hasNextSentence ? View.VISIBLE : View.GONE);
+        binding.buttonSpeakingNext.setEnabled(true);
         binding.textCommentsTitle.setText(state.commentCount == 0
                 ? getString(R.string.lesson_comments_zero)
                 : getResources().getQuantityString(
@@ -712,6 +712,19 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         }
     }
 
+    private void handleTranscriptAutoPlay() {
+        if (viewModel.getSelectedTab() != LessonViewModel.TAB_TRANSCRIPT) return;
+        if (viewModel.isRepeatTranscriptMode()) {
+            // Repeat: replay the same sentence
+            binding.getRoot().postDelayed(() -> handlePrimaryMediaAction(true), 200);
+        } else if (latestState != null && latestState.hasNextSentence) {
+            // Auto-play next: advance then play
+            releaseLessonMedia(true, false);
+            viewModel.nextSentence();
+            binding.getRoot().postDelayed(() -> handlePrimaryMediaAction(true), 200);
+        }
+    }
+
     private void fetchSpeakingResultsIfNeeded(@NonNull LessonViewModel.UiState state) {
         if (!state.showSpeakingTab || !userSessionStore.isLoggedIn() || state.currentSentenceId <= 0L) {
             return;
@@ -904,6 +917,5 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         });
     }
 }
-
 
 

@@ -27,9 +27,7 @@
             android:layout_marginStart="12dp"
             android:layout_weight="1"
             android:text="@string/notifications_title"
-            android:textColor="?attr/ttColorTextPrimary"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:textAppearance="@style/TextAppearance.TungTung.TitleLarge" />
 
         <TextView
             android:id="@+id/buttonMarkAllRead"
@@ -39,8 +37,8 @@
             android:paddingHorizontal="8dp"
             android:paddingVertical="6dp"
             android:text="@string/notifications_mark_all_read"
+            android:textAppearance="@style/TextAppearance.TungTung.BodySmall"
             android:textColor="?attr/ttColorPrimary"
-            android:textSize="13sp"
             android:textStyle="bold"
             android:visibility="gone" />
     </LinearLayout>

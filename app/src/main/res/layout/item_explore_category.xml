@@ -4,11 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
-    app:cardBackgroundColor="?attr/ttColorSurface"
-    app:cardCornerRadius="@dimen/card_radius"
-    app:cardElevation="@dimen/elevation_sm"
-    app:strokeColor="?attr/ttColorBorder"
-    app:strokeWidth="1dp">
+    style="@style/Widget.TungTung.Card">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -47,8 +43,8 @@
                 android:background="@drawable/shape_badge_pill"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="4dp"
+                android:textAppearance="@style/TextAppearance.TungTung.LabelSmall"
                 android:textColor="?attr/ttColorPrimary"
-                android:textSize="11sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -56,17 +52,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:textColor="?attr/ttColorTextPrimary"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textAppearance="@style/TextAppearance.TungTung.TitleMedium" />
 
             <TextView
                 android:id="@+id/textLevelRange"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:textColor="?attr/ttColorTextSecondary"
-                android:textSize="13sp" />
+                android:textAppearance="@style/TextAppearance.TungTung.BodySmall" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -80,8 +73,8 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textColor="?attr/ttColorTextMuted"
-                    android:textSize="12sp" />
+                    android:textAppearance="@style/TextAppearance.TungTung.LabelSmall"
+                    android:textColor="?attr/ttColorTextMuted" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipPracticeType"

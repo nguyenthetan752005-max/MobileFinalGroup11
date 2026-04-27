@@ -15,8 +15,8 @@
             android:id="@+id/textAppearanceDialogSummary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="?attr/ttColorTextSecondary"
-            android:textSize="14sp" />
+            android:textAppearance="@style/TextAppearance.TungTung.BodyMedium"
+            android:textColor="?attr/ttColorTextSecondary" />
 
         <RadioGroup
             android:id="@+id/groupPaletteOptions"
@@ -31,7 +31,7 @@
                 android:layout_height="wrap_content"
                 android:paddingVertical="10dp"
                 android:paddingStart="8dp"
-                android:textSize="16sp"
+                android:textAppearance="@style/TextAppearance.TungTung.BodyLarge"
                 android:text="@string/palette_classic" />
 
             <RadioButton
@@ -40,7 +40,7 @@
                 android:layout_height="wrap_content"
                 android:paddingVertical="10dp"
                 android:paddingStart="8dp"
-                android:textSize="16sp"
+                android:textAppearance="@style/TextAppearance.TungTung.BodyLarge"
                 android:text="@string/palette_ocean" />
 
             <RadioButton
@@ -49,7 +49,7 @@
                 android:layout_height="wrap_content"
                 android:paddingVertical="10dp"
                 android:paddingStart="8dp"
-                android:textSize="16sp"
+                android:textAppearance="@style/TextAppearance.TungTung.BodyLarge"
                 android:text="@string/palette_forest" />
 
             <RadioButton
@@ -58,7 +58,7 @@
                 android:layout_height="wrap_content"
                 android:paddingVertical="10dp"
                 android:paddingStart="8dp"
-                android:textSize="16sp"
+                android:textAppearance="@style/TextAppearance.TungTung.BodyLarge"
                 android:text="@string/palette_sunset" />
         </RadioGroup>
 
@@ -101,8 +101,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
                     android:text="@string/settings_preview_title_text"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:textAppearance="@style/TextAppearance.TungTung.TitleLarge" />
 
                 <TextView
                     android:id="@+id/textPreviewBody"
@@ -110,7 +109,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:text="@string/settings_preview_body_text"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.TungTung.BodySmall" />
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardPreviewStat"
@@ -139,7 +138,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/settings_preview_stat_label"
-                                android:textSize="12sp" />
+                                android:textAppearance="@style/TextAppearance.TungTung.LabelSmall" />
 
                             <TextView
                                 android:id="@+id/textPreviewStatValue"
@@ -147,8 +146,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="6dp"
                                 android:text="@string/settings_preview_stat_value"
-                                android:textSize="18sp"
-                                android:textStyle="bold" />
+                                android:textAppearance="@style/TextAppearance.TungTung.TitleLarge" />
                         </LinearLayout>
 
                         <com.google.android.material.button.MaterialButton

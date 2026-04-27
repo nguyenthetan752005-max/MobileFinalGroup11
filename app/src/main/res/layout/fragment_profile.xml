@@ -33,23 +33,47 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
-                    <com.google.android.material.card.MaterialCardView
+                    <FrameLayout
                         android:layout_width="88dp"
-                        android:layout_height="88dp"
-                        app:cardCornerRadius="44dp"
-                        app:cardElevation="0dp"
-                        app:strokeWidth="0dp"
-                        app:cardBackgroundColor="?attr/ttColorPrimaryTint">
+                        android:layout_height="88dp">
 
-                        <TextView
-                            android:id="@+id/textAvatar"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:gravity="center"
-                            android:textColor="?attr/ttColorPrimary"
-                            android:textSize="28sp"
-                            android:textStyle="bold" />
-                    </com.google.android.material.card.MaterialCardView>
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="88dp"
+                            android:layout_height="88dp"
+                            app:cardCornerRadius="44dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="0dp"
+                            app:cardBackgroundColor="?attr/ttColorPrimaryTint">
+
+                            <ImageView
+                                android:id="@+id/imageAvatar"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:scaleType="centerCrop"
+                                android:visibility="gone"
+                                android:contentDescription="@string/cd_change_avatar" />
+
+                            <TextView
+                                android:id="@+id/textAvatar"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
+                                android:textAppearance="@style/TextAppearance.TungTung.HeadlineLarge"
+                                android:textColor="?attr/ttColorPrimary" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <ImageButton
+                            android:id="@+id/buttonChangeAvatar"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_gravity="bottom|end"
+                            android:background="@drawable/circle_background_primary"
+                            android:src="@drawable/ic_camera"
+                            android:scaleType="centerInside"
+                            android:padding="5dp"
+                            android:contentDescription="@string/cd_change_avatar"
+                            android:visibility="gone" />
+                    </FrameLayout>
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -62,8 +86,8 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/profile_header_label"
+                            android:textAppearance="@style/TextAppearance.TungTung.LabelSmall"
                             android:textColor="?attr/ttColorPrimary"
-                            android:textSize="12sp"
                             android:textStyle="bold" />
 
                         <TextView
@@ -71,17 +95,15 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:textColor="?attr/ttColorTextPrimary"
-                            android:textSize="24sp"
-                            android:textStyle="bold" />
+                            android:textAppearance="@style/TextAppearance.TungTung.HeadlineMedium" />
 
                         <TextView
                             android:id="@+id/textEmail"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:textColor="?attr/ttColorTextSecondary"
-                            android:textSize="14sp" />
+                            android:textAppearance="@style/TextAppearance.TungTung.BodyMedium"
+                            android:textColor="?attr/ttColorTextSecondary" />
                     </LinearLayout>
                 </LinearLayout>
 
@@ -125,6 +147,58 @@
 
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Learning Profile card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardAccountActions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            style="@style/Widget.TungTung.Card">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/profile_header_label"
+                    android:textAppearance="@style/TextAppearance.TungTung.LabelSmall"
+                    android:textColor="?attr/ttColorPrimary"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:id="@+id/actionEditProfile"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingVertical="8dp">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginEnd="12dp"
+                        android:src="@drawable/ic_nav_profile"
+                        android:contentDescription="@string/cd_edit_profile"
+                        android:tint="?attr/ttColorTextSecondary" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/profile_edit"
+                        android:textColor="?attr/ttColorTextPrimary" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardGuestProfilePromo"
             android:layout_width="match_parent"
@@ -147,17 +221,15 @@
                     android:id="@+id/textGuestProfileTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="?attr/ttColorTextPrimary"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:textAppearance="@style/TextAppearance.TungTung.TitleLarge" />
 
                 <TextView
                     android:id="@+id/textGuestProfileBody"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:textColor="?attr/ttColorTextSecondary"
-                    android:textSize="14sp" />
+                    android:textAppearance="@style/TextAppearance.TungTung.BodyMedium"
+                    android:textColor="?attr/ttColorTextSecondary" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonGuestProfileCreateAccount"
@@ -190,11 +262,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginEnd="6dp"
-                    app:cardBackgroundColor="?attr/ttColorSurface"
-                    app:cardCornerRadius="@dimen/card_radius"
-                    app:cardElevation="@dimen/elevation_sm"
-                    app:strokeColor="?attr/ttColorBorder"
-                    app:strokeWidth="1dp">
+                    style="@style/Widget.TungTung.Card">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -205,18 +273,15 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="🔥 Current streak"
-                            android:textColor="?attr/ttColorTextSecondary"
-                            android:textSize="12sp" />
+                            android:text="@string/profile_current_streak"
+                            android:textAppearance="@style/TextAppearance.TungTung.LabelSmall" />
 
                         <TextView
                             android:id="@+id/textCurrentStreak"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:textColor="?attr/ttColorPrimary"
-                            android:textSize="20sp"
-                            android:textStyle="bold" />
+                            android:textAppearance="@style/TextAppearance.TungTung.DisplayMedium" />
                     </LinearLayout>
 
                 </com.google.android.material.card.MaterialCardView>
@@ -226,11 +291,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginStart="6dp"
-                    app:cardBackgroundColor="?attr/ttColorSurface"
-                    app:cardCornerRadius="@dimen/card_radius"
-                    app:cardElevation="@dimen/elevation_sm"
-                    app:strokeColor="?attr/ttColorBorder"
-                    app:strokeWidth="1dp">
+                    style="@style/Widget.TungTung.Card">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -241,18 +302,15 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="🏆 Longest streak"
-                            android:textColor="?attr/ttColorTextSecondary"
-                            android:textSize="12sp" />
+                            android:text="@string/profile_longest_streak"
+                            android:textAppearance="@style/TextAppearance.TungTung.LabelSmall" />
 
                         <TextView
                             android:id="@+id/textLongestStreak"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:textColor="?attr/ttColorPrimary"
-                            android:textSize="20sp"
-                            android:textStyle="bold" />
+                            android:textAppearance="@style/TextAppearance.TungTung.DisplayMedium" />
                     </LinearLayout>
 
                 </com.google.android.material.card.MaterialCardView>
@@ -262,11 +320,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                app:cardBackgroundColor="?attr/ttColorSurface"
-                app:cardCornerRadius="@dimen/card_radius"
-                app:cardElevation="@dimen/elevation_sm"
-                app:strokeColor="?attr/ttColorBorder"
-                app:strokeWidth="1dp">
+                style="@style/Widget.TungTung.Card">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -277,18 +331,16 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="📚 Total study"
-                        android:textColor="?attr/ttColorTextSecondary"
-                        android:textSize="12sp" />
+                        android:text="@string/profile_total_study"
+                        android:textAppearance="@style/TextAppearance.TungTung.LabelSmall" />
 
                     <TextView
                         android:id="@+id/textTotalStudy"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:textColor="?attr/ttColorPrimary"
-                        android:textSize="22sp"
-                        android:textStyle="bold" />
+                        android:textAppearance="@style/TextAppearance.TungTung.HeadlineMedium"
+                        android:textColor="?attr/ttColorPrimary" />
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
@@ -299,11 +351,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            app:cardBackgroundColor="?attr/ttColorSurface"
-            app:cardCornerRadius="@dimen/card_radius"
-            app:cardElevation="@dimen/elevation_sm"
-            app:strokeColor="?attr/ttColorBorder"
-            app:strokeWidth="1dp">
+            style="@style/Widget.TungTung.Card">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -314,7 +362,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Weekly activity"
+                    android:text="@string/profile_weekly_activity"
                     android:textColor="?attr/ttColorTextPrimary"
                     android:textStyle="bold" />
 
@@ -334,11 +382,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            app:cardBackgroundColor="?attr/ttColorSurface"
-            app:cardCornerRadius="@dimen/card_radius"
-            app:cardElevation="@dimen/elevation_sm"
-            app:strokeColor="?attr/ttColorBorder"
-            app:strokeWidth="1dp">
+            style="@style/Widget.TungTung.Card">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -359,7 +403,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:gravity="center"
-                        android:text="TT"
+                        android:text="@string/mascot_initials"
                         android:textColor="?attr/ttColorPrimary"
                         android:textStyle="bold" />
                 </com.google.android.material.card.MaterialCardView>
@@ -376,68 +420,13 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Menu Account -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardAccountActions"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            app:cardBackgroundColor="?attr/ttColorSurface"
-            app:cardCornerRadius="@dimen/card_radius"
-            app:cardElevation="@dimen/elevation_sm"
-            app:strokeColor="?attr/ttColorBorder"
-            app:strokeWidth="1dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <LinearLayout
-                    android:id="@+id/actionEditProfile"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="?attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingVertical="8dp">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginEnd="12dp"
-                        android:src="@drawable/ic_nav_profile"
-                        android:tint="?attr/ttColorTextSecondary" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Chỉnh sửa hồ sơ"
-                        android:textColor="?attr/ttColorTextPrimary" />
-                </LinearLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginVertical="8dp"
-                    android:background="?attr/ttColorBorder" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardSettings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            app:cardBackgroundColor="?attr/ttColorSurface"
-            app:cardCornerRadius="@dimen/card_radius"
-            app:cardElevation="@dimen/elevation_sm"
-            app:strokeColor="?attr/ttColorBorder"
-            app:strokeWidth="1dp">
+            style="@style/Widget.TungTung.Card">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -538,8 +527,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:textColor="?attr/ttColorTextSecondary"
-                            android:textSize="12sp" />
+                            android:textAppearance="@style/TextAppearance.TungTung.LabelSmall" />
                     </LinearLayout>
 
                     <com.google.android.material.materialswitch.MaterialSwitch
@@ -553,8 +541,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:textColor="?attr/ttColorTextSecondary"
-                    android:textSize="12sp"
+                    android:textAppearance="@style/TextAppearance.TungTung.LabelSmall"
                     android:visibility="gone" />
 
                 <LinearLayout
@@ -578,8 +565,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:textColor="?attr/ttColorTextSecondary"
-                        android:textSize="12sp" />
+                        android:textAppearance="@style/TextAppearance.TungTung.LabelSmall" />
 
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
@@ -635,8 +621,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="4dp"
-                                    android:textColor="?attr/ttColorTextSecondary"
-                                    android:textSize="12sp" />
+                                    android:textAppearance="@style/TextAppearance.TungTung.LabelSmall" />
                             </LinearLayout>
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
@@ -708,8 +693,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:textColor="?attr/ttColorTextSecondary"
-                            android:textSize="12sp" />
+                            android:textAppearance="@style/TextAppearance.TungTung.LabelSmall" />
                     </LinearLayout>
 
                     <TextView

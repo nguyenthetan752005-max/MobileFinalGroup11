@@ -47,8 +47,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:textColor="?attr/ttColorTextMuted"
-                android:textSize="12sp" />
+                android:textAppearance="@style/TextAppearance.TungTung.LabelSmall"
+                android:textColor="?attr/ttColorTextMuted" />
         </LinearLayout>
 
         <TextView
@@ -80,8 +80,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="2dp"
-                android:textColor="?attr/ttColorTextMuted"
-                android:textSize="12sp" />
+                android:textAppearance="@style/TextAppearance.TungTung.LabelSmall"
+                android:textColor="?attr/ttColorTextMuted" />
 
             <ImageButton
                 android:id="@+id/buttonDislike"
@@ -99,8 +99,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="2dp"
-                android:textColor="?attr/ttColorTextMuted"
-                android:textSize="12sp" />
+                android:textAppearance="@style/TextAppearance.TungTung.LabelSmall"
+                android:textColor="?attr/ttColorTextMuted" />
 
             <ImageButton
                 android:id="@+id/buttonReply"
@@ -118,8 +118,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
+                android:textAppearance="@style/TextAppearance.TungTung.LabelSmall"
                 android:textColor="?attr/ttColorPrimary"
-                android:textSize="12sp"
                 android:textStyle="bold" />
         </LinearLayout>
 

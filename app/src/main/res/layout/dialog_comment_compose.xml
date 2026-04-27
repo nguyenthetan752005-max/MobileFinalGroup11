@@ -12,17 +12,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/label_write_comment"
-        android:textColor="?attr/ttColorTextPrimary"
-        android:textSize="18sp"
-        android:textStyle="bold"
+        android:textAppearance="@style/TextAppearance.TungTung.TitleLarge"
         android:layout_marginBottom="4dp" />
 
     <TextView
         android:id="@+id/textReplyingTo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.TungTung.BodySmall"
         android:textColor="?attr/ttColorTextMuted"
-        android:textSize="13sp"
         android:visibility="gone"
         android:layout_marginBottom="8dp" />
 

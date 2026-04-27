@@ -29,12 +29,14 @@ public class TranscriptAdapter extends RecyclerView.Adapter<TranscriptAdapter.Vi
         public final String sentence;
         public final SentenceStatus status;
         public final boolean selected;
+        public final boolean playing;
 
-        public Row(int order, String sentence, SentenceStatus status, boolean selected) {
+        public Row(int order, String sentence, SentenceStatus status, boolean selected, boolean playing) {
             this.order = order;
             this.sentence = sentence;
             this.status = status;
             this.selected = selected;
+            this.playing = playing;
         }
     }
 
@@ -96,6 +98,9 @@ public class TranscriptAdapter extends RecyclerView.Adapter<TranscriptAdapter.Vi
                     ? ThemeColorResolver.resolveColor(binding.getRoot().getContext(), R.attr.ttColorPrimary)
                     : ThemeColorResolver.resolveColor(binding.getRoot().getContext(), R.attr.ttColorBorder));
             binding.getRoot().setOnClickListener(v -> listener.onSentenceSelected(getBindingAdapterPosition()));
+            binding.buttonPlayRow.setImageResource(
+                    row.selected && row.playing ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play
+            );
             binding.buttonPlayRow.setOnClickListener(v -> listener.onPlayRow(getBindingAdapterPosition()));
         }
     }

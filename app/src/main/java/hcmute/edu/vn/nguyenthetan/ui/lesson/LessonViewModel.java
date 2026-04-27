@@ -113,6 +113,7 @@ public class LessonViewModel extends ViewModel {
     private long playbackDuration;
     private boolean speakingBusy;
     private String speakingBusyLabel = "";
+    private boolean repeatTranscriptMode;
     private boolean loaded;
 
     public LessonViewModel(
@@ -227,6 +228,18 @@ public class LessonViewModel extends ViewModel {
         playbackPosition = 0L;
         playing = false;
         publish();
+    }
+
+    public void setRepeatTranscriptMode(boolean repeat) {
+        this.repeatTranscriptMode = repeat;
+    }
+
+    public boolean isRepeatTranscriptMode() {
+        return repeatTranscriptMode;
+    }
+
+    public int getSelectedTab() {
+        return selectedTab;
     }
 
     public void checkAnswer() {
@@ -501,7 +514,8 @@ public class LessonViewModel extends ViewModel {
         List<TranscriptAdapter.Row> rows = new ArrayList<>();
         for (int i = 0; i < lessonSession.getSentences().size(); i++) {
             Sentence sentence = lessonSession.getSentences().get(i);
-            rows.add(new TranscriptAdapter.Row(i + 1, sentence.getContent(), sentenceStatuses.get(sentence.getId()), i == currentIndex));
+            boolean isSelected = i == currentIndex;
+            rows.add(new TranscriptAdapter.Row(i + 1, sentence.getContent(), sentenceStatuses.get(sentence.getId()), isSelected, isSelected && playing));
         }
         return rows;
     }

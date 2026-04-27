@@ -37,10 +37,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TungTung"
-                android:textColor="?attr/ttColorPrimary"
-                android:textSize="40sp"
-                android:textStyle="bold" />
+                android:text="@string/app_name"
+                android:textAppearance="@style/TextAppearance.TungTung.BrandSplash" />
         </LinearLayout>
 
         <TextView
@@ -48,9 +46,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:gravity="center"
-            android:text="Master English listening and speaking through short, focused practice."
-            android:textColor="?attr/ttColorTextSecondary"
-            android:textSize="16sp" />
+            android:text="@string/onboarding_subtitle"
+            android:textAppearance="@style/TextAppearance.TungTung.BodyLarge"
+            android:textColor="?attr/ttColorTextSecondary" />
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="140dp"

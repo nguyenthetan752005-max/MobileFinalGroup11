@@ -1,15 +1,13 @@
-<resources>
+﻿<resources>
     <string name="app_name">TungTung</string>
     <string name="nav_home">Home</string>
     <string name="nav_explore">Explore</string>
-    <string name="nav_leaderboard">Leaderboard</string>
     <string name="nav_top">Top</string>
     <string name="nav_profile">Profile</string>
     <string name="explore_search_hint">Search topics</string>
     <string name="explore_no_results">No topics match your search.</string>
     <string name="filter_listening">Listening</string>
     <string name="filter_speaking">Speaking</string>
-    <string name="home_greeting">Good morning, Tan</string>
     <string name="button_continue">Continue</string>
     <string name="button_continue_guest">Continue as Guest</string>
     <string name="button_google">Continue with Google</string>
@@ -17,7 +15,6 @@
     <string name="button_create_account">Create Account</string>
     <string name="button_back">Back</string>
     <string name="button_logout">Logout</string>
-    <string name="button_start_listening">Start Listening</string>
     <string name="login_title">Sign in to your account</string>
     <string name="login_subtitle">Use your backend API account to test mobile sync.</string>
     <string name="hint_username_or_email">Username or Email</string>
@@ -31,36 +28,21 @@
     <string name="link_sign_in">Already have an account? Sign in</string>
     <string name="session_guest_mode">You are in guest mode. Please sign in to view your profile and use full features.</string>
     <string name="session_logged_in">Signed in as %1$s</string>
-    <string name="session_backend_connected">Backend profile loaded for %1$s</string>
-    <string name="session_backend_failed">Signed in, but profile sync failed: %1$s</string>
     <string name="home_guest_promo_title">Create an account to keep your learning</string>
     <string name="home_guest_promo_body">Guest mode lets you listen right away, but progress, comments, streaks, and profile data are not saved.</string>
-    <string name="home_guest_streak_title">Guest mode</string>
-    <string name="home_guest_streak_value">No saved streak</string>
-    <string name="home_guest_mood">Listen only</string>
-    <string name="home_guest_progress">Guest sessions are not saved. Create an account to continue from where you left off.</string>
-    <string name="home_guest_today">No sync</string>
-    <string name="home_guest_week">No history</string>
-    <string name="home_guest_best">No profile</string>
-    <string name="guest_sign_in_prompt">Create an account to save progress, comment, and view your profile.</string>
     <string name="lesson_dictation">Dictation</string>
     <string name="lesson_transcript">Transcript</string>
     <string name="lesson_speaking">Speaking</string>
-    <string name="lesson_count_format">%1$d lessons</string>
     <string name="lesson_progress_format">%1$d/%2$d sentences</string>
     <string name="lesson_check">Check</string>
     <string name="lesson_skip">Skip</string>
     <string name="lesson_previous">&lt;</string>
     <string name="lesson_next">Next</string>
-    <string name="lesson_try_again">Try Again</string>
     <string name="lesson_comments_zero">0 comment</string>
     <string name="lesson_no_audio_source">This sentence has no audio URL.</string>
     <string name="lesson_audio_failed">Failed to play audio for this sentence.</string>
     <string name="lesson_audio_unauthorized">Audio URL is denied (401/403). Backend needs to provide a public media URL or a valid signed URL.</string>
-    <string name="lesson_video_unavailable">This lesson video does not have a valid YouTube link.</string>
-    <string name="lesson_video_external_fallback">Cannot play YouTube directly in the app on this device. The app will open YouTube externally to continue.</string>
     <string name="lesson_video_player_failed">Failed to initialize YouTube player in the app. The app will open YouTube externally to continue.</string>
-    <string name="lesson_sign_in_for_ai">Please sign in to use AI speaking evaluation. Guest mode is still a local demo.</string>
     <string name="lesson_record_permission_denied">You need to grant microphone permission to record speaking.</string>
     <string name="lesson_record_failed">Cannot start or complete recording speaking.</string>
     <string name="lesson_evaluating_speaking">Sending audio for AI evaluation...</string>
@@ -73,18 +55,14 @@
     <string name="loading">Loading...</string>
     <string name="leaderboard_active_time">Your active time: %1$s</string>
     <string name="leaderboard_empty">No leaderboard data yet.</string>
-    <string name="placeholder_coming_soon">Feature queued after the core flow.</string>
-    <string name="guest_login_required">You need to sign in to use this feature.</string>
     <string name="guest_display_name">Guest</string>
     <string name="guest_profile_hint">Sign in to view your personal information</string>
-    <string name="guest_profile_cta">Sign in to unlock statistics and study streaks</string>
     <string name="guest_profile_title">Build a real learning profile</string>
     <string name="guest_profile_body">Create an account to see your personal information, save progress, comment on lessons, and keep your streak across sessions.</string>
     <string name="profile_theme_label">Theme</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="settings_notifications_title">Study reminders</string>
-    <string name="settings_notifications_guest_hint">Daily reminders work on this device, even in guest mode.</string>
     <string name="settings_guest_device_hint">Guest mode can change appearance and reminders on this device, but profile data is still not synced.</string>
     <string name="settings_notifications_ready_summary">Daily reminders are enabled for this device.</string>
     <string name="settings_notifications_disabled_summary">Daily reminders are off for this device.</string>
@@ -96,7 +74,6 @@
     <string name="settings_notifications_permission_denied">Notification permission is off. Enable it in Android Settings to receive reminders.</string>
     <string name="settings_notifications_enabled_toast">Daily reminders enabled on this device.</string>
     <string name="settings_notifications_disabled_toast">Daily reminders disabled on this device.</string>
-    <string name="settings_notifications_save_failed">Could not save reminder settings to the server.</string>
     <string name="settings_appearance_title">App appearance</string>
     <string name="settings_preview_action">Preview</string>
     <string name="settings_language_summary">Language: English</string>
@@ -107,29 +84,22 @@
     <string name="settings_preview_body_text">See how cards, text, and buttons look before applying the palette to the full app.</string>
     <string name="settings_preview_stat_label">Streak</string>
     <string name="settings_preview_stat_value">7 days</string>
-    <string name="settings_preview_action_apply">Apply</string>
     <string name="settings_palette_dialog_title">Choose app palette</string>
     <string name="settings_palette_dialog_message">Pick a palette and preview it before applying across the app.</string>
     <string name="settings_palette_apply">Apply</string>
     <string name="settings_palette_cancel">Cancel</string>
     <string name="settings_palette_applied">%1$s palette applied.</string>
-    <string name="settings_open_profile_for_notifications">Open Profile to manage your settings.</string>
     <string name="palette_classic">Classic TungTung</string>
     <string name="palette_ocean">Ocean</string>
     <string name="palette_forest">Forest</string>
     <string name="palette_sunset">Sunset</string>
     <string name="palette_scary">Scary</string>
-    <string name="scary_palette_locked">Giao diện bị khóa trong mood Scary 🎃</string>
-    <string name="settings_palette_scary_summary">🎃 Scary — Tự động</string>
+    <string name="scary_palette_locked">Giao diá»‡n bá»‹ khÃ³a trong mood Scary ðŸŽƒ</string>
+    <string name="settings_palette_scary_summary">ðŸŽƒ Scary â€” Tá»± Ä‘á»™ng</string>
     <string name="daily_reminder_channel_name">Daily study reminders</string>
     <string name="daily_reminder_channel_description">TungTung sends a daily reminder to keep your English study streak going.</string>
-    <string name="daily_reminder_notification_body">Hôm nay bạn đã học tiếng anh chưa, nếu chưa hãy học cùng Tung Tung nhé!</string>
     <string name="lesson_search_hint">Search lessons</string>
     <string name="lesson_search_no_results">No lessons match your search.</string>
-    <string name="speaking_intro">Listen to the sample, record your voice, then compare the result.</string>
-    <string name="speaking_reference_label">REFERENCE</string>
-    <string name="speaking_sample_prompt">Play sample audio</string>
-    <string name="speaking_record_prompt">Record your answer</string>
     <string name="speaking_best_attempt">Best attempt</string>
     <string name="speaking_current_attempt">Current attempt</string>
     <string name="profile_header_label">Learning profile</string>
@@ -143,7 +113,7 @@
     <string name="dialog_network_required_positive">OK</string>
     <string name="dialog_server_required_title">Server Required</string>
     <string name="dialog_server_required_positive">OK</string>
-    <string name="dialog_account_locked_title">Tài khoản bị khóa</string>
+    <string name="dialog_account_locked_title">TÃ i khoáº£n bá»‹ khÃ³a</string>
     <string name="dialog_account_locked_positive">OK</string>
     <string name="error_connection_generic">Connection failed. Please try again.</string>
     <string name="error_auth_login_failed">Sign in failed. Please try again.</string>
@@ -197,7 +167,6 @@
     <string name="notification_current_lesson_label">Current lesson: %1$s</string>
     <string name="daily_reminder_notification_body_with_lesson">%1$s. %2$s</string>
     <string name="notifications_title">Notifications</string>
-    <string name="notifications_loading">Loading notifications...</string>
     <string name="notifications_empty">No notifications yet.</string>
     <string name="notifications_mark_all_read">Mark all read</string>
     <string name="notifications_load_failed">Could not load notifications right now.</string>
@@ -207,7 +176,74 @@
     <string name="notification_mood_body">TungTung is currently in %1$s mood.</string>
     <string name="notification_reminder_enabled_body">Daily reminder is on for %1$s (%2$s).</string>
     <string name="notification_reminder_disabled_body">Daily reminder is currently turned off.</string>
-    <string name="notification_reply_title">%1$s replied to your comment</string>
     <string name="notification_reply_fallback_body">You have a new reply.</string>
     <string name="notification_guest_hint">Sign in to see reply notifications.</string>
+
+    <!-- Home screen labels -->
+    <string name="home_study_streak">Study streak</string>
+    <string name="home_continue_learning">Continue Learning</string>
+    <string name="stats_today">Today</string>
+    <string name="stats_this_week">This Week</string>
+    <string name="stats_best_streak">Best Streak</string>
+
+    <!-- Explore / Leaderboard titles -->
+    <string name="explore_title">Explore</string>
+    <string name="leaderboard_title">Leaderboard</string>
+    <string name="leaderboard_your_rank">Your rank</string>
+
+    <!-- Profile labels -->
+    <string name="profile_current_streak">ðŸ”¥ Current streak</string>
+    <string name="profile_longest_streak">ðŸ† Longest streak</string>
+    <string name="profile_total_study">ðŸ“š Total study</string>
+    <string name="profile_weekly_activity">Weekly activity</string>
+    <string name="profile_edit">Chá»‰nh sá»­a há»“ sÆ¡</string>
+    <string name="mascot_initials">TT</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_subtitle">Master English listening and speaking through short, focused practice.</string>
+
+    <!-- Main banners / errors -->
+    <string name="offline_banner">No internet connection</string>
+    <string name="error_load_failed">Failed to load data.</string>
+
+    <!-- Login -->
+    <string name="login_forgot_password">QuÃªn máº­t kháº©u?</string>
+
+    <!-- Edit profile -->
+    <string name="edit_profile_change_name">Äá»•i tÃªn hiá»ƒn thá»‹</string>
+    <string name="edit_profile_update_name">Cáº­p nháº­t tÃªn</string>
+    <string name="edit_profile_change_password">Äá»•i máº­t kháº©u</string>
+    <string name="edit_profile_update_password">Cáº­p nháº­t máº­t kháº©u</string>
+    <string name="edit_profile_hint_new_name">TÃªn hiá»ƒn thá»‹ má»›i</string>
+    <string name="edit_profile_hint_current_password">Máº­t kháº©u hiá»‡n táº¡i</string>
+    <string name="edit_profile_hint_new_password">Máº­t kháº©u má»›i</string>
+
+    <!-- Forgot password -->
+    <string name="forgot_password_title">QuÃªn máº­t kháº©u</string>
+    <string name="forgot_password_subtitle">Vui lÃ²ng nháº­p Ä‘á»‹a chá»‰ email Ä‘Ã£ Ä‘Äƒng kÃ½. ChÃºng tÃ´i sáº½ gá»­i má»™t liÃªn káº¿t Ä‘á»ƒ báº¡n thiáº¿t láº­p láº¡i máº­t kháº©u.</string>
+    <string name="forgot_password_send_email">Gá»­i Email KhÃ´i Phá»¥c</string>
+    <string name="forgot_password_hint_email">Email</string>
+
+    <!-- Lesson -->
+    <string name="lesson_dictation_hint">Type what you hear</string>
+
+    <!-- Content descriptions (Accessibility) -->
+    <string name="cd_go_back">Go back</string>
+    <string name="cd_replay_audio">Replay audio</string>
+    <string name="cd_skip_prev">Previous sentence</string>
+    <string name="cd_skip_next">Next sentence</string>
+    <string name="cd_edit_profile">Edit profile</string>
+    <string name="cd_change_avatar">Change avatar</string>
+    <!-- Avatar -->
+    <string name="avatar_picker_title">Chá»n áº£nh Ä‘áº¡i diá»‡n</string>
+    <string name="avatar_option_camera">Chá»¥p áº£nh</string>
+    <string name="avatar_option_gallery">Chá»n tá»« thÆ° viá»‡n</string>
+    <string name="avatar_camera_permission_denied">Báº¡n cáº§n cáº¥p quyá»n camera Ä‘á»ƒ chá»¥p áº£nh.</string>
+    <string name="avatar_camera_failed">KhÃ´ng thá»ƒ má»Ÿ camera.</string>
+    <string name="avatar_load_failed">KhÃ´ng thá»ƒ táº£i áº£nh.</string>
+    <string name="avatar_saved">ÄÃ£ lÆ°u áº£nh Ä‘áº¡i diá»‡n.</string>
+
+    <!-- Transcript -->
+    <string name="lesson_repeat">Repeat</string>
 </resources>
+

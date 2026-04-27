@@ -10,11 +10,7 @@
         android:id="@+id/cardHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardBackgroundColor="?attr/ttColorSurface"
-        app:cardCornerRadius="@dimen/card_radius"
-        app:cardElevation="@dimen/elevation_sm"
-        app:strokeColor="?attr/ttColorBorder"
-        app:strokeWidth="1dp">
+        style="@style/Widget.TungTung.Card">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -28,17 +24,16 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textColor="?attr/ttColorTextPrimary"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textAppearance="@style/TextAppearance.TungTung.TitleMedium" />
 
             <TextView
                 android:id="@+id/textArrow"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="&#x25BE;"
+                android:textAppearance="@style/TextAppearance.TungTung.TitleLarge"
                 android:textColor="?attr/ttColorTextSecondary"
-                android:textSize="18sp" />
+                android:textStyle="normal" />
         </LinearLayout>
 
     </com.google.android.material.card.MaterialCardView>

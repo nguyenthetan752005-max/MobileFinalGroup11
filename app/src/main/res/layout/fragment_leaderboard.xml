@@ -15,18 +15,16 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Leaderboard"
-        android:textColor="?attr/ttColorTextPrimary"
-        android:textSize="28sp"
-        android:textStyle="bold" />
+        android:text="@string/leaderboard_title"
+        android:textAppearance="@style/TextAppearance.TungTung.HeadlineLarge" />
 
     <TextView
         android:id="@+id/textActiveTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:textColor="?attr/ttColorTextSecondary"
-        android:textSize="14sp" />
+        android:textAppearance="@style/TextAppearance.TungTung.BodyMedium"
+        android:textColor="?attr/ttColorTextSecondary" />
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"
@@ -89,7 +87,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Your rank"
+                android:text="@string/leaderboard_your_rank"
                 android:textColor="?attr/ttColorPrimary"
                 android:textStyle="bold" />
 
