@@ -12,7 +12,6 @@ import java.util.List;
 import hcmute.edu.vn.nguyenthetan.R;
 import hcmute.edu.vn.nguyenthetan.core.ThemeColorResolver;
 import hcmute.edu.vn.nguyenthetan.databinding.ItemTranscriptSentenceBinding;
-import hcmute.edu.vn.nguyenthetan.domain.model.lesson.SentenceStatus;
 
 import android.view.View;
 
@@ -24,24 +23,8 @@ public class TranscriptAdapter extends RecyclerView.Adapter<TranscriptAdapter.Vi
         void onPlayRow(int position);
     }
 
-    public static class Row {
-        public final int order;
-        public final String sentence;
-        public final SentenceStatus status;
-        public final boolean selected;
-        public final boolean playing;
-
-        public Row(int order, String sentence, SentenceStatus status, boolean selected, boolean playing) {
-            this.order = order;
-            this.sentence = sentence;
-            this.status = status;
-            this.selected = selected;
-            this.playing = playing;
-        }
-    }
-
     private final Listener listener;
-    private final List<Row> items = new ArrayList<>();
+    private final List<LessonTranscriptRow> items = new ArrayList<>();
     private boolean showStatus = true;
 
     public TranscriptAdapter(Listener listener) {
@@ -52,7 +35,7 @@ public class TranscriptAdapter extends RecyclerView.Adapter<TranscriptAdapter.Vi
         this.showStatus = showStatus;
     }
 
-    public void submitList(List<Row> rows) {
+    public void submitList(List<LessonTranscriptRow> rows) {
         items.clear();
         items.addAll(rows);
         notifyDataSetChanged();
@@ -84,7 +67,7 @@ public class TranscriptAdapter extends RecyclerView.Adapter<TranscriptAdapter.Vi
             this.binding = binding;
         }
 
-        void bind(Row row, Listener listener, boolean showStatus) {
+        void bind(LessonTranscriptRow row, Listener listener, boolean showStatus) {
             binding.textOrder.setText(String.valueOf(row.order));
             binding.textSentence.setText(row.sentence);
             binding.textStatus.setVisibility(showStatus ? View.VISIBLE : View.GONE);

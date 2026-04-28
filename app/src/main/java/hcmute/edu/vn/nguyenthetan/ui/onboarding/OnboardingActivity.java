@@ -5,15 +5,14 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
-import hcmute.edu.vn.nguyenthetan.ui.common.ThemedActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import hcmute.edu.vn.nguyenthetan.R;
 import hcmute.edu.vn.nguyenthetan.TungTungApplication;
@@ -22,27 +21,20 @@ import hcmute.edu.vn.nguyenthetan.core.NetworkUtils;
 import hcmute.edu.vn.nguyenthetan.core.NotificationPreferenceStore;
 import hcmute.edu.vn.nguyenthetan.core.ReminderSettingsStore;
 import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
-import hcmute.edu.vn.nguyenthetan.data.remote.api.MobileApiService;
-import hcmute.edu.vn.nguyenthetan.data.remote.dto.AuthResponseDto;
-import hcmute.edu.vn.nguyenthetan.data.remote.dto.GoogleAuthRequestDto;
-import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileReminderSettingsDto;
-import hcmute.edu.vn.nguyenthetan.ui.main.MainActivity;
-import hcmute.edu.vn.nguyenthetan.ui.auth.LoginActivity;
-import hcmute.edu.vn.nguyenthetan.ui.auth.RegisterActivity;
-import hcmute.edu.vn.nguyenthetan.ui.auth.AuthResponseHelper;
-import hcmute.edu.vn.nguyenthetan.ui.auth.GoogleAuthSupport;
+import hcmute.edu.vn.nguyenthetan.domain.model.profile.ReminderSettings;
 import hcmute.edu.vn.nguyenthetan.databinding.ActivityOnboardingBinding;
 import hcmute.edu.vn.nguyenthetan.ui.auth.AccountLockUiHandler;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import hcmute.edu.vn.nguyenthetan.ui.auth.AuthSubmissionState;
+import hcmute.edu.vn.nguyenthetan.ui.auth.GoogleAuthSupport;
+import hcmute.edu.vn.nguyenthetan.ui.auth.LoginActivity;
+import hcmute.edu.vn.nguyenthetan.ui.auth.RegisterActivity;
+import hcmute.edu.vn.nguyenthetan.ui.common.ThemedActivity;
+import hcmute.edu.vn.nguyenthetan.ui.main.MainActivity;
 
 public class OnboardingActivity extends ThemedActivity {
 
-    private static final String TAG = "OnboardingActivity";
-
     private ActivityOnboardingBinding binding;
-    private MobileApiService mobileApiService;
+    private OnboardingViewModel viewModel;
     private UserSessionStore userSessionStore;
     private GoogleAuthSupport googleAuthSupport;
     private TungTungApplication application;
@@ -62,22 +54,34 @@ public class OnboardingActivity extends ThemedActivity {
         super.onCreate(savedInstanceState);
         application = (TungTungApplication) getApplication();
         userSessionStore = application.getAppContainer().getUserSessionStore();
-        mobileApiService = application.getAppContainer().getMobileApiService();
+
+        OnboardingViewModelFactory factory = new OnboardingViewModelFactory(
+                application.getAppContainer().getGoogleAuthUseCase(),
+                application.getAppContainer().getReminderSettingsUseCase(),
+                userSessionStore,
+                () -> application.getAppContainer().refreshCurrentUserProfile()
+        );
+        viewModel = new ViewModelProvider(this, factory).get(OnboardingViewModel.class);
+        viewModel.getAuthState().observe(this, this::renderAuthState);
+        viewModel.getReminderState().observe(this, this::applyReminderSettings);
+
         binding = ActivityOnboardingBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         ensureReminderPreferenceInitialized();
-        syncReminderSettings();
+        viewModel.loadReminderSettings();
         AccountLockUiHandler.attach(this);
         showIncomingMessageIfNeeded();
         googleAuthSupport = new GoogleAuthSupport(this, new GoogleAuthSupport.Callback() {
             @Override
             public void onGoogleIdTokenReceived(@NonNull String idToken) {
-                submitGoogleAuth(idToken);
+                if (ensureNetworkAvailable()) {
+                    viewModel.submitGoogle(idToken);
+                }
             }
 
             @Override
             public void onGoogleAuthLoadingChanged(boolean loading) {
-                setLoading(loading, R.string.loading_google_sign_in);
+                applyLoadingOverlay(loading, R.string.loading_google_sign_in);
             }
         });
         if (userSessionStore.isLoggedIn() && NetworkUtils.isNetworkAvailable(this)) {
@@ -104,6 +108,44 @@ public class OnboardingActivity extends ThemedActivity {
                 startActivity(new Intent(this, RegisterActivity.class));
             }
         });
+    }
+
+    private void renderAuthState(AuthSubmissionState state) {
+        boolean loading = state.status == AuthSubmissionState.Status.LOADING;
+        applyLoadingOverlay(loading, R.string.loading_signing_in);
+        switch (state.status) {
+            case SUCCESS:
+                Toast.makeText(this,
+                        state.message == null || state.message.isEmpty() ? "Login successful." : state.message,
+                        Toast.LENGTH_SHORT).show();
+                viewModel.acknowledgeAuth();
+                openMain();
+                break;
+            case ERROR:
+            case ACCOUNT_LOCKED:
+                Toast.makeText(this,
+                        state.message == null || state.message.isEmpty() ? "Google login failed" : state.message,
+                        Toast.LENGTH_SHORT).show();
+                viewModel.acknowledgeAuth();
+                break;
+            case NETWORK_ERROR:
+                Toast.makeText(this, R.string.error_connection_generic, Toast.LENGTH_SHORT).show();
+                viewModel.acknowledgeAuth();
+                break;
+            case IDLE:
+            case LOADING:
+            default:
+                break;
+        }
+    }
+
+    private void applyReminderSettings(ReminderSettings settings) {
+        if (settings == null) {
+            DailyReminderScheduler.apply(this);
+            return;
+        }
+        ReminderSettingsStore.save(this, settings.dailyReminderEnabled, settings.dailyReminderTime, settings.dailyReminderTimezone);
+        DailyReminderScheduler.apply(this);
     }
 
     private void openMain() {
@@ -137,84 +179,6 @@ public class OnboardingActivity extends ThemedActivity {
         DailyReminderScheduler.cancel(this);
     }
 
-    private void syncReminderSettings() {
-        mobileApiService.getReminderSettings().enqueue(new Callback<MobileReminderSettingsDto>() {
-            @Override
-            public void onResponse(Call<MobileReminderSettingsDto> call, Response<MobileReminderSettingsDto> response) {
-                if (!response.isSuccessful() || response.body() == null) {
-                    DailyReminderScheduler.apply(OnboardingActivity.this);
-                    return;
-                }
-                MobileReminderSettingsDto body = response.body();
-                ReminderSettingsStore.save(
-                        OnboardingActivity.this,
-                        body.dailyReminderEnabled,
-                        body.dailyReminderTime,
-                        body.dailyReminderTimezone
-                );
-                DailyReminderScheduler.apply(OnboardingActivity.this);
-            }
-
-            @Override
-            public void onFailure(Call<MobileReminderSettingsDto> call, Throwable throwable) {
-                DailyReminderScheduler.apply(OnboardingActivity.this);
-            }
-        });
-    }
-
-    private void submitGoogleAuth(@NonNull String idToken) {
-        if (!ensureNetworkAvailable()) {
-            return;
-        }
-        Log.d(TAG, "Submitting Google auth from onboarding. tokenLength=" + idToken.length());
-        setLoading(true, R.string.loading_signing_in);
-        mobileApiService.googleAuth(new GoogleAuthRequestDto(idToken)).enqueue(new Callback<AuthResponseDto>() {
-            @Override
-            public void onResponse(Call<AuthResponseDto> call, Response<AuthResponseDto> response) {
-                setLoading(false, R.string.loading_signing_in);
-                Log.d(
-                        TAG,
-                        "Onboarding Google auth HTTP response. code=" + response.code()
-                                + ", successful=" + response.isSuccessful()
-                                + ", errorBody=" + AuthResponseHelper.peekErrorBody(response)
-                );
-                if (!response.isSuccessful() || response.body() == null) {
-                    Toast.makeText(
-                            OnboardingActivity.this,
-                            AuthResponseHelper.resolveErrorMessage(response, "Google login failed"),
-                            Toast.LENGTH_SHORT
-                    ).show();
-                    return;
-                }
-
-                AuthResponseDto body = response.body();
-                Log.d(
-                        TAG,
-                        "Onboarding Google auth body received. success=" + body.success
-                                + ", userId=" + body.userId
-                                + ", message=" + body.message
-                );
-                if (!body.success || body.userId == null) {
-                    Toast.makeText(OnboardingActivity.this, body.message == null ? "Google login failed." : body.message, Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                userSessionStore.saveUser(body.userId, body.username, body.email, body.token);
-                application.getAppContainer().refreshCurrentUserProfile();
-                Log.d(TAG, "User session saved from onboarding. Opening MainActivity.");
-                Toast.makeText(OnboardingActivity.this, body.message == null ? "Login successful." : body.message, Toast.LENGTH_SHORT).show();
-                openMain();
-            }
-
-            @Override
-            public void onFailure(Call<AuthResponseDto> call, Throwable throwable) {
-                setLoading(false, R.string.loading_signing_in);
-                Log.e(TAG, "Onboarding Google auth network failure.", throwable);
-                Toast.makeText(OnboardingActivity.this, R.string.error_connection_generic, Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
     private void setButtonsEnabled(boolean enabled) {
         binding.buttonGoogle.setEnabled(enabled);
         binding.buttonSignIn.setEnabled(enabled);
@@ -222,7 +186,7 @@ public class OnboardingActivity extends ThemedActivity {
         binding.buttonGuest.setEnabled(enabled);
     }
 
-    private void setLoading(boolean loading, int messageRes) {
+    private void applyLoadingOverlay(boolean loading, int messageRes) {
         binding.loadingOverlay.setVisibility(loading ? View.VISIBLE : View.GONE);
         binding.textLoadingMessage.setText(messageRes);
         setButtonsEnabled(!loading);
@@ -241,9 +205,9 @@ public class OnboardingActivity extends ThemedActivity {
     }
 
     private void checkServerAndRun(int loadingMessageRes, Runnable onAvailable) {
-        setLoading(true, loadingMessageRes);
+        applyLoadingOverlay(true, loadingMessageRes);
         application.getAppContainer().checkServerAvailability((available, message) -> {
-            setLoading(false, loadingMessageRes);
+            applyLoadingOverlay(false, loadingMessageRes);
             if (available) {
                 onAvailable.run();
                 return;
@@ -268,4 +232,3 @@ public class OnboardingActivity extends ThemedActivity {
                 .show();
     }
 }
-

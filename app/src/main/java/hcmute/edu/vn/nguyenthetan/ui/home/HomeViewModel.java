@@ -9,17 +9,24 @@ import java.util.concurrent.Executors;
 
 import hcmute.edu.vn.nguyenthetan.domain.model.home.HomeDashboard;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.home.GetHomeDashboardUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.notification.GetNotificationSummaryUseCase;
 
 public class HomeViewModel extends ViewModel {
 
     private final GetHomeDashboardUseCase getHomeDashboardUseCase;
+    private final GetNotificationSummaryUseCase getNotificationSummaryUseCase;
     private final MutableLiveData<HomeDashboard> dashboardState = new MutableLiveData<>();
     private final MutableLiveData<Boolean> loadingState = new MutableLiveData<>(false);
+    private final MutableLiveData<Long> unreadNotificationCount = new MutableLiveData<>(0L);
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private boolean loaded;
 
-    public HomeViewModel(GetHomeDashboardUseCase getHomeDashboardUseCase) {
+    public HomeViewModel(
+            GetHomeDashboardUseCase getHomeDashboardUseCase,
+            GetNotificationSummaryUseCase getNotificationSummaryUseCase
+    ) {
         this.getHomeDashboardUseCase = getHomeDashboardUseCase;
+        this.getNotificationSummaryUseCase = getNotificationSummaryUseCase;
     }
 
     public LiveData<HomeDashboard> getDashboardState() {
@@ -28,6 +35,10 @@ public class HomeViewModel extends ViewModel {
 
     public LiveData<Boolean> getLoadingState() {
         return loadingState;
+    }
+
+    public LiveData<Long> getUnreadNotificationCount() {
+        return unreadNotificationCount;
     }
 
     public void load() {
@@ -45,6 +56,16 @@ public class HomeViewModel extends ViewModel {
     public void forceLoad() {
         loaded = false;
         load();
+    }
+
+    public void refreshNotificationBadge(boolean loggedIn) {
+        if (!loggedIn) {
+            unreadNotificationCount.postValue(0L);
+            return;
+        }
+        executorService.execute(() ->
+                unreadNotificationCount.postValue(getNotificationSummaryUseCase.execute())
+        );
     }
 
     @Override

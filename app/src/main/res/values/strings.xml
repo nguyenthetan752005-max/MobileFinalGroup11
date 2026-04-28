@@ -94,8 +94,8 @@
     <string name="palette_forest">Forest</string>
     <string name="palette_sunset">Sunset</string>
     <string name="palette_scary">Scary</string>
-    <string name="scary_palette_locked">Giao diá»‡n bá»‹ khÃ³a trong mood Scary ðŸŽƒ</string>
-    <string name="settings_palette_scary_summary">ðŸŽƒ Scary â€” Tá»± Ä‘á»™ng</string>
+    <string name="scary_palette_locked">Giao diện bị khóa trong mood Scary 🎃</string>
+    <string name="settings_palette_scary_summary">🎃 Scary — Tự động</string>
     <string name="daily_reminder_channel_name">Daily study reminders</string>
     <string name="daily_reminder_channel_description">TungTung sends a daily reminder to keep your English study streak going.</string>
     <string name="lesson_search_hint">Search lessons</string>
@@ -113,7 +113,7 @@
     <string name="dialog_network_required_positive">OK</string>
     <string name="dialog_server_required_title">Server Required</string>
     <string name="dialog_server_required_positive">OK</string>
-    <string name="dialog_account_locked_title">TÃ i khoáº£n bá»‹ khÃ³a</string>
+    <string name="dialog_account_locked_title">Tài khoản bị khóa</string>
     <string name="dialog_account_locked_positive">OK</string>
     <string name="error_connection_generic">Connection failed. Please try again.</string>
     <string name="error_auth_login_failed">Sign in failed. Please try again.</string>
@@ -192,11 +192,11 @@
     <string name="leaderboard_your_rank">Your rank</string>
 
     <!-- Profile labels -->
-    <string name="profile_current_streak">ðŸ”¥ Current streak</string>
-    <string name="profile_longest_streak">ðŸ† Longest streak</string>
-    <string name="profile_total_study">ðŸ“š Total study</string>
+    <string name="profile_current_streak">🔥 Current streak</string>
+    <string name="profile_longest_streak">🏆 Longest streak</string>
+    <string name="profile_total_study">📚 Total study</string>
     <string name="profile_weekly_activity">Weekly activity</string>
-    <string name="profile_edit">Chá»‰nh sá»­a há»“ sÆ¡</string>
+    <string name="profile_edit">Chỉnh sửa hồ sơ</string>
     <string name="mascot_initials">TT</string>
 
     <!-- Onboarding -->
@@ -207,21 +207,21 @@
     <string name="error_load_failed">Failed to load data.</string>
 
     <!-- Login -->
-    <string name="login_forgot_password">QuÃªn máº­t kháº©u?</string>
+    <string name="login_forgot_password">Quên mật khẩu?</string>
 
     <!-- Edit profile -->
-    <string name="edit_profile_change_name">Äá»•i tÃªn hiá»ƒn thá»‹</string>
-    <string name="edit_profile_update_name">Cáº­p nháº­t tÃªn</string>
-    <string name="edit_profile_change_password">Äá»•i máº­t kháº©u</string>
-    <string name="edit_profile_update_password">Cáº­p nháº­t máº­t kháº©u</string>
-    <string name="edit_profile_hint_new_name">TÃªn hiá»ƒn thá»‹ má»›i</string>
-    <string name="edit_profile_hint_current_password">Máº­t kháº©u hiá»‡n táº¡i</string>
-    <string name="edit_profile_hint_new_password">Máº­t kháº©u má»›i</string>
+    <string name="edit_profile_change_name">Đổi tên hiển thị</string>
+    <string name="edit_profile_update_name">Cập nhật tên</string>
+    <string name="edit_profile_change_password">Đổi mật khẩu</string>
+    <string name="edit_profile_update_password">Cập nhật mật khẩu</string>
+    <string name="edit_profile_hint_new_name">Tên hiển thị mới</string>
+    <string name="edit_profile_hint_current_password">Mật khẩu hiện tại</string>
+    <string name="edit_profile_hint_new_password">Mật khẩu mới</string>
 
     <!-- Forgot password -->
-    <string name="forgot_password_title">QuÃªn máº­t kháº©u</string>
-    <string name="forgot_password_subtitle">Vui lÃ²ng nháº­p Ä‘á»‹a chá»‰ email Ä‘Ã£ Ä‘Äƒng kÃ½. ChÃºng tÃ´i sáº½ gá»­i má»™t liÃªn káº¿t Ä‘á»ƒ báº¡n thiáº¿t láº­p láº¡i máº­t kháº©u.</string>
-    <string name="forgot_password_send_email">Gá»­i Email KhÃ´i Phá»¥c</string>
+    <string name="forgot_password_title">Quên mật khẩu</string>
+    <string name="forgot_password_subtitle">Vui lòng nhập địa chỉ email đã đăng ký. Chúng tôi sẽ gửi một liên kết để bạn thiết lập lại mật khẩu.</string>
+    <string name="forgot_password_send_email">Gửi Email Khôi Phục</string>
     <string name="forgot_password_hint_email">Email</string>
 
     <!-- Lesson -->
@@ -235,13 +235,13 @@
     <string name="cd_edit_profile">Edit profile</string>
     <string name="cd_change_avatar">Change avatar</string>
     <!-- Avatar -->
-    <string name="avatar_picker_title">Chá»n áº£nh Ä‘áº¡i diá»‡n</string>
-    <string name="avatar_option_camera">Chá»¥p áº£nh</string>
-    <string name="avatar_option_gallery">Chá»n tá»« thÆ° viá»‡n</string>
-    <string name="avatar_camera_permission_denied">Báº¡n cáº§n cáº¥p quyá»n camera Ä‘á»ƒ chá»¥p áº£nh.</string>
-    <string name="avatar_camera_failed">KhÃ´ng thá»ƒ má»Ÿ camera.</string>
-    <string name="avatar_load_failed">KhÃ´ng thá»ƒ táº£i áº£nh.</string>
-    <string name="avatar_saved">ÄÃ£ lÆ°u áº£nh Ä‘áº¡i diá»‡n.</string>
+    <string name="avatar_picker_title">Chọn ảnh đại diện</string>
+    <string name="avatar_option_camera">Chụp ảnh</string>
+    <string name="avatar_option_gallery">Chọn từ thư viện</string>
+    <string name="avatar_camera_permission_denied">Bạn cần cấp quyền camera để chụp ảnh.</string>
+    <string name="avatar_camera_failed">Không thể mở camera.</string>
+    <string name="avatar_load_failed">Không thể tải ảnh.</string>
+    <string name="avatar_saved">Đã lưu ảnh đại diện.</string>
 
     <!-- Transcript -->
     <string name="lesson_repeat">Repeat</string>

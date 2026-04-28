@@ -6,12 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import hcmute.edu.vn.nguyenthetan.data.remote.dto.DictationResultDto;
+import hcmute.edu.vn.nguyenthetan.domain.model.lesson.DictationResult;
 import hcmute.edu.vn.nguyenthetan.domain.model.lesson.DictationFeedback;
 
 public class DictationFeedbackMapper {
 
-    public static DictationFeedback map(@NonNull DictationResultDto dto, String currentSentenceContent, String currentHintText) {
+    public static DictationFeedback map(@NonNull DictationResult dto, String currentSentenceContent, String currentHintText) {
         String fullAnswer = dto.correctSentence == null || dto.correctSentence.trim().isEmpty()
                 ? currentSentenceContent : dto.correctSentence;
         String[] answerWords = splitWords(fullAnswer);
@@ -31,7 +31,7 @@ public class DictationFeedbackMapper {
         );
     }
 
-    private static String buildVisibleHint(DictationResultDto dto, String currentHintText) {
+    private static String buildVisibleHint(DictationResult dto, String currentHintText) {
         if (dto.hintWords == null || dto.hintWords.isEmpty()) {
             return currentHintText == null ? "" : currentHintText;
         }

@@ -8,9 +8,6 @@ import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -25,10 +22,6 @@ import hcmute.edu.vn.nguyenthetan.data.repository.RoomLeaderboardRepository;
 import hcmute.edu.vn.nguyenthetan.data.repository.RoomLessonRepository;
 import hcmute.edu.vn.nguyenthetan.data.repository.RoomProfileRepository;
 import hcmute.edu.vn.nguyenthetan.data.remote.api.MobileApiService;
-import hcmute.edu.vn.nguyenthetan.core.MascotMoodResolver;
-import hcmute.edu.vn.nguyenthetan.data.local.entity.user.ProfileEntity;
-import hcmute.edu.vn.nguyenthetan.data.local.entity.user.DailyActivityEntity;
-import hcmute.edu.vn.nguyenthetan.data.local.entity.user.StreakDayEntity;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.HealthStatusDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileBootstrapDto;
 import hcmute.edu.vn.nguyenthetan.data.remote.dto.UserProfileDto;
@@ -37,20 +30,39 @@ import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteLeaderboardSyncManager;
 import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteLessonSyncManager;
 import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteNotificationSyncManager;
 import hcmute.edu.vn.nguyenthetan.data.remote.sync.RemoteProgressSyncManager;
-import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.CheckDictationAnswerUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.auth.ForgotPasswordUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.auth.GoogleAuthUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.auth.LoginUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.auth.RegisterUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.comment.AddCommentUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.comment.DeleteCommentUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.comment.GetCommentsUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.comment.SyncSentenceCommentsUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.comment.VoteCommentUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.explore.GetExploreCatalogUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.home.GetHomeDashboardUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.leaderboard.GetLeaderboardUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.leaderboard.SyncLeaderboardUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.CheckDictationAnswerUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.CheckDictationOnlineUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.EvaluateSpeakingUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.GetLessonCollectionUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.GetLessonProgressUseCase;
-import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncLessonProgressUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.GetLessonSessionUseCase;
-import hcmute.edu.vn.nguyenthetan.domain.usecase.profile.GetProfileUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.GetSpeakingResultsUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SaveSentenceStatusUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SaveSpeakingAttemptUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SkipDictationUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncLessonProgressUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.TrackLessonTimeUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.notification.GetNotificationSummaryUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.notification.GetNotificationsUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.notification.MarkAllNotificationsReadUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.notification.MarkNotificationReadUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.profile.ChangePasswordUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.profile.GetProfileUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.profile.GetReminderSettingsUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.profile.UpdateUsernameUseCase;
 import retrofit2.Response;
 
 public class AppContainer {
@@ -80,6 +92,25 @@ public class AppContainer {
     private final SaveSpeakingAttemptUseCase saveSpeakingAttemptUseCase;
     private final hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncCategoryCollectionUseCase syncCategoryCollectionUseCase;
     private final hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncSectionLessonsUseCase syncSectionLessonsUseCase;
+    private final LoginUseCase loginUseCase;
+    private final RegisterUseCase registerUseCase;
+    private final GoogleAuthUseCase googleAuthUseCase;
+    private final ForgotPasswordUseCase forgotPasswordUseCase;
+    private final UpdateUsernameUseCase updateUsernameUseCase;
+    private final ChangePasswordUseCase changePasswordUseCase;
+    private final GetReminderSettingsUseCase getReminderSettingsUseCase;
+    private final GetNotificationsUseCase getNotificationsUseCase;
+    private final GetNotificationSummaryUseCase getNotificationSummaryUseCase;
+    private final MarkAllNotificationsReadUseCase markAllNotificationsReadUseCase;
+    private final MarkNotificationReadUseCase markNotificationReadUseCase;
+    private final CheckDictationOnlineUseCase checkDictationOnlineUseCase;
+    private final SkipDictationUseCase skipDictationUseCase;
+    private final EvaluateSpeakingUseCase evaluateSpeakingUseCase;
+    private final GetSpeakingResultsUseCase getSpeakingResultsUseCase;
+    private final TrackLessonTimeUseCase trackLessonTimeUseCase;
+    private final AddCommentUseCase addCommentUseCase;
+    private final VoteCommentUseCase voteCommentUseCase;
+    private final DeleteCommentUseCase deleteCommentUseCase;
     private final MutableLiveData<Boolean> isSyncing = new MutableLiveData<>(true);
     private final MutableLiveData<String> syncErrorMessage = new MutableLiveData<>();
     private final RemoteCategorySyncManager remoteCategorySyncManager;
@@ -90,6 +121,7 @@ public class AppContainer {
     private final TungTungDatabase database;
     private final MobileApiService mobileApiService;
     private final UserSessionStore userSessionStore;
+    private final ProfileSyncMapper profileSyncMapper;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final Context appContext;
     private final Object refreshLock = new Object();
@@ -100,6 +132,7 @@ public class AppContainer {
         this.appContext = context.getApplicationContext();
         userSessionStore = new UserSessionStore(context);
         database = DatabaseModule.createDatabase(context);
+        profileSyncMapper = new ProfileSyncMapper(appContext, database);
 
         ioExecutor = Executors.newFixedThreadPool(3);
 
@@ -167,6 +200,26 @@ public class AppContainer {
         saveSpeakingAttemptUseCase = new SaveSpeakingAttemptUseCase(lessonRepository);
         syncCategoryCollectionUseCase = new hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncCategoryCollectionUseCase(catalogRepository);
         syncSectionLessonsUseCase = new hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncSectionLessonsUseCase(catalogRepository);
+
+        loginUseCase = new LoginUseCase(mobileApiService);
+        registerUseCase = new RegisterUseCase(mobileApiService);
+        googleAuthUseCase = new GoogleAuthUseCase(mobileApiService);
+        forgotPasswordUseCase = new ForgotPasswordUseCase(mobileApiService);
+        updateUsernameUseCase = new UpdateUsernameUseCase(mobileApiService);
+        changePasswordUseCase = new ChangePasswordUseCase(mobileApiService);
+        getReminderSettingsUseCase = new GetReminderSettingsUseCase(mobileApiService);
+        getNotificationsUseCase = new GetNotificationsUseCase(mobileApiService);
+        getNotificationSummaryUseCase = new GetNotificationSummaryUseCase(mobileApiService);
+        markAllNotificationsReadUseCase = new MarkAllNotificationsReadUseCase(mobileApiService);
+        markNotificationReadUseCase = new MarkNotificationReadUseCase(mobileApiService);
+        checkDictationOnlineUseCase = new CheckDictationOnlineUseCase(mobileApiService);
+        skipDictationUseCase = new SkipDictationUseCase(mobileApiService);
+        evaluateSpeakingUseCase = new EvaluateSpeakingUseCase(mobileApiService);
+        getSpeakingResultsUseCase = new GetSpeakingResultsUseCase(mobileApiService);
+        trackLessonTimeUseCase = new TrackLessonTimeUseCase(mobileApiService);
+        addCommentUseCase = new AddCommentUseCase(mobileApiService);
+        voteCommentUseCase = new VoteCommentUseCase(mobileApiService);
+        deleteCommentUseCase = new DeleteCommentUseCase(mobileApiService);
     }
 
     public void sync() {
@@ -250,9 +303,9 @@ public class AppContainer {
     }
 
     /**
-     * Syncs user profile from backend API to local Room DB.
-     * This ensures local data (todayStudyMinutes, missedDays, etc.) is available
-     * for immediate mascot mood resolution without an extra async API call.
+     * Fetches the user's profile from the backend and persists it locally so the
+     * home/profile screens can render immediately without another async hop.
+     * Mapping is delegated to {@link ProfileSyncMapper}.
      */
     private void syncProfile() {
         if (!userSessionStore.isLoggedIn()) {
@@ -274,81 +327,10 @@ public class AppContainer {
                 Log.w(TAG, "Profile sync skipped. HTTP " + response.code());
                 return;
             }
-            UserProfileDto dto = response.body();
-            int daysSince = resolveDaysSinceLastStudy(dto);
-            int todaySeconds = MascotMoodResolver.getTodaySeconds(dto.weeklyActivity);
-            int todayMinutes = todaySeconds / 60;
-            int weekMinutes = dto.activeTime7d / 60;
-            int totalMinutes = dto.totalActiveTime / 60;
-            MascotMoodResolver.Mood mood = MascotMoodResolver.resolve(daysSince, todaySeconds);
-            hcmute.edu.vn.nguyenthetan.core.AppearancePreferenceStore.setCurrentMood(appContext, mood);
-
-            ProfileEntity profile = new ProfileEntity(
-                    1L,
-                    dto.username,
-                    dto.email,
-                    dto.currentStreak,
-                    dto.longestStreak,
-                    totalMinutes,
-                    todayMinutes,
-                    weekMinutes,
-                    false,
-                    Boolean.TRUE.equals(dto.notificationsEnabled),
-                    mood.getId(),
-                    mood.getLabel(),
-                    "",
-                    daysSince,
-                    daysSince >= 1
-            );
-            database.profileDao().upsert(profile);
-
-            // Sync streak days from weeklyActivity
-            if (dto.weeklyActivity != null && dto.weeklyActivity.size() == 7) {
-                List<StreakDayEntity> streakDays = new ArrayList<>();
-                for (int i = 0; i < 7; i++) {
-                    boolean studied = dto.weeklyActivity.get(i) > 0;
-                    boolean isToday = (i == 6);
-                    streakDays.add(new StreakDayEntity(i, studied, isToday));
-                }
-                database.streakDayDao().deleteAll();
-                database.streakDayDao().insertAll(streakDays);
-            }
-
-            // Sync daily activity chart data from weeklyActivity
-            if (dto.weeklyActivity != null && dto.weeklyActivity.size() == 7) {
-                List<DailyActivityEntity> dailyActivities = new ArrayList<>();
-                String[] dayLabels = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
-                // weeklyActivity index 6 = today, index 0 = 6 days ago
-                for (int i = 0; i < 7; i++) {
-                    int daysAgo = 6 - i;
-                    Calendar dayCal = Calendar.getInstance();
-                    dayCal.add(Calendar.DAY_OF_YEAR, -daysAgo);
-                    int dow = dayCal.get(Calendar.DAY_OF_WEEK);
-                    // Map Calendar.DAY_OF_WEEK (Sun=1..Sat=7) to label index (Mon=0..Sun=6)
-                    int labelIdx = (dow + 5) % 7;
-                    int mins = dto.weeklyActivity.get(i) / 60;
-                    boolean highlighted = (i == 6);
-                    dailyActivities.add(new DailyActivityEntity(i, dayLabels[labelIdx], mins, highlighted));
-                }
-                database.dailyActivityDao().deleteAll();
-                database.dailyActivityDao().insertAll(dailyActivities);
-            }
-
-            Log.d(TAG, "Profile synced. todayMin=" + todayMinutes + ", missedDays=" + daysSince + ", mood=" + mood.name());
+            profileSyncMapper.persist(response.body());
         } catch (Exception exception) {
             Log.w(TAG, "Profile sync failed: " + exception.getMessage());
         }
-    }
-
-    private int resolveDaysSinceLastStudy(UserProfileDto dto) {
-        int weeklyDaysSince = MascotMoodResolver.computeDaysSinceLastStudy(dto.weeklyActivity);
-        int daysSince = dto.missedDays == null
-                ? weeklyDaysSince
-                : Math.max(dto.missedDays, weeklyDaysSince);
-        if (dto.totalActiveTime > 0 && dto.activeTime30d <= 0) {
-            daysSince = Math.max(daysSince, 30);
-        }
-        return Math.max(daysSince, 0);
     }
 
     public GetHomeDashboardUseCase getHomeDashboardUseCase() {
@@ -414,6 +396,26 @@ public class AppContainer {
     public hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncSectionLessonsUseCase getSyncSectionLessonsUseCase() {
         return syncSectionLessonsUseCase;
     }
+
+    public LoginUseCase getLoginUseCase() { return loginUseCase; }
+    public RegisterUseCase getRegisterUseCase() { return registerUseCase; }
+    public GoogleAuthUseCase getGoogleAuthUseCase() { return googleAuthUseCase; }
+    public ForgotPasswordUseCase getForgotPasswordUseCase() { return forgotPasswordUseCase; }
+    public UpdateUsernameUseCase getUpdateUsernameUseCase() { return updateUsernameUseCase; }
+    public ChangePasswordUseCase getChangePasswordUseCase() { return changePasswordUseCase; }
+    public GetReminderSettingsUseCase getReminderSettingsUseCase() { return getReminderSettingsUseCase; }
+    public GetNotificationsUseCase getNotificationsUseCase() { return getNotificationsUseCase; }
+    public GetNotificationSummaryUseCase getNotificationSummaryUseCase() { return getNotificationSummaryUseCase; }
+    public MarkAllNotificationsReadUseCase getMarkAllNotificationsReadUseCase() { return markAllNotificationsReadUseCase; }
+    public MarkNotificationReadUseCase getMarkNotificationReadUseCase() { return markNotificationReadUseCase; }
+    public CheckDictationOnlineUseCase getCheckDictationOnlineUseCase() { return checkDictationOnlineUseCase; }
+    public SkipDictationUseCase getSkipDictationUseCase() { return skipDictationUseCase; }
+    public EvaluateSpeakingUseCase getEvaluateSpeakingUseCase() { return evaluateSpeakingUseCase; }
+    public GetSpeakingResultsUseCase getSpeakingResultsUseCase() { return getSpeakingResultsUseCase; }
+    public TrackLessonTimeUseCase getTrackLessonTimeUseCase() { return trackLessonTimeUseCase; }
+    public AddCommentUseCase getAddCommentUseCase() { return addCommentUseCase; }
+    public VoteCommentUseCase getVoteCommentUseCase() { return voteCommentUseCase; }
+    public DeleteCommentUseCase getDeleteCommentUseCase() { return deleteCommentUseCase; }
 
     public LiveData<Boolean> getIsSyncing() {
         return isSyncing;

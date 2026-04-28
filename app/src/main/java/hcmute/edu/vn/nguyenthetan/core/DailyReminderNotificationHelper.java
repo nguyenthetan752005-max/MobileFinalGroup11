@@ -79,7 +79,13 @@ public final class DailyReminderNotificationHelper {
     public static MascotMoodResolver.Mood resolveCurrentMood(@NonNull Context context) {
         TungTungDatabase database = DatabaseModule.createDatabase(context.getApplicationContext());
         try {
-            ProfileEntity profile = database.profileDao().getProfile();
+            ProfileEntity profile;
+            try {
+                profile = database.profileDao().getProfile();
+            } catch (IllegalStateException e) {
+                // Room forbids main-thread queries; return default mood gracefully
+                profile = null;
+            }
             return MascotMoodResolver.resolve(profile);
         } finally {
             database.close();

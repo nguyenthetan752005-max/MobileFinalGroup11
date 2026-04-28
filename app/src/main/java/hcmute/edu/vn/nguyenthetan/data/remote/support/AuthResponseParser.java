@@ -1,4 +1,4 @@
-package hcmute.edu.vn.nguyenthetan.ui.auth;
+package hcmute.edu.vn.nguyenthetan.data.remote.support;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,12 +13,16 @@ import okhttp3.ResponseBody;
 import okio.BufferedSource;
 import retrofit2.Response;
 
-public final class AuthResponseHelper {
+/**
+ * Parses Retrofit error/success bodies for the auth endpoints. Lives in the data
+ * layer so domain UseCases can depend on it without reaching back into the UI.
+ */
+public final class AuthResponseParser {
 
     private static final Gson GSON = new Gson();
     public static final String ACCOUNT_LOCKED = "ACCOUNT_LOCKED";
 
-    private AuthResponseHelper() {
+    private AuthResponseParser() {
     }
 
     @Nullable
@@ -27,7 +31,6 @@ public final class AuthResponseHelper {
         if (raw == null || raw.trim().isEmpty()) {
             return null;
         }
-
         try {
             return GSON.fromJson(raw, AuthResponseDto.class);
         } catch (RuntimeException ignored) {
@@ -41,7 +44,6 @@ public final class AuthResponseHelper {
         if (errorBody == null) {
             return null;
         }
-
         try {
             BufferedSource source = errorBody.source();
             source.request(Long.MAX_VALUE);

@@ -18,15 +18,10 @@ import hcmute.edu.vn.nguyenthetan.R;
 import hcmute.edu.vn.nguyenthetan.TungTungApplication;
 import hcmute.edu.vn.nguyenthetan.core.MascotMoodResolver;
 import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
-import hcmute.edu.vn.nguyenthetan.data.remote.api.MobileApiService;
-import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileNotificationSummaryDto;
 import hcmute.edu.vn.nguyenthetan.databinding.FragmentHomeBinding;
 import hcmute.edu.vn.nguyenthetan.domain.model.home.HomeDashboard;
 import hcmute.edu.vn.nguyenthetan.ui.notification.NotificationCenterActivity;
 import hcmute.edu.vn.nguyenthetan.ui.onboarding.OnboardingActivity;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class HomeFragment extends Fragment {
 
@@ -38,7 +33,6 @@ public class HomeFragment extends Fragment {
     private Listener listener;
     private long currentLessonId;
     private UserSessionStore userSessionStore;
-    private MobileApiService mobileApiService;
     private HomeViewModel viewModel;
     private Boolean lastSyncing;
 
@@ -67,16 +61,19 @@ public class HomeFragment extends Fragment {
 
         TungTungApplication application = (TungTungApplication) requireActivity().getApplication();
         userSessionStore = application.getAppContainer().getUserSessionStore();
-        mobileApiService = application.getAppContainer().getMobileApiService();
-        
-        HomeViewModelFactory factory = new HomeViewModelFactory(application.getAppContainer().getHomeDashboardUseCase());
+
+        HomeViewModelFactory factory = new HomeViewModelFactory(
+                application.getAppContainer().getHomeDashboardUseCase(),
+                application.getAppContainer().getNotificationSummaryUseCase()
+        );
         viewModel = new ViewModelProvider(this, factory).get(HomeViewModel.class);
-        
+
         viewModel.getDashboardState().observe(getViewLifecycleOwner(), this::render);
         viewModel.getLoadingState().observe(getViewLifecycleOwner(), loading ->
                 binding.progressHomeLoad.setVisibility(Boolean.TRUE.equals(loading) ? View.VISIBLE : View.GONE)
         );
-        
+        viewModel.getUnreadNotificationCount().observe(getViewLifecycleOwner(), this::renderNotificationBadge);
+
         application.getAppContainer().getIsSyncing().observe(getViewLifecycleOwner(), syncing -> {
             if (Boolean.TRUE.equals(lastSyncing) && !Boolean.TRUE.equals(syncing)) {
                 viewModel.forceLoad();
@@ -102,22 +99,24 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        refreshNotificationBadge();
+        if (viewModel != null) {
+            viewModel.refreshNotificationBadge(userSessionStore != null && userSessionStore.isLoggedIn());
+        }
     }
 
     private void render(HomeDashboard dashboard) {
         boolean guestMode = userSessionStore == null || !userSessionStore.isLoggedIn();
-        
+
         binding.textGreeting.setText(dashboard.getGreeting());
         String subtitle = dashboard.getSubtitle();
         boolean hasSubtitle = subtitle != null && !subtitle.trim().isEmpty();
         binding.textSubtitle.setVisibility(hasSubtitle ? View.VISIBLE : View.GONE);
         binding.textSubtitle.setText(hasSubtitle ? subtitle : "");
-        
+
         binding.cardGuestPromo.setVisibility(guestMode ? View.VISIBLE : View.GONE);
         binding.textGuestPromoTitle.setText(R.string.home_guest_promo_title);
         binding.textGuestPromoBody.setText(R.string.home_guest_promo_body);
-        
+
         binding.cardStreak.setVisibility(guestMode ? View.GONE : View.VISIBLE);
         binding.textStreakValue.setText(String.format(Locale.US, "%d days", dashboard.getStreakSummary().getCurrentDays()));
 
@@ -145,7 +144,6 @@ public class HomeFragment extends Fragment {
         }
 
         binding.layoutStudyStats.setVisibility(guestMode ? View.GONE : View.VISIBLE);
-
         binding.textTodayValue.setText(dashboard.getStudyStats().getToday());
         binding.textWeekValue.setText(dashboard.getStudyStats().getThisWeek());
         binding.textBestValue.setText(String.valueOf(dashboard.getStudyStats().getBestStreak()));
@@ -158,38 +156,9 @@ public class HomeFragment extends Fragment {
         binding.layoutHomeContent.setVisibility(View.VISIBLE);
     }
 
-    private void refreshNotificationBadge() {
-        if (binding == null) {
-            return;
-        }
-        if (userSessionStore == null || !userSessionStore.isLoggedIn()) {
-            renderNotificationBadge(0L);
-            return;
-        }
-        mobileApiService.getNotificationSummary().enqueue(new Callback<>() {
-            @Override
-            public void onResponse(@NonNull Call<MobileNotificationSummaryDto> call, @NonNull Response<MobileNotificationSummaryDto> response) {
-                if (!isAdded() || binding == null) {
-                    return;
-                }
-                MobileNotificationSummaryDto summary = response.body();
-                long unreadCount = !response.isSuccessful() || summary == null ? 0L : summary.unreadCount;
-                renderNotificationBadge(unreadCount);
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<MobileNotificationSummaryDto> call, @NonNull Throwable throwable) {
-                if (binding != null) {
-                    renderNotificationBadge(0L);
-                }
-            }
-        });
-    }
-
-    private void renderNotificationBadge(long unreadCount) {
-        if (binding == null) {
-            return;
-        }
+    private void renderNotificationBadge(Long unreadCountBoxed) {
+        if (binding == null) return;
+        long unreadCount = unreadCountBoxed == null ? 0L : unreadCountBoxed;
         if (unreadCount <= 0L) {
             binding.textNotificationBadge.setVisibility(View.GONE);
             return;

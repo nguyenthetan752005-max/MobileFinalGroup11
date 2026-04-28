@@ -40,6 +40,12 @@ android {
         buildConfig = true
         viewBinding = true
     }
+
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+        }
+    }
 }
 
 dependencies {
@@ -62,8 +68,12 @@ dependencies {
     implementation(libs.play.services.auth)
     implementation(libs.androidx.webkit)
     implementation(libs.glide)
+    implementation(libs.security.crypto)
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     testImplementation(libs.junit)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.archunit.junit4)
+    testImplementation(libs.arch.core.testing)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 }

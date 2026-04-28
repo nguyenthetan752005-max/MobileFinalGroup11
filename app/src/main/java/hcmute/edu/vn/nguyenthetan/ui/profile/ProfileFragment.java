@@ -55,17 +55,13 @@ import hcmute.edu.vn.nguyenthetan.core.ReminderSettingsStore;
 import hcmute.edu.vn.nguyenthetan.core.ThemePreferenceStore;
 import hcmute.edu.vn.nguyenthetan.core.ThemeColorResolver;
 import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
-import hcmute.edu.vn.nguyenthetan.data.remote.api.MobileApiService;
-import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileReminderSettingsDto;
+import hcmute.edu.vn.nguyenthetan.domain.model.profile.ReminderSettings;
 import hcmute.edu.vn.nguyenthetan.databinding.DialogAppearanceSettingsBinding;
 import hcmute.edu.vn.nguyenthetan.databinding.FragmentProfileBinding;
 import hcmute.edu.vn.nguyenthetan.domain.model.home.DailyActivity;
 import hcmute.edu.vn.nguyenthetan.domain.model.profile.ProfileData;
 import hcmute.edu.vn.nguyenthetan.ui.onboarding.OnboardingActivity;
 import hcmute.edu.vn.nguyenthetan.ui.common.StreakDialogFragment;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class ProfileFragment extends Fragment {
 
@@ -74,7 +70,6 @@ public class ProfileFragment extends Fragment {
 
     private FragmentProfileBinding binding;
     private UserSessionStore userSessionStore;
-    private MobileApiService mobileApiService;
     private ProfileViewModel viewModel;
     private Boolean lastSyncing;
     private boolean syncingNotificationSwitch;
@@ -153,13 +148,16 @@ public class ProfileFragment extends Fragment {
 
         TungTungApplication application = (TungTungApplication) requireActivity().getApplication();
         userSessionStore = application.getAppContainer().getUserSessionStore();
-        mobileApiService = application.getAppContainer().getMobileApiService();
-        ProfileViewModelFactory factory = new ProfileViewModelFactory(application.getAppContainer().getProfileUseCase());
+        ProfileViewModelFactory factory = new ProfileViewModelFactory(
+                application.getAppContainer().getProfileUseCase(),
+                application.getAppContainer().getReminderSettingsUseCase()
+        );
         viewModel = new ViewModelProvider(this, factory).get(ProfileViewModel.class);
         viewModel.getProfileState().observe(getViewLifecycleOwner(), this::render);
         viewModel.getLoadingState().observe(getViewLifecycleOwner(), loading ->
                 binding.progressProfileLoad.setVisibility(Boolean.TRUE.equals(loading) ? View.VISIBLE : View.GONE)
         );
+        viewModel.getReminderState().observe(getViewLifecycleOwner(), this::onReminderResult);
         application.getAppContainer().getIsSyncing().observe(getViewLifecycleOwner(), syncing -> {
             if (Boolean.TRUE.equals(lastSyncing) && !Boolean.TRUE.equals(syncing) && viewModel != null) {
                 viewModel.forceLoad();
@@ -201,6 +199,7 @@ public class ProfileFragment extends Fragment {
     }
 
     private void render(ProfileData profileData) {
+        if (profileData == null) return;
         boolean guestMode = isGuestMode();
         String nameToDisplay = guestMode ? getString(R.string.guest_display_name) : profileData.getName();
         binding.textAvatar.setText(guestMode ? "GU" : buildAvatar(profileData.getName()));
@@ -555,32 +554,24 @@ public class ProfileFragment extends Fragment {
     }
 
     private void refreshReminderSettings() {
-        if (mobileApiService == null) {
-            return;
+        if (viewModel != null) {
+            viewModel.refreshReminderSettings();
         }
-        mobileApiService.getReminderSettings().enqueue(new Callback<MobileReminderSettingsDto>() {
-            @Override
-            public void onResponse(Call<MobileReminderSettingsDto> call, Response<MobileReminderSettingsDto> response) {
-                if (!isAdded() || binding == null || !response.isSuccessful() || response.body() == null) {
-                    return;
-                }
-                applyReminderSettings(response.body());
-            }
-
-            @Override
-            public void onFailure(Call<MobileReminderSettingsDto> call, Throwable throwable) {
-                if (!isAdded() || binding == null) {
-                    return;
-                }
-                remoteSettingsSyncFailed = true;
-                loadReminderSettingsFromStore();
-                DailyReminderScheduler.apply(requireContext());
-                renderSettingsState();
-            }
-        });
     }
 
-    private void applyReminderSettings(MobileReminderSettingsDto settings) {
+    private void onReminderResult(ProfileViewModel.ReminderResult result) {
+        if (!isAdded() || binding == null || result == null) return;
+        if (result.fetched && result.settings != null) {
+            applyReminderSettings(result.settings);
+            return;
+        }
+        remoteSettingsSyncFailed = true;
+        loadReminderSettingsFromStore();
+        DailyReminderScheduler.apply(requireContext());
+        renderSettingsState();
+    }
+
+    private void applyReminderSettings(ReminderSettings settings) {
         ReminderSettingsStore.save(
                 requireContext(),
                 settings.dailyReminderEnabled,
@@ -622,8 +613,14 @@ public class ProfileFragment extends Fragment {
     }
 
     private void sendTestReminderNow() {
-        DailyReminderNotificationHelper.showReminderNotification(requireContext());
-        Toast.makeText(requireContext(), R.string.settings_notification_test_sent, Toast.LENGTH_SHORT).show();
+        new Thread(() -> {
+            DailyReminderNotificationHelper.showReminderNotification(requireContext());
+            if (isAdded()) {
+                requireActivity().runOnUiThread(() ->
+                        Toast.makeText(requireContext(), R.string.settings_notification_test_sent, Toast.LENGTH_SHORT).show()
+                );
+            }
+        }).start();
     }
 
     private int[] parseReminderTime(String reminderTime) {

@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import java.util.ArrayList;
@@ -17,16 +18,10 @@ import hcmute.edu.vn.nguyenthetan.core.MascotMoodResolver;
 import hcmute.edu.vn.nguyenthetan.core.NotificationPreferenceStore;
 import hcmute.edu.vn.nguyenthetan.core.ReminderSettingsStore;
 import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
-import hcmute.edu.vn.nguyenthetan.data.remote.api.MobileApiService;
-import hcmute.edu.vn.nguyenthetan.data.remote.dto.GenericApiResponseDto;
-import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileNotificationFeedDto;
-import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileNotificationItemDto;
+import hcmute.edu.vn.nguyenthetan.domain.model.notification.NotificationFeed;
 import hcmute.edu.vn.nguyenthetan.databinding.ActivityNotificationCenterBinding;
 import hcmute.edu.vn.nguyenthetan.ui.common.ThemedActivity;
 import hcmute.edu.vn.nguyenthetan.ui.lesson.LessonActivity;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class NotificationCenterActivity extends ThemedActivity implements NotificationAdapter.OnNotificationClickListener {
 
@@ -35,7 +30,7 @@ public class NotificationCenterActivity extends ThemedActivity implements Notifi
     private ActivityNotificationCenterBinding binding;
     private NotificationAdapter adapter;
     private UserSessionStore userSessionStore;
-    private MobileApiService mobileApiService;
+    private NotificationCenterViewModel viewModel;
     private final List<NotificationItem> notifications = new ArrayList<>();
 
     @Override
@@ -46,46 +41,55 @@ public class NotificationCenterActivity extends ThemedActivity implements Notifi
 
         TungTungApplication application = (TungTungApplication) getApplication();
         userSessionStore = application.getAppContainer().getUserSessionStore();
-        mobileApiService = application.getAppContainer().getMobileApiService();
+        NotificationCenterViewModelFactory factory = new NotificationCenterViewModelFactory(
+                application.getAppContainer().getNotificationsUseCase(),
+                application.getAppContainer().getMarkAllNotificationsReadUseCase(),
+                application.getAppContainer().getMarkNotificationReadUseCase()
+        );
+        viewModel = new ViewModelProvider(this, factory).get(NotificationCenterViewModel.class);
 
         adapter = new NotificationAdapter(this);
         binding.recyclerNotifications.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerNotifications.setAdapter(adapter);
         binding.buttonBack.setOnClickListener(v -> finish());
-        binding.buttonMarkAllRead.setOnClickListener(v -> markAllNotificationsRead());
+        binding.buttonMarkAllRead.setOnClickListener(v -> viewModel.markAllRead());
 
-        loadNotifications();
-    }
-
-    private void loadNotifications() {
-        setLoading(true);
-        if (userSessionStore == null || !userSessionStore.isLoggedIn()) {
-            renderNotifications(buildGuestNotifications(), false, R.string.notifications_empty);
-            return;
-        }
-
-        mobileApiService.getNotifications(NOTIFICATION_LIMIT).enqueue(new Callback<>() {
-            @Override
-            public void onResponse(@NonNull Call<MobileNotificationFeedDto> call, @NonNull Response<MobileNotificationFeedDto> response) {
-                if (isFinishing() || isDestroyed() || binding == null) {
-                    return;
-                }
-                MobileNotificationFeedDto feed = response.body();
-                if (!response.isSuccessful() || feed == null) {
-                    renderNotifications(new ArrayList<>(), false, R.string.notifications_load_failed);
-                    return;
-                }
-                renderNotifications(mapRemoteNotifications(feed.items), feed.unreadCount > 0L, R.string.notifications_empty);
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<MobileNotificationFeedDto> call, @NonNull Throwable throwable) {
-                if (isFinishing() || isDestroyed() || binding == null) {
-                    return;
-                }
-                renderNotifications(new ArrayList<>(), false, R.string.notifications_load_failed);
+        viewModel.getFeedState().observe(this, this::renderFeedState);
+        viewModel.getMarkAllInFlight().observe(this, inFlight -> {
+            if (binding == null) return;
+            binding.buttonMarkAllRead.setEnabled(!Boolean.TRUE.equals(inFlight));
+        });
+        viewModel.getMarkAllSucceeded().observe(this, ok -> {
+            if (Boolean.TRUE.equals(ok)) {
+                markAllNotificationsReadLocally();
             }
         });
+        viewModel.getSingleMarkRead().observe(this, this::markNotificationReadLocally);
+
+        if (userSessionStore == null || !userSessionStore.isLoggedIn()) {
+            renderNotifications(buildGuestNotifications(), false, R.string.notifications_empty);
+        } else {
+            setLoading(true);
+            viewModel.load(NOTIFICATION_LIMIT);
+        }
+    }
+
+    private void renderFeedState(NotificationCenterViewModel.FeedState state) {
+        if (binding == null) return;
+        if (state.loading) {
+            setLoading(true);
+            return;
+        }
+        if (state.failed) {
+            renderNotifications(new ArrayList<>(), false, R.string.notifications_load_failed);
+            return;
+        }
+        NotificationFeed feed = state.feed;
+        if (feed == null) {
+            renderNotifications(new ArrayList<>(), false, R.string.notifications_empty);
+            return;
+        }
+        renderNotifications(mapRemoteNotifications(feed.items), feed.unreadCount > 0L, R.string.notifications_empty);
     }
 
     @NonNull
@@ -162,15 +166,13 @@ public class NotificationCenterActivity extends ThemedActivity implements Notifi
     }
 
     @NonNull
-    private List<NotificationItem> mapRemoteNotifications(List<MobileNotificationItemDto> items) {
+    private List<NotificationItem> mapRemoteNotifications(List<hcmute.edu.vn.nguyenthetan.domain.model.notification.NotificationItem> items) {
         List<NotificationItem> mappedItems = new ArrayList<>();
         if (items == null) {
             return mappedItems;
         }
-        for (MobileNotificationItemDto item : items) {
-            if (item == null) {
-                continue;
-            }
+        for (hcmute.edu.vn.nguyenthetan.domain.model.notification.NotificationItem item : items) {
+            if (item == null) continue;
             mappedItems.add(new NotificationItem(
                     item.id,
                     mapType(item.type),
@@ -186,12 +188,8 @@ public class NotificationCenterActivity extends ThemedActivity implements Notifi
 
     @NonNull
     private NotificationItem.Type mapType(String rawType) {
-        if ("DAILY_REMINDER".equalsIgnoreCase(rawType)) {
-            return NotificationItem.Type.REMINDER;
-        }
-        if ("COMMENT_REPLY".equalsIgnoreCase(rawType)) {
-            return NotificationItem.Type.REPLY;
-        }
+        if ("DAILY_REMINDER".equalsIgnoreCase(rawType)) return NotificationItem.Type.REMINDER;
+        if ("COMMENT_REPLY".equalsIgnoreCase(rawType)) return NotificationItem.Type.REPLY;
         return NotificationItem.Type.MOOD;
     }
 
@@ -199,43 +197,13 @@ public class NotificationCenterActivity extends ThemedActivity implements Notifi
     private String buildMeta(String meta, String timeAgo) {
         String safeMeta = safeText(meta, "");
         String safeTimeAgo = safeText(timeAgo, "");
-        if (safeMeta.isEmpty()) {
-            return safeTimeAgo;
-        }
-        if (safeTimeAgo.isEmpty()) {
-            return safeMeta;
-        }
+        if (safeMeta.isEmpty()) return safeTimeAgo;
+        if (safeTimeAgo.isEmpty()) return safeMeta;
         return safeMeta + " • " + safeTimeAgo;
     }
 
-    private void markAllNotificationsRead() {
-        if (userSessionStore == null || !userSessionStore.isLoggedIn()) {
-            return;
-        }
-        binding.buttonMarkAllRead.setEnabled(false);
-        mobileApiService.markAllNotificationsRead().enqueue(new Callback<>() {
-            @Override
-            public void onResponse(@NonNull Call<GenericApiResponseDto> call, @NonNull Response<GenericApiResponseDto> response) {
-                if (isFinishing() || isDestroyed() || binding == null) {
-                    return;
-                }
-                binding.buttonMarkAllRead.setEnabled(true);
-                if (!response.isSuccessful()) {
-                    return;
-                }
-                markAllNotificationsReadLocally();
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<GenericApiResponseDto> call, @NonNull Throwable throwable) {
-                if (binding != null) {
-                    binding.buttonMarkAllRead.setEnabled(true);
-                }
-            }
-        });
-    }
-
     private void markAllNotificationsReadLocally() {
+        if (binding == null) return;
         List<NotificationItem> updatedItems = new ArrayList<>();
         for (NotificationItem item : notifications) {
             updatedItems.add(item.markRead());
@@ -246,34 +214,22 @@ public class NotificationCenterActivity extends ThemedActivity implements Notifi
     @Override
     public void onNotificationClick(@NonNull NotificationItem item) {
         if (item.isRemote() && !item.isRead()) {
-            mobileApiService.markNotificationRead(item.getId()).enqueue(new Callback<>() {
-                @Override
-                public void onResponse(@NonNull Call<GenericApiResponseDto> call, @NonNull Response<GenericApiResponseDto> response) {
-                    if (response.isSuccessful()) {
-                        markNotificationReadLocally(item.getId());
-                    }
-                }
-
-                @Override
-                public void onFailure(@NonNull Call<GenericApiResponseDto> call, @NonNull Throwable throwable) {
-                    // Best-effort update only.
-                }
-            });
+            viewModel.markRead(item.getId());
         }
         if (item.getTargetLessonId() > 0L) {
             startActivity(LessonActivity.newIntent(this, item.getTargetLessonId()));
         }
     }
 
-    private void markNotificationReadLocally(long notificationId) {
+    private void markNotificationReadLocally(Long notificationIdBoxed) {
+        if (binding == null || notificationIdBoxed == null) return;
+        long notificationId = notificationIdBoxed;
         List<NotificationItem> updatedItems = new ArrayList<>();
         boolean hasUnread = false;
         for (NotificationItem item : notifications) {
             NotificationItem resolvedItem = item.getId() == notificationId ? item.markRead() : item;
             updatedItems.add(resolvedItem);
-            if (!resolvedItem.isRead()) {
-                hasUnread = true;
-            }
+            if (!resolvedItem.isRead()) hasUnread = true;
         }
         renderNotifications(updatedItems, hasUnread, R.string.notifications_empty);
     }

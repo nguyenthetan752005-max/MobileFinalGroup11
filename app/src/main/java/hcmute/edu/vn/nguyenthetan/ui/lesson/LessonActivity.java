@@ -8,14 +8,12 @@ import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import hcmute.edu.vn.nguyenthetan.ui.common.ThemedActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
@@ -26,59 +24,44 @@ import com.google.android.material.tabs.TabLayout;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 import hcmute.edu.vn.nguyenthetan.R;
 import hcmute.edu.vn.nguyenthetan.TungTungApplication;
 import hcmute.edu.vn.nguyenthetan.core.ThemeColorResolver;
 import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
-import hcmute.edu.vn.nguyenthetan.data.remote.api.MobileApiService;
-import hcmute.edu.vn.nguyenthetan.data.remote.dto.CheckDictationRequestDto;
-import hcmute.edu.vn.nguyenthetan.data.remote.dto.CreateCommentRequestDto;
-import hcmute.edu.vn.nguyenthetan.data.remote.dto.DictationResultDto;
-import hcmute.edu.vn.nguyenthetan.data.remote.dto.GenericApiResponseDto;
-import hcmute.edu.vn.nguyenthetan.data.remote.dto.MobileBootstrapCommentDto;
-import hcmute.edu.vn.nguyenthetan.data.remote.dto.ProgressUpdateRequestDto;
-import hcmute.edu.vn.nguyenthetan.data.remote.dto.SpeakingResultDto;
-import hcmute.edu.vn.nguyenthetan.data.remote.dto.VoteCommentRequestDto;
 import hcmute.edu.vn.nguyenthetan.databinding.ActivityLessonBinding;
 import hcmute.edu.vn.nguyenthetan.databinding.DialogCommentComposeBinding;
-import hcmute.edu.vn.nguyenthetan.domain.model.comment.Comment;
-import hcmute.edu.vn.nguyenthetan.domain.model.lesson.DictationFeedback;
 import hcmute.edu.vn.nguyenthetan.domain.model.lesson.SentenceStatus;
-import hcmute.edu.vn.nguyenthetan.domain.model.lesson.SpeakingAttempt;
 import hcmute.edu.vn.nguyenthetan.ui.auth.AccountLockUiHandler;
-import hcmute.edu.vn.nguyenthetan.ui.onboarding.OnboardingActivity;
-import hcmute.edu.vn.nguyenthetan.work.AudioDownloadWorker;
+import hcmute.edu.vn.nguyenthetan.ui.common.ThemedActivity;
 import hcmute.edu.vn.nguyenthetan.ui.lesson.manager.AudioPlaybackManager;
 import hcmute.edu.vn.nguyenthetan.ui.lesson.manager.AudioRecordingManager;
 import hcmute.edu.vn.nguyenthetan.ui.lesson.manager.YouTubePlaybackManager;
-import hcmute.edu.vn.nguyenthetan.ui.lesson.mapper.DictationFeedbackMapper;
-
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.RequestBody;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import hcmute.edu.vn.nguyenthetan.work.AudioDownloadWorker;
 
 public class LessonActivity extends ThemedActivity implements TranscriptAdapter.Listener {
 
-    private static final String TAG = "LessonActivity";
     private static final String EXTRA_LESSON_ID = "extra_lesson_id";
     private static final int RECORD_AUDIO_REQUEST_CODE = 7001;
 
     private final CommentsAdapter.CommentActionListener commentActionListener = new CommentsAdapter.CommentActionListener() {
         @Override
         public void onLike(long commentId) {
-            voteComment(commentId, true);
+            if (!userSessionStore.isLoggedIn()) {
+                requireLoginForRestrictedFeature();
+                return;
+            }
+            viewModel.voteComment(commentId, true);
         }
 
         @Override
         public void onDislike(long commentId) {
-            voteComment(commentId, false);
+            if (!userSessionStore.isLoggedIn()) {
+                requireLoginForRestrictedFeature();
+                return;
+            }
+            viewModel.voteComment(commentId, false);
         }
 
         @Override
@@ -95,7 +78,7 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
             new AlertDialog.Builder(LessonActivity.this)
                     .setTitle(R.string.comment_delete_confirm_title)
                     .setMessage(R.string.comment_delete_confirm_message)
-                    .setPositiveButton(R.string.dialog_login_required_positive, (dialog, which) -> deleteComment(commentId))
+                    .setPositiveButton(R.string.dialog_login_required_positive, (dialog, which) -> viewModel.deleteComment(commentId))
                     .setNegativeButton(R.string.action_cancel, null)
                     .show();
         }
@@ -105,7 +88,6 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
     private LessonViewModel viewModel;
     private TranscriptAdapter transcriptAdapter;
     private CommentsAdapter commentsAdapter;
-    private MobileApiService mobileApiService;
     private UserSessionStore userSessionStore;
 
     private final List<Integer> visibleTabs = new ArrayList<>();
@@ -134,7 +116,6 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         AccountLockUiHandler.attach(this);
 
         TungTungApplication application = (TungTungApplication) getApplication();
-        mobileApiService = application.getAppContainer().getMobileApiService();
         userSessionStore = application.getAppContainer().getUserSessionStore();
 
         lessonId = getIntent().getLongExtra(EXTRA_LESSON_ID, 0L);
@@ -148,6 +129,15 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
                 application.getAppContainer().getCheckDictationAnswerUseCase(),
                 application.getAppContainer().getSaveSentenceStatusUseCase(),
                 application.getAppContainer().getSaveSpeakingAttemptUseCase(),
+                application.getAppContainer().getCheckDictationOnlineUseCase(),
+                application.getAppContainer().getSkipDictationUseCase(),
+                application.getAppContainer().getEvaluateSpeakingUseCase(),
+                application.getAppContainer().getSpeakingResultsUseCase(),
+                application.getAppContainer().getTrackLessonTimeUseCase(),
+                application.getAppContainer().getAddCommentUseCase(),
+                application.getAppContainer().getVoteCommentUseCase(),
+                application.getAppContainer().getDeleteCommentUseCase(),
+                userSessionStore,
                 lessonId,
                 userSessionStore != null && userSessionStore.isLoggedIn()
         );
@@ -183,16 +173,16 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
 
         viewModel.getUiState().observe(this, state -> {
             render(state);
-            // Fetch speaking results on first load too
             if (state.currentSentenceId > 0 && state.showSpeakingTab
                     && userSessionStore.isLoggedIn() && !initialSpeakingFetched) {
                 initialSpeakingFetched = true;
-                fetchSpeakingResultsIfNeeded(state);
+                viewModel.fetchSpeakingResultsForCurrentSentence();
             }
         });
         viewModel.getLoadingState().observe(this, loading ->
                 binding.progressLessonLoad.setVisibility(Boolean.TRUE.equals(loading) ? View.VISIBLE : View.GONE)
         );
+        viewModel.getCommentEvent().observe(this, this::onCommentEvent);
         application.getAppContainer().getSyncErrorMessage().observe(this, message -> {
             if (message != null && !message.trim().isEmpty()) {
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show();
@@ -200,6 +190,25 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         });
 
         viewModel.load();
+    }
+
+    private void onCommentEvent(LessonViewModel.CommentOpResult result) {
+        if (result == null) return;
+        switch (result) {
+            case ADD_SUCCESS:
+                Toast.makeText(this, R.string.comment_sent_success, Toast.LENGTH_SHORT).show();
+                break;
+            case ADD_FAIL:
+                Toast.makeText(this, R.string.comment_sent_failed, Toast.LENGTH_SHORT).show();
+                break;
+            case DELETE_SUCCESS:
+                Toast.makeText(this, R.string.comment_deleted, Toast.LENGTH_SHORT).show();
+                break;
+            case DELETE_FAIL:
+                Toast.makeText(this, R.string.comment_delete_failed, Toast.LENGTH_SHORT).show();
+                break;
+        }
+        viewModel.consumeCommentEvent();
     }
 
     private void initializeManagers() {
@@ -283,10 +292,13 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         binding.buttonBack.setOnClickListener(v -> finish());
         binding.buttonPlay.setOnClickListener(v -> handlePrimaryMediaAction(false));
         binding.buttonReplay.setOnClickListener(v -> handlePrimaryMediaAction(true));
-        binding.buttonCheck.setOnClickListener(v -> submitDictationCheck());
+        binding.buttonCheck.setOnClickListener(v -> {
+            if (latestState == null || safeInput().trim().isEmpty()) return;
+            viewModel.submitDictationCheck();
+        });
         binding.buttonSkip.setOnClickListener(v -> {
             releaseLessonMedia(true, false);
-            submitDictationSkip();
+            viewModel.submitDictationSkip();
         });
         binding.buttonPrevious.setOnClickListener(v -> {
             releaseLessonMedia(true, false);
@@ -346,10 +358,12 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
 
         long previousSentenceId = latestState == null ? -1L : latestState.currentSentenceId;
         latestState = state;
-        
+
         if (previousSentenceId != -1L && previousSentenceId != state.currentSentenceId) {
             releaseLessonMedia(false, false);
-            fetchSpeakingResultsIfNeeded(state);
+            if (state.showSpeakingTab && userSessionStore.isLoggedIn() && state.currentSentenceId > 0L) {
+                viewModel.fetchSpeakingResultsForCurrentSentence();
+            }
         }
 
         if (state.videoLesson) {
@@ -381,14 +395,14 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         binding.textMediaSummary.setVisibility(state.mediaSummary != null && !state.mediaSummary.isEmpty() ? View.VISIBLE : View.GONE);
         binding.textTranscriptMediaSummary.setText(state.mediaSummary);
         binding.textTranscriptMediaSummary.setVisibility(state.mediaSummary != null && !state.mediaSummary.isEmpty() ? View.VISIBLE : View.GONE);
-        
+
         if (!safeInput().equals(state.inputText)) {
             binding.inputDictation.setText(state.inputText);
             if (binding.inputDictation.getText() != null) {
                 binding.inputDictation.setSelection(binding.inputDictation.getText().length());
             }
         }
-        
+
         binding.cardFeedback.setVisibility(state.showFeedback ? View.VISIBLE : View.GONE);
         binding.textFeedbackTitle.setText(state.feedbackTitle);
         setTextOrHide(binding.textCorrectWords, state.correctWords);
@@ -408,13 +422,13 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         binding.videoPlayerCard.setVisibility(state.videoLesson && youtubePlaybackManager.supportsEmbeddedYoutubePlayback() ? View.VISIBLE : View.GONE);
         binding.buttonTranscriptPrev.setVisibility(state.hasPreviousSentence ? View.VISIBLE : View.INVISIBLE);
         binding.buttonTranscriptNext.setVisibility(state.hasNextSentence ? View.VISIBLE : View.INVISIBLE);
-        
+
         binding.buttonPlay.setImageResource(state.playing ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
         binding.buttonSpeakingPlay.setImageResource(state.playing ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
         binding.buttonPlay.setEnabled(state.videoLesson || state.canPlayAudio);
         binding.buttonReplay.setEnabled(state.canPlayAudio);
         binding.buttonSpeakingPlay.setEnabled(state.videoLesson || state.canPlayAudio);
-        
+
         scheduleAudioPrefetchIfNeeded(state);
         transcriptAdapter.submitList(state.transcriptRows);
 
@@ -513,18 +527,8 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
     }
 
     private void trackTimeSpent() {
-        if (sessionStartTime > 0 && userSessionStore.isLoggedIn() && mobileApiService != null) {
-            long durationMillis = System.currentTimeMillis() - sessionStartTime;
-            int durationSeconds = (int) (durationMillis / 1000);
-            if (durationSeconds > 0) {
-                mobileApiService.trackTime(new hcmute.edu.vn.nguyenthetan.data.remote.dto.TimeTrackingRequestDto(userSessionStore.getUserId(), durationSeconds))
-                        .enqueue(new Callback<hcmute.edu.vn.nguyenthetan.data.remote.dto.GenericApiResponseDto>() {
-                            @Override
-                            public void onResponse(@NonNull Call<hcmute.edu.vn.nguyenthetan.data.remote.dto.GenericApiResponseDto> call, @NonNull Response<hcmute.edu.vn.nguyenthetan.data.remote.dto.GenericApiResponseDto> response) {}
-                            @Override
-                            public void onFailure(@NonNull Call<hcmute.edu.vn.nguyenthetan.data.remote.dto.GenericApiResponseDto> call, @NonNull Throwable t) {}
-                        });
-            }
+        if (sessionStartTime > 0) {
+            viewModel.trackSessionTime(System.currentTimeMillis() - sessionStartTime);
         }
         sessionStartTime = 0;
     }
@@ -625,12 +629,12 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
 
     private void requireLoginForRestrictedFeature() {
         new android.app.AlertDialog.Builder(this)
-                .setTitle(hcmute.edu.vn.nguyenthetan.R.string.dialog_login_required_title)
-                .setMessage(hcmute.edu.vn.nguyenthetan.R.string.dialog_login_required_message)
-                .setPositiveButton(hcmute.edu.vn.nguyenthetan.R.string.dialog_login_required_positive, (dialog, which) -> {
-                    startActivity(new android.content.Intent(this, hcmute.edu.vn.nguyenthetan.ui.onboarding.OnboardingActivity.class));
+                .setTitle(R.string.dialog_login_required_title)
+                .setMessage(R.string.dialog_login_required_message)
+                .setPositiveButton(R.string.dialog_login_required_positive, (dialog, which) -> {
+                    startActivity(new Intent(this, hcmute.edu.vn.nguyenthetan.ui.onboarding.OnboardingActivity.class));
                 })
-                .setNegativeButton(hcmute.edu.vn.nguyenthetan.R.string.dialog_login_required_negative, null)
+                .setNegativeButton(R.string.dialog_login_required_negative, null)
                 .show();
     }
 
@@ -639,61 +643,13 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
             viewModel.showSpeakingMessage(getString(R.string.lesson_record_failed));
             return;
         }
-        if (!userSessionStore.isLoggedIn()) {
-            audioFile.delete();
-            return;
-        }
-        viewModel.setSpeakingBusy(getString(R.string.lesson_evaluating_speaking));
-        final long requestedSentenceId = latestState.currentSentenceId;
-
-        RequestBody audioRequest = RequestBody.create(MediaType.parse("audio/wav"), audioFile);
-        MultipartBody.Part audioPart = MultipartBody.Part.createFormData("audio", audioFile.getName(), audioRequest);
-        RequestBody referenceText = RequestBody.create(MediaType.parse("text/plain"), latestState.speakingReference);
-        RequestBody sentenceId = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(requestedSentenceId));
-
-        mobileApiService.evaluateSpeaking(audioPart, referenceText, sentenceId).enqueue(new Callback<SpeakingResultDto>() {
-            @Override
-            public void onResponse(@NonNull Call<SpeakingResultDto> call, @NonNull Response<SpeakingResultDto> response) {
-                if (!response.isSuccessful() || response.body() == null) {
-                    if (latestState != null && latestState.currentSentenceId == requestedSentenceId) {
-                        viewModel.showSpeakingMessage(getString(R.string.lesson_speaking_failed));
-                    }
-                    audioFile.delete();
-                    return;
-                }
-                SpeakingResultDto body = response.body();
-                String transcript = body.recognizedText == null ? "" : body.recognizedText;
-                String feedback = body.feedback == null ? "" : body.feedback;
-                if (body.accuracy > 0d) {
-                    feedback = feedback.isEmpty()
-                            ? String.format(Locale.US, "Accuracy: %.1f%%", body.accuracy)
-                            : feedback + "\nAccuracy: " + String.format(Locale.US, "%.1f%%", body.accuracy);
-                }
-
-                SpeakingAttempt bestAttempt = null;
-                if (body.bestResult != null) {
-                    bestAttempt = new SpeakingAttempt(
-                            body.bestResult.score,
-                            body.bestResult.recognizedText == null ? "" : body.bestResult.recognizedText,
-                            body.bestResult.feedback == null ? "" : body.bestResult.feedback,
-                            body.bestResult.audioUrl == null ? "" : body.bestResult.audioUrl
-                        );
-                }
-
-                if (latestState != null && latestState.currentSentenceId == requestedSentenceId) {
-                    viewModel.applySpeakingEvaluation(body.score, transcript, feedback, body.audioUrl, bestAttempt);
-                }
-                audioFile.delete();
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<SpeakingResultDto> call, @NonNull Throwable throwable) {
-                if (latestState != null && latestState.currentSentenceId == requestedSentenceId) {
-                    viewModel.showSpeakingMessage(getString(R.string.lesson_speaking_failed));
-                }
-                audioFile.delete();
-            }
-        });
+        viewModel.evaluateSpeaking(
+                audioFile,
+                latestState.speakingReference,
+                latestState.currentSentenceId,
+                getString(R.string.lesson_evaluating_speaking),
+                getString(R.string.lesson_speaking_failed)
+        );
     }
 
     private void releaseLessonMedia(boolean notifyViewModel, boolean deletePendingRecording) {
@@ -715,128 +671,18 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
     private void handleTranscriptAutoPlay() {
         if (viewModel.getSelectedTab() != LessonViewModel.TAB_TRANSCRIPT) return;
         if (viewModel.isRepeatTranscriptMode()) {
-            // Repeat: replay the same sentence
             binding.getRoot().postDelayed(() -> handlePrimaryMediaAction(true), 200);
         } else if (latestState != null && latestState.hasNextSentence) {
-            // Auto-play next: advance then play
             releaseLessonMedia(true, false);
             viewModel.nextSentence();
             binding.getRoot().postDelayed(() -> handlePrimaryMediaAction(true), 200);
         }
     }
 
-    private void fetchSpeakingResultsIfNeeded(@NonNull LessonViewModel.UiState state) {
-        if (!state.showSpeakingTab || !userSessionStore.isLoggedIn() || state.currentSentenceId <= 0L) {
-            return;
-        }
-        final long requestedSentenceId = state.currentSentenceId;
-        mobileApiService.getSpeakingResults(requestedSentenceId).enqueue(new Callback<SpeakingResultDto>() {
-            @Override
-            public void onResponse(@NonNull Call<SpeakingResultDto> call, @NonNull Response<SpeakingResultDto> response) {
-                if (!response.isSuccessful() || response.body() == null) return;
-                if (latestState == null || latestState.currentSentenceId != requestedSentenceId) {
-                    return;
-                }
-                SpeakingResultDto body = response.body();
-                int bestScore = 0;
-                String bestTranscript = null, bestFeedback = null, bestAudioUrl = null;
-                if (body.bestResult != null) {
-                    bestScore = body.bestResult.score;
-                    bestTranscript = body.bestResult.recognizedText;
-                    bestFeedback = body.bestResult.feedback;
-                    bestAudioUrl = body.bestResult.audioUrl;
-                }
-                viewModel.applySpeakingResultsFromServer(
-                        body.score, body.recognizedText, body.feedback, body.audioUrl,
-                        bestScore, bestTranscript, bestFeedback, bestAudioUrl
-                );
-            }
-            @Override
-            public void onFailure(@NonNull Call<SpeakingResultDto> call, @NonNull Throwable t) {
-                // Silent fail — user can still record fresh
-            }
-        });
-    }
-
     private void scheduleAudioPrefetchIfNeeded(@NonNull LessonViewModel.UiState state) {
         if (audioPrefetchEnqueued || lessonId <= 0L || state.videoLesson) return;
         audioPrefetchEnqueued = true;
         AudioDownloadWorker.enqueue(this, lessonId);
-    }
-
-    private void submitDictationCheck() {
-        if (latestState == null || safeInput().trim().isEmpty()) return;
-        final long requestedSentenceId = viewModel.getCurrentSentenceId();
-        final String requestedSentenceContent = viewModel.getCurrentSentenceContent();
-        final String requestedHintText = viewModel.getCurrentHintText();
-
-        mobileApiService.checkDictation(
-                new CheckDictationRequestDto(requestedSentenceId, safeInput().trim())
-        ).enqueue(new Callback<DictationResultDto>() {
-            @Override
-            public void onResponse(@NonNull Call<DictationResultDto> call, @NonNull Response<DictationResultDto> response) {
-                if (!response.isSuccessful() || response.body() == null) {
-                    if (latestState != null && latestState.currentSentenceId == requestedSentenceId) {
-                        viewModel.checkAnswer();
-                    }
-                    return;
-                }
-                if (latestState == null || latestState.currentSentenceId != requestedSentenceId) {
-                    return;
-                }
-                DictationFeedback feedback = DictationFeedbackMapper.map(
-                        response.body(),
-                        requestedSentenceContent,
-                        requestedHintText
-                );
-                viewModel.applyDictationFeedback(feedback, response.body().correct, false);
-            }
-            @Override
-            public void onFailure(@NonNull Call<DictationResultDto> call, @NonNull Throwable throwable) {
-                if (latestState != null && latestState.currentSentenceId == requestedSentenceId) {
-                    viewModel.checkAnswer();
-                }
-            }
-        });
-    }
-
-    private void submitDictationSkip() {
-        if (latestState == null) return;
-        final long requestedSentenceId = viewModel.getCurrentSentenceId();
-        final String requestedSentenceContent = viewModel.getCurrentSentenceContent();
-        final String requestedHintText = viewModel.getCurrentHintText();
-
-        mobileApiService.skipDictation(
-                new ProgressUpdateRequestDto(
-                        userSessionStore.isLoggedIn() ? userSessionStore.getUserId() : 0L,
-                        requestedSentenceId
-                )
-        ).enqueue(new Callback<DictationResultDto>() {
-            @Override
-            public void onResponse(@NonNull Call<DictationResultDto> call, @NonNull Response<DictationResultDto> response) {
-                if (!response.isSuccessful() || response.body() == null) {
-                    if (latestState != null && latestState.currentSentenceId == requestedSentenceId) {
-                        viewModel.skip();
-                    }
-                    return;
-                }
-                if (latestState == null || latestState.currentSentenceId != requestedSentenceId) {
-                    return;
-                }
-                DictationFeedback feedback = DictationFeedbackMapper.map(
-                        response.body(),
-                        requestedSentenceContent,
-                        requestedHintText
-                );
-                viewModel.applyDictationFeedback(feedback, false, true);
-            }
-            @Override
-            public void onFailure(@NonNull Call<DictationResultDto> call, @NonNull Throwable throwable) {
-                if (latestState != null && latestState.currentSentenceId == requestedSentenceId) {
-                    viewModel.skip();
-                }
-            }
-        });
     }
 
     private void showCommentComposer(Long parentCommentId, String replyingToAuthor) {
@@ -856,66 +702,10 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
             String content = dialogBinding.inputCommentContent.getText() != null ?
                     dialogBinding.inputCommentContent.getText().toString().trim() : "";
             if (content.isEmpty()) return;
-
             dialog.dismiss();
-            submitComment(latestState.currentSentenceId, parentCommentId, content);
+            viewModel.submitComment(parentCommentId, content);
         });
 
         dialog.show();
     }
-
-    private void submitComment(long sentenceId, Long parentCommentId, String content) {
-        CreateCommentRequestDto request = new CreateCommentRequestDto(sentenceId, userSessionStore.getUserId(), content, parentCommentId);
-        mobileApiService.addComment(request).enqueue(new Callback<MobileBootstrapCommentDto>() {
-            @Override
-            public void onResponse(@NonNull Call<MobileBootstrapCommentDto> call, @NonNull Response<MobileBootstrapCommentDto> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(LessonActivity.this, R.string.comment_sent_success, Toast.LENGTH_SHORT).show();
-                    viewModel.refreshComments();
-                } else {
-                    Toast.makeText(LessonActivity.this, R.string.comment_sent_failed, Toast.LENGTH_SHORT).show();
-                }
-            }
-            @Override
-            public void onFailure(@NonNull Call<MobileBootstrapCommentDto> call, @NonNull Throwable t) {
-                Toast.makeText(LessonActivity.this, R.string.comment_sent_failed, Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void voteComment(long commentId, boolean isLike) {
-        if (!userSessionStore.isLoggedIn()) {
-            requireLoginForRestrictedFeature();
-            return;
-        }
-        VoteCommentRequestDto request = new VoteCommentRequestDto(userSessionStore.getUserId(), isLike);
-        mobileApiService.voteComment(commentId, request).enqueue(new Callback<GenericApiResponseDto>() {
-            @Override
-            public void onResponse(@NonNull Call<GenericApiResponseDto> call, @NonNull Response<GenericApiResponseDto> response) {
-                if (response.isSuccessful()) viewModel.refreshComments();
-            }
-            @Override
-            public void onFailure(@NonNull Call<GenericApiResponseDto> call, @NonNull Throwable t) {}
-        });
-    }
-
-    private void deleteComment(long commentId) {
-        mobileApiService.deleteComment(commentId, userSessionStore.getUserId()).enqueue(new Callback<GenericApiResponseDto>() {
-            @Override
-            public void onResponse(@NonNull Call<GenericApiResponseDto> call, @NonNull Response<GenericApiResponseDto> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(LessonActivity.this, R.string.comment_deleted, Toast.LENGTH_SHORT).show();
-                    viewModel.refreshComments();
-                } else {
-                    Toast.makeText(LessonActivity.this, R.string.comment_delete_failed, Toast.LENGTH_SHORT).show();
-                }
-            }
-            @Override
-            public void onFailure(@NonNull Call<GenericApiResponseDto> call, @NonNull Throwable t) {
-                Toast.makeText(LessonActivity.this, R.string.comment_delete_failed, Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
 }
-
-
