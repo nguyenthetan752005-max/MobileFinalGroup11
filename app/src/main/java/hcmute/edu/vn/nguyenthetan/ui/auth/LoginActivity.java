@@ -34,7 +34,7 @@ public class LoginActivity extends ThemedActivity {
                 application.getAppContainer().getLoginUseCase(),
                 application.getAppContainer().getGoogleAuthUseCase(),
                 application.getAppContainer().getUserSessionStore(),
-                () -> application.getAppContainer().refreshCurrentUserProfile()
+                () -> application.getAppContainer().refreshAfterAuthSuccess()
         );
         viewModel = new ViewModelProvider(this, factory).get(LoginViewModel.class);
         viewModel.getState().observe(this, this::renderState);

@@ -21,8 +21,10 @@ public class ProfileEntity {
     public String mascotMoodId;
     public String activeMood;
     public String quote;
+    public String avatarUrl;
     public int missedDays;
     public boolean broken;
+    public String provider;
 
     public ProfileEntity(
             long id,
@@ -38,8 +40,10 @@ public class ProfileEntity {
             String mascotMoodId,
             String activeMood,
             String quote,
+            String avatarUrl,
             int missedDays,
-            boolean broken
+            boolean broken,
+            String provider
     ) {
         this.id = id;
         this.name = name;
@@ -54,7 +58,9 @@ public class ProfileEntity {
         this.mascotMoodId = mascotMoodId;
         this.activeMood = activeMood;
         this.quote = quote;
+        this.avatarUrl = avatarUrl;
         this.missedDays = missedDays;
         this.broken = broken;
+        this.provider = provider;
     }
 }

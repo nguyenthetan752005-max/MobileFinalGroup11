@@ -21,6 +21,9 @@ public class MobileBootstrapCommentDto {
     @SerializedName(value = "avatarLabel", alternate = {"avatar_label"})
     public String avatarLabel;
 
+    @SerializedName(value = "avatarUrl", alternate = {"avatar_url", "avatar", "profileImageUrl", "profile_image_url", "userAvatarUrl", "user_avatar_url"})
+    public String avatarUrl;
+
     @SerializedName(value = "timeAgo", alternate = {"time_ago"})
     public String timeAgo;
 

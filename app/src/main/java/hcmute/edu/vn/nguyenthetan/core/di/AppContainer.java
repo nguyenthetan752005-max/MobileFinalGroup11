@@ -46,6 +46,7 @@ import hcmute.edu.vn.nguyenthetan.domain.usecase.leaderboard.SyncLeaderboardUseC
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.CheckDictationAnswerUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.CheckDictationOnlineUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.EvaluateSpeakingUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.GetLessonCategorySlugUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.GetLessonCollectionUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.GetLessonProgressUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.GetLessonSessionUseCase;
@@ -53,8 +54,10 @@ import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.GetSpeakingResultsUseCas
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SaveSentenceStatusUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SaveSpeakingAttemptUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SkipDictationUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncCategoriesUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncLessonProgressUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.TrackLessonTimeUseCase;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.notification.DeleteNotificationUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.notification.GetNotificationSummaryUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.notification.GetNotificationsUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.notification.MarkAllNotificationsReadUseCase;
@@ -80,6 +83,7 @@ public class AppContainer {
     private final GetExploreCatalogUseCase getExploreCatalogUseCase;
     private final GetLessonCollectionUseCase getLessonCollectionUseCase;
     private final GetLessonSessionUseCase getLessonSessionUseCase;
+    private final GetLessonCategorySlugUseCase getLessonCategorySlugUseCase;
     private final GetLessonProgressUseCase getLessonProgressUseCase;
     private final SyncLessonProgressUseCase syncLessonProgressUseCase;
     private final GetLeaderboardUseCase getLeaderboardUseCase;
@@ -91,6 +95,7 @@ public class AppContainer {
     private final SaveSentenceStatusUseCase saveSentenceStatusUseCase;
     private final SaveSpeakingAttemptUseCase saveSpeakingAttemptUseCase;
     private final hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncCategoryCollectionUseCase syncCategoryCollectionUseCase;
+    private final SyncCategoriesUseCase syncCategoriesUseCase;
     private final hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncSectionLessonsUseCase syncSectionLessonsUseCase;
     private final LoginUseCase loginUseCase;
     private final RegisterUseCase registerUseCase;
@@ -103,6 +108,7 @@ public class AppContainer {
     private final GetNotificationSummaryUseCase getNotificationSummaryUseCase;
     private final MarkAllNotificationsReadUseCase markAllNotificationsReadUseCase;
     private final MarkNotificationReadUseCase markNotificationReadUseCase;
+    private final DeleteNotificationUseCase deleteNotificationUseCase;
     private final CheckDictationOnlineUseCase checkDictationOnlineUseCase;
     private final SkipDictationUseCase skipDictationUseCase;
     private final EvaluateSpeakingUseCase evaluateSpeakingUseCase;
@@ -182,12 +188,17 @@ public class AppContainer {
                 userSessionStore
         );
         RoomLeaderboardRepository leaderboardRepository = new RoomLeaderboardRepository(database.leaderboardDao());
-        RoomCommentRepository commentRepository = new RoomCommentRepository(database.commentDao());
+        RoomCommentRepository commentRepository = new RoomCommentRepository(
+                database.commentDao(),
+                database.profileDao(),
+                userSessionStore
+        );
 
         getHomeDashboardUseCase = new GetHomeDashboardUseCase(homeRepository);
         getExploreCatalogUseCase = new GetExploreCatalogUseCase(catalogRepository);
         getLessonCollectionUseCase = new GetLessonCollectionUseCase(catalogRepository);
         getLessonSessionUseCase = new GetLessonSessionUseCase(lessonRepository);
+        getLessonCategorySlugUseCase = new GetLessonCategorySlugUseCase(lessonRepository);
         getLessonProgressUseCase = new GetLessonProgressUseCase(lessonRepository);
         syncLessonProgressUseCase = new SyncLessonProgressUseCase(lessonRepository);
         getLeaderboardUseCase = new GetLeaderboardUseCase(leaderboardRepository);
@@ -198,6 +209,7 @@ public class AppContainer {
         checkDictationAnswerUseCase = new CheckDictationAnswerUseCase();
         saveSentenceStatusUseCase = new SaveSentenceStatusUseCase(lessonRepository);
         saveSpeakingAttemptUseCase = new SaveSpeakingAttemptUseCase(lessonRepository);
+        syncCategoriesUseCase = new SyncCategoriesUseCase(catalogRepository);
         syncCategoryCollectionUseCase = new hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncCategoryCollectionUseCase(catalogRepository);
         syncSectionLessonsUseCase = new hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncSectionLessonsUseCase(catalogRepository);
 
@@ -212,6 +224,7 @@ public class AppContainer {
         getNotificationSummaryUseCase = new GetNotificationSummaryUseCase(mobileApiService);
         markAllNotificationsReadUseCase = new MarkAllNotificationsReadUseCase(mobileApiService);
         markNotificationReadUseCase = new MarkNotificationReadUseCase(mobileApiService);
+        deleteNotificationUseCase = new DeleteNotificationUseCase(mobileApiService);
         checkDictationOnlineUseCase = new CheckDictationOnlineUseCase(mobileApiService);
         skipDictationUseCase = new SkipDictationUseCase(mobileApiService);
         evaluateSpeakingUseCase = new EvaluateSpeakingUseCase(mobileApiService);
@@ -282,6 +295,14 @@ public class AppContainer {
         }, POST_LOGIN_REFRESH_DELAY_MS);
     }
 
+    public void refreshAfterAuthSuccess() {
+        if (!hasCatalogData()) {
+            sync();
+            return;
+        }
+        refreshCurrentUserProfile();
+    }
+
     private void runUserRefreshIfPossible() {
         synchronized (refreshLock) {
             if (!refreshAfterSyncPending || Boolean.TRUE.equals(isSyncing.getValue())) {
@@ -349,6 +370,10 @@ public class AppContainer {
         return getLessonSessionUseCase;
     }
 
+    public GetLessonCategorySlugUseCase getLessonCategorySlugUseCase() {
+        return getLessonCategorySlugUseCase;
+    }
+
     public GetLessonProgressUseCase getLessonProgressUseCase() {
         return getLessonProgressUseCase;
     }
@@ -377,6 +402,7 @@ public class AppContainer {
         return syncSentenceCommentsUseCase;
     }
 
+
     public CheckDictationAnswerUseCase getCheckDictationAnswerUseCase() {
         return checkDictationAnswerUseCase;
     }
@@ -391,6 +417,10 @@ public class AppContainer {
 
     public hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncCategoryCollectionUseCase getSyncCategoryCollectionUseCase() {
         return syncCategoryCollectionUseCase;
+    }
+
+    public SyncCategoriesUseCase getSyncCategoriesUseCase() {
+        return syncCategoriesUseCase;
     }
 
     public hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncSectionLessonsUseCase getSyncSectionLessonsUseCase() {
@@ -408,6 +438,7 @@ public class AppContainer {
     public GetNotificationSummaryUseCase getNotificationSummaryUseCase() { return getNotificationSummaryUseCase; }
     public MarkAllNotificationsReadUseCase getMarkAllNotificationsReadUseCase() { return markAllNotificationsReadUseCase; }
     public MarkNotificationReadUseCase getMarkNotificationReadUseCase() { return markNotificationReadUseCase; }
+    public DeleteNotificationUseCase getDeleteNotificationUseCase() { return deleteNotificationUseCase; }
     public CheckDictationOnlineUseCase getCheckDictationOnlineUseCase() { return checkDictationOnlineUseCase; }
     public SkipDictationUseCase getSkipDictationUseCase() { return skipDictationUseCase; }
     public EvaluateSpeakingUseCase getEvaluateSpeakingUseCase() { return evaluateSpeakingUseCase; }

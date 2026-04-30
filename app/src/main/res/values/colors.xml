@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="tt_primary">#F97316</color>
+    <color name="tt_primary_pressed">#EA580C</color>
     <color name="tt_primary_tint">#FFF7ED</color>
     <color name="tt_success">#10B981</color>
     <color name="tt_warning">#F59E0B</color>
@@ -13,5 +14,6 @@
     <color name="tt_text_secondary">#64748B</color>
     <color name="tt_text_muted">#94A3B8</color>
     <color name="tt_border">#E2E8F0</color>
+    <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>

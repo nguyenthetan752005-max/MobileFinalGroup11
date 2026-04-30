@@ -1,5 +1,7 @@
 package hcmute.edu.vn.nguyenthetan.ui.main;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 
@@ -22,6 +24,10 @@ public class MainActivity extends ThemedActivity implements
         ExploreFragment.Listener,
         ProfileFragment.Listener {
 
+    public static final String EXTRA_START_TAB = "extra_start_tab";
+    public static final String TAB_HOME = "HOME";
+    public static final String TAB_EXPLORE = "EXPLORE";
+
     private ActivityMainBinding binding;
 
     private HomeFragment homeFragment;
@@ -29,6 +35,12 @@ public class MainActivity extends ThemedActivity implements
     private LeaderboardFragment leaderboardFragment;
     private ProfileFragment profileFragment;
     private Fragment activeFragment;
+
+    public static Intent newIntent(Context context, String startTab) {
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.putExtra(EXTRA_START_TAB, startTab);
+        return intent;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,10 +57,11 @@ public class MainActivity extends ThemedActivity implements
             if (exploreFragment == null) exploreFragment = ExploreFragment.newInstance();
             if (leaderboardFragment == null) leaderboardFragment = LeaderboardFragment.newInstance();
             if (profileFragment == null) profileFragment = ProfileFragment.newInstance();
+            
+            String activeTab = savedInstanceState.getString("ACTIVE_TAB");
             for (Fragment f : getSupportFragmentManager().getFragments()) {
-                if (f != null && f.isVisible()) {
+                if (f != null && f.getTag() != null && f.getTag().equals(activeTab)) {
                     activeFragment = f;
-                    break;
                 }
             }
         }
@@ -80,25 +93,27 @@ public class MainActivity extends ThemedActivity implements
                 return true;
             }
 
-            if (targetFragment.isAdded()) {
-                getSupportFragmentManager().beginTransaction()
-                        .hide(activeFragment != null ? activeFragment : targetFragment)
-                        .show(targetFragment)
-                        .commit();
-            } else {
-                getSupportFragmentManager().beginTransaction()
-                        .add(R.id.fragmentContainer, targetFragment, tag)
-                        .hide(activeFragment != null ? activeFragment : targetFragment)
-                        .show(targetFragment)
-                        .commit();
+            androidx.fragment.app.FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            if (activeFragment != null) {
+                transaction.hide(activeFragment);
             }
+            if (targetFragment.isAdded()) {
+                transaction.show(targetFragment);
+            } else {
+                transaction.add(R.id.fragmentContainer, targetFragment, tag);
+            }
+            transaction.commit();
 
             activeFragment = targetFragment;
             return true;
         });
 
         if (savedInstanceState == null) {
-            binding.bottomNavigation.setSelectedItemId(R.id.navigation_home);
+            String requestedTab = getIntent() != null ? getIntent().getStringExtra(EXTRA_START_TAB) : null;
+            int startItemId = TAB_EXPLORE.equals(requestedTab)
+                    ? R.id.navigation_explore
+                    : R.id.navigation_home;
+            binding.bottomNavigation.setSelectedItemId(startItemId);
         } else if (activeFragment != null && activeFragment.isAdded()) {
             String tag = activeFragment.getTag();
             if ("HOME".equals(tag)) {
@@ -122,6 +137,44 @@ public class MainActivity extends ThemedActivity implements
                 recreate();
             }
         });
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        if (intent == null) return;
+        String requestedTab = intent.getStringExtra(EXTRA_START_TAB);
+        if (TAB_EXPLORE.equals(requestedTab)) {
+            binding.bottomNavigation.setSelectedItemId(R.id.navigation_explore);
+        } else if (TAB_HOME.equals(requestedTab)) {
+            binding.bottomNavigation.setSelectedItemId(R.id.navigation_home);
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (activeFragment != null && activeFragment.getTag() != null) {
+            outState.putString("ACTIVE_TAB", activeFragment.getTag());
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        String activeTab = savedInstanceState.getString("ACTIVE_TAB");
+        if (activeTab != null) {
+            if ("HOME".equals(activeTab)) {
+                binding.bottomNavigation.setSelectedItemId(R.id.navigation_home);
+            } else if ("EXPLORE".equals(activeTab)) {
+                binding.bottomNavigation.setSelectedItemId(R.id.navigation_explore);
+            } else if ("LEADERBOARD".equals(activeTab)) {
+                binding.bottomNavigation.setSelectedItemId(R.id.navigation_leaderboard);
+            } else {
+                binding.bottomNavigation.setSelectedItemId(R.id.navigation_profile);
+            }
+        }
     }
 
     @Override

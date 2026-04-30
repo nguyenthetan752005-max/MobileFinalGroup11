@@ -15,6 +15,9 @@ public class UserProfileDto {
     @SerializedName("role")
     public String role;
 
+    @SerializedName("provider")
+    public String provider;
+
     @SerializedName(value = "avatarUrl", alternate = {"avatar_url"})
     public String avatarUrl;
 

@@ -3,10 +3,13 @@ package hcmute.edu.vn.nguyenthetan.data.remote.sync;
 import android.util.Log;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import hcmute.edu.vn.nguyenthetan.core.RetryUtil;
 import hcmute.edu.vn.nguyenthetan.data.local.db.TungTungDatabase;
+import hcmute.edu.vn.nguyenthetan.data.local.entity.catalog.CategoryEntity;
+import hcmute.edu.vn.nguyenthetan.data.local.entity.catalog.SectionEntity;
 import hcmute.edu.vn.nguyenthetan.data.local.entity.lesson.LessonEntity;
 import hcmute.edu.vn.nguyenthetan.data.local.entity.lesson.SentenceEntity;
 import hcmute.edu.vn.nguyenthetan.data.remote.api.MobileApiService;
@@ -17,6 +20,8 @@ import retrofit2.Response;
 public class RemoteLessonSyncManager {
 
     private static final String TAG = "RemoteLessonSync";
+    private static final long STUB_CATEGORY_ID = -9999L;
+    private static final String STUB_CATEGORY_SLUG = "__stub_notification_nav";
 
     private final MobileApiService mobileApiService;
     private final TungTungDatabase database;
@@ -49,12 +54,32 @@ public class RemoteLessonSyncManager {
             }
 
             database.runInTransaction(() -> {
-                database.lessonDao().insertAll(java.util.Collections.singletonList(lessonEntity));
+                ensureSectionExists(lessonEntity.sectionId);
+                database.lessonDao().insertAll(Collections.singletonList(lessonEntity));
                 database.sentenceDao().deleteByLessonId(lessonId);
                 database.sentenceDao().insertAll(sentences);
             });
         } catch (IOException exception) {
             Log.w(TAG, "Lesson detail sync failed for lesson " + lessonId + ": " + exception.getMessage());
         }
+    }
+
+    private void ensureSectionExists(long sectionId) {
+        if (sectionId <= 0L) return;
+        if (database.sectionDao().getById(sectionId) != null) return;
+        // Section not found — create stub category + section to satisfy FK
+        ensureStubCategoryExists();
+        SectionEntity stubSection = new SectionEntity(sectionId, STUB_CATEGORY_ID, "", "", 0);
+        database.sectionDao().insertAll(Collections.singletonList(stubSection));
+        Log.d(TAG, "Created stub section " + sectionId + " for notification navigation");
+    }
+
+    private void ensureStubCategoryExists() {
+        if (database.categoryDao().getBySlug(STUB_CATEGORY_SLUG) != null) return;
+        CategoryEntity stubCategory = new CategoryEntity(
+                STUB_CATEGORY_ID, STUB_CATEGORY_SLUG, "", null, null, null, null, 0, null, Integer.MAX_VALUE
+        );
+        database.categoryDao().insertAll(Collections.singletonList(stubCategory));
+        Log.d(TAG, "Created stub category for notification navigation");
     }
 }

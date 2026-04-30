@@ -17,10 +17,7 @@ public final class DatabaseModule {
                         TungTungDatabase.class,
                         "tungtung.db"
                 )
-                // Keep destructive fallback ONLY on downgrade (e.g. user installs older build).
-                // For upgrades, missing migrations should fail loudly so we don't silently
-                // wipe user progress, attempts, comments, etc.
-                .fallbackToDestructiveMigrationOnDowngrade()
+                .fallbackToDestructiveMigration()
                 .build();
     }
 }

@@ -80,8 +80,10 @@ public class RoomHomeRepository implements HomeRepository {
                     MascotMoodResolver.Mood.ORIGIN.getId(),
                     "Calm",
                     "",
+                    null,
                     0,
-                    false
+                    false,
+                    null
             );
         }
 
@@ -195,8 +197,10 @@ public class RoomHomeRepository implements HomeRepository {
                 MascotMoodResolver.Mood.ORIGIN.getId(),
                 "Guest mode",
                 "",
+                null,
                 0,
-                false
+                false,
+                null
         );
     }
 }

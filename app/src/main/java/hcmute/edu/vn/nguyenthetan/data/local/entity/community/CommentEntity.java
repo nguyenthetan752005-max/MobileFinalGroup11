@@ -32,6 +32,7 @@ public class CommentEntity {
     public Long parentCommentId;
     public String author;
     public String avatarLabel;
+    public String avatarUrl;
     public String timeAgo;
     public String content;
     public int likeCount;
@@ -45,6 +46,7 @@ public class CommentEntity {
             Long parentCommentId,
             String author,
             String avatarLabel,
+            String avatarUrl,
             String timeAgo,
             String content,
             int likeCount,
@@ -57,6 +59,7 @@ public class CommentEntity {
         this.parentCommentId = parentCommentId;
         this.author = author;
         this.avatarLabel = avatarLabel;
+        this.avatarUrl = avatarUrl;
         this.timeAgo = timeAgo;
         this.content = content;
         this.likeCount = likeCount;

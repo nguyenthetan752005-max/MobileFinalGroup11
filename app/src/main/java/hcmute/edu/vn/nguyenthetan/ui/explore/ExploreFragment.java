@@ -35,7 +35,11 @@ public class ExploreFragment extends Fragment implements CategoryAdapter.Listene
     private FragmentExploreBinding binding;
     private Listener listener;
     private ExploreViewModel viewModel;
+    private TungTungApplication application;
     private Boolean lastSyncing;
+    private boolean lastCategoriesEmpty = true;
+    private boolean lastLoading;
+    private String latestSyncErrorMessage;
 
     public static ExploreFragment newInstance() {
         return new ExploreFragment();
@@ -64,7 +68,7 @@ public class ExploreFragment extends Fragment implements CategoryAdapter.Listene
         binding.recyclerCategories.setLayoutManager(new GridLayoutManager(requireContext(), resolveSpanCount()));
         binding.recyclerCategories.setAdapter(adapter);
 
-        TungTungApplication application = (TungTungApplication) requireActivity().getApplication();
+        application = (TungTungApplication) requireActivity().getApplication();
         ExploreViewModelFactory factory = new ExploreViewModelFactory(application.getAppContainer().getExploreCatalogUseCase());
         viewModel = new ViewModelProvider(this, factory).get(ExploreViewModel.class);
 
@@ -89,21 +93,28 @@ public class ExploreFragment extends Fragment implements CategoryAdapter.Listene
         binding.chipSpeaking.setOnCheckedChangeListener((buttonView, isChecked) ->
                 handlePracticeChipChanged(binding.chipSpeaking, binding.chipListening, viewModel)
         );
+        binding.buttonExploreRetry.setOnClickListener(v -> retryExploreSync());
         updateChipAppearance(binding.chipListening);
         updateChipAppearance(binding.chipSpeaking);
 
         viewModel.getCategories().observe(getViewLifecycleOwner(), categories -> {
             adapter.submitList(categories);
-            boolean showEmptyState = categories == null || categories.isEmpty();
-            binding.textExploreEmpty.setVisibility(showEmptyState ? View.VISIBLE : View.GONE);
+            lastCategoriesEmpty = categories == null || categories.isEmpty();
+            renderExploreState();
         });
-        viewModel.getLoadingState().observe(getViewLifecycleOwner(), loading ->
-                binding.progressExploreLoad.setVisibility(Boolean.TRUE.equals(loading) ? View.VISIBLE : View.GONE)
-        );
+        viewModel.getLoadingState().observe(getViewLifecycleOwner(), loading -> {
+            lastLoading = Boolean.TRUE.equals(loading);
+            binding.progressExploreLoad.setVisibility(lastLoading ? View.VISIBLE : View.GONE);
+            renderExploreState();
+        });
         application.getAppContainer().getSyncErrorMessage().observe(getViewLifecycleOwner(), message -> {
             if (message != null && !message.trim().isEmpty()) {
+                latestSyncErrorMessage = message;
                 Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+            } else {
+                latestSyncErrorMessage = null;
             }
+            renderExploreState();
         });
 
         application.getAppContainer().getIsSyncing().observe(getViewLifecycleOwner(), syncing -> {
@@ -111,6 +122,7 @@ public class ExploreFragment extends Fragment implements CategoryAdapter.Listene
                 viewModel.forceLoad();
             }
             lastSyncing = syncing;
+            renderExploreState();
         });
 
         viewModel.load();
@@ -171,5 +183,37 @@ public class ExploreFragment extends Fragment implements CategoryAdapter.Listene
         super.onDestroyView();
         lastSyncing = null;
         binding = null;
+    }
+
+    private void retryExploreSync() {
+        latestSyncErrorMessage = null;
+        renderExploreState();
+        application.getAppContainer().sync();
+    }
+
+    private void renderExploreState() {
+        if (binding == null) {
+            return;
+        }
+        boolean syncing = Boolean.TRUE.equals(lastSyncing);
+        boolean hasSearchQuery = binding.inputSearch.getText() != null
+                && !binding.inputSearch.getText().toString().trim().isEmpty();
+        boolean shouldOfferRetry = lastCategoriesEmpty && !hasSearchQuery;
+        boolean showRetryState = lastCategoriesEmpty
+                && !lastLoading
+                && !syncing
+                && (shouldOfferRetry || (latestSyncErrorMessage != null && !latestSyncErrorMessage.trim().isEmpty()));
+        binding.layoutExploreError.setVisibility(showRetryState ? View.VISIBLE : View.GONE);
+        binding.textExploreError.setText(showRetryState
+                ? ((latestSyncErrorMessage != null && !latestSyncErrorMessage.trim().isEmpty())
+                ? latestSyncErrorMessage
+                : getString(R.string.explore_load_failed))
+                : getString(R.string.explore_load_failed));
+        boolean showSearchEmptyState = lastCategoriesEmpty && !showRetryState;
+        binding.textExploreEmpty.setText(hasSearchQuery
+                ? R.string.explore_no_results
+                : R.string.explore_load_failed);
+        binding.textExploreEmpty.setVisibility(showSearchEmptyState ? View.VISIBLE : View.GONE);
+        binding.buttonExploreRetry.setEnabled(!syncing);
     }
 }

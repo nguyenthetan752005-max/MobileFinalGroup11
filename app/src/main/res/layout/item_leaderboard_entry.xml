@@ -41,7 +41,7 @@
                 android:layout_height="16dp"
                 android:layout_gravity="top|end"
                 android:src="@drawable/ic_trophy"
-                android:tint="@color/tt_warning"
+                app:tint="@color/tt_warning"
                 android:visibility="gone" />
         </FrameLayout>
 

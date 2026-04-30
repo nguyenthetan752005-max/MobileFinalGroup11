@@ -46,11 +46,14 @@ public class YouTubePlaybackManager {
     private Boolean inlineYoutubeSupported;
     private boolean youtubePlayerInitializationStarted;
     private String loadedVideoClipKey = "";
+    private String currentYoutubeVideoId = null;
 
     private Runnable completeVideoPlaybackRunnable;
     private volatile float activeEndTimeSeconds = -1f;
     private volatile float activeStartTimeSeconds = -1f;
     private volatile boolean endTimeCheckActive = false;
+    private volatile boolean loopAtEndActive = false;
+    private volatile long lastSeekTimeMillis = 0L;
 
     public YouTubePlaybackManager(Context context, LifecycleOwner lifecycleOwner, YouTubePlayerView youTubePlayerView, Listener listener) {
         this.context = context;
@@ -107,16 +110,25 @@ public class YouTubePlaybackManager {
 
             @Override
             public void onCurrentSecond(@NonNull YouTubePlayer player, float second) {
+                if (System.currentTimeMillis() - lastSeekTimeMillis < 800) {
+                    return; // Bỏ qua các sự kiện cũ trong khi đang tua
+                }
+                listener.onProgressUpdate((long)(second * 1000), 0, true);
                 if (!endTimeCheckActive || activeEndTimeSeconds < 0f) {
                     return;
                 }
                 if (second >= activeEndTimeSeconds) {
-                    endTimeCheckActive = false;
-                    pauseYoutubePlayer();
-                    long clipDuration = activeStartTimeSeconds >= 0f
-                            ? Math.round((activeEndTimeSeconds - activeStartTimeSeconds) * 1000d)
-                            : Math.round(activeEndTimeSeconds * 1000d);
-                    listener.onCompletePlayback(clipDuration);
+                    if (loopAtEndActive && activeStartTimeSeconds >= 0f) {
+                        lastSeekTimeMillis = System.currentTimeMillis();
+                        youtubePlayer.seekTo(activeStartTimeSeconds);
+                    } else {
+                        endTimeCheckActive = false;
+                        pauseYoutubePlayer();
+                        long clipDuration = activeStartTimeSeconds >= 0f
+                                ? Math.round((activeEndTimeSeconds - activeStartTimeSeconds) * 1000d)
+                                : Math.round(activeEndTimeSeconds * 1000d);
+                        listener.onCompletePlayback(clipDuration);
+                    }
                 }
             }
 
@@ -149,7 +161,7 @@ public class YouTubePlaybackManager {
         }
     }
 
-    public void toggleVideoPlayback(String youtubeVideoId, Double startTime, Double endTime, long currentSentenceId, boolean replayRequested, boolean isPlaying) {
+    public void toggleVideoPlayback(String youtubeVideoId, Double startTime, Double endTime, long currentSentenceId, boolean replayRequested, boolean isPlaying, boolean loopAtEnd) {
         if (youtubeVideoId == null || youtubeVideoId.trim().isEmpty()) {
             return; // Handled in UI
         }
@@ -166,7 +178,15 @@ public class YouTubePlaybackManager {
 
         youtubePlaybackReleased = false;
         float startSeconds = startTime == null ? 0f : (float) Math.max(0d, startTime);
-        youtubePlayer.loadVideo(youtubeVideoId, startSeconds);
+        
+        lastSeekTimeMillis = System.currentTimeMillis();
+        if (youtubeVideoId.equals(currentYoutubeVideoId)) {
+            youtubePlayer.seekTo(startSeconds);
+            youtubePlayer.play();
+        } else {
+            youtubePlayer.loadVideo(youtubeVideoId, startSeconds);
+            currentYoutubeVideoId = youtubeVideoId;
+        }
 
         long durationMillis = resolveVideoDurationMillis(startTime, endTime);
         listener.onProgressUpdate(0L, durationMillis, true);
@@ -174,6 +194,7 @@ public class YouTubePlaybackManager {
 
         // Sử dụng onCurrentSecond listener để dừng chính xác tại endTime
         activeStartTimeSeconds = startSeconds;
+        loopAtEndActive = loopAtEnd;
         if (endTime != null && endTime > (double) startSeconds) {
             activeEndTimeSeconds = endTime.floatValue();
             endTimeCheckActive = true;
@@ -188,7 +209,13 @@ public class YouTubePlaybackManager {
             return;
         }
         float startSeconds = startTime == null ? 0f : (float) Math.max(0d, startTime);
-        youtubePlayer.cueVideo(youtubeVideoId, startSeconds);
+        if (youtubeVideoId.equals(currentYoutubeVideoId)) {
+            youtubePlayer.seekTo(startSeconds);
+            youtubePlayer.pause();
+        } else {
+            youtubePlayer.cueVideo(youtubeVideoId, startSeconds);
+            currentYoutubeVideoId = youtubeVideoId;
+        }
         youtubePlaybackReleased = false;
         listener.onResetPlayback();
     }

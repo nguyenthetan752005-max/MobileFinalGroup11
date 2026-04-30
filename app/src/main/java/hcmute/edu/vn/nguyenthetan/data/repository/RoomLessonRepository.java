@@ -172,6 +172,19 @@ public class RoomLessonRepository implements LessonRepository {
     }
 
     @Override
+    public String getLessonCategorySlug(long lessonId) {
+        LessonEntity lesson = lessonDao.getById(lessonId);
+        if (lesson == null) {
+            return null;
+        }
+        SectionEntity section = sectionDao.getById(lesson.sectionId);
+        if (section == null) {
+            return null;
+        }
+        return resolveCategorySlug(section.categoryId);
+    }
+
+    @Override
     public void saveSentenceStatus(long lessonId, long sentenceId, SentenceStatus status) {
         if (!shouldPersistProgress()) {
             return;

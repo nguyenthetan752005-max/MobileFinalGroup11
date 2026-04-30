@@ -47,6 +47,13 @@ public class RoomCatalogRepository implements CatalogRepository {
     }
 
     @Override
+    public void syncCategories() {
+        if (remoteCategorySyncManager != null) {
+            remoteCategorySyncManager.syncCategories();
+        }
+    }
+
+    @Override
     public void syncCategoryCollection(String categorySlug) {
         if (remoteCategorySyncManager != null) {
             remoteCategorySyncManager.syncCategoryCollection(categorySlug);

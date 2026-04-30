@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import hcmute.edu.vn.nguyenthetan.domain.model.notification.NotificationFeed;
+import hcmute.edu.vn.nguyenthetan.domain.usecase.notification.DeleteNotificationUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.notification.GetNotificationsUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.notification.MarkAllNotificationsReadUseCase;
 import hcmute.edu.vn.nguyenthetan.domain.usecase.notification.MarkNotificationReadUseCase;
@@ -30,20 +31,24 @@ public class NotificationCenterViewModel extends ViewModel {
     private final GetNotificationsUseCase getNotificationsUseCase;
     private final MarkAllNotificationsReadUseCase markAllReadUseCase;
     private final MarkNotificationReadUseCase markReadUseCase;
+    private final DeleteNotificationUseCase deleteUseCase;
     private final MutableLiveData<FeedState> feedState = new MutableLiveData<>(new FeedState(false, false, null));
     private final MutableLiveData<Boolean> markAllInFlight = new MutableLiveData<>(false);
     private final MutableLiveData<Long> singleMarkRead = new MutableLiveData<>();
     private final MutableLiveData<Boolean> markAllSucceeded = new MutableLiveData<>();
+    private final MutableLiveData<Long> deleteNotificationId = new MutableLiveData<>();
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public NotificationCenterViewModel(
             GetNotificationsUseCase getNotificationsUseCase,
             MarkAllNotificationsReadUseCase markAllReadUseCase,
-            MarkNotificationReadUseCase markReadUseCase
+            MarkNotificationReadUseCase markReadUseCase,
+            DeleteNotificationUseCase deleteUseCase
     ) {
         this.getNotificationsUseCase = getNotificationsUseCase;
         this.markAllReadUseCase = markAllReadUseCase;
         this.markReadUseCase = markReadUseCase;
+        this.deleteUseCase = deleteUseCase;
     }
 
     public LiveData<FeedState> getFeedState() {
@@ -62,6 +67,11 @@ public class NotificationCenterViewModel extends ViewModel {
     /** Emits true once whenever a "mark all read" call succeeds. */
     public LiveData<Boolean> getMarkAllSucceeded() {
         return markAllSucceeded;
+    }
+
+    /** Emits the id of a notification that was successfully deleted. */
+    public LiveData<Long> getDeleteNotificationId() {
+        return deleteNotificationId;
     }
 
     public void load(int limit) {
@@ -91,6 +101,14 @@ public class NotificationCenterViewModel extends ViewModel {
         executor.execute(() -> {
             if (markReadUseCase.execute(notificationId)) {
                 singleMarkRead.postValue(notificationId);
+            }
+        });
+    }
+
+    public void deleteNotification(long notificationId) {
+        executor.execute(() -> {
+            if (deleteUseCase.execute(notificationId)) {
+                deleteNotificationId.postValue(notificationId);
             }
         });
     }

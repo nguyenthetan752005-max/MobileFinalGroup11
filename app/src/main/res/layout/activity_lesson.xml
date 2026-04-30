@@ -20,7 +20,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/cd_go_back"
             android:src="@drawable/ic_arrow_back"
-            android:tint="?attr/ttColorTextPrimary" />
+            app:tint="?attr/ttColorTextPrimary" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -81,7 +81,26 @@
         android:layout_marginTop="8dp"
         android:visibility="gone" />
 
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/videoPlayerCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone"
+        style="@style/Widget.TungTung.Card">
+
+        <com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+            android:id="@+id/youtubePlayerView"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            app:enableAutomaticInitialization="false" />
+    </com.google.android.material.card.MaterialCardView>
+
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollMain"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
@@ -91,21 +110,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/videoPlayerCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:visibility="gone"
-                style="@style/Widget.TungTung.Card">
-
-                <com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-                    android:id="@+id/youtubePlayerView"
-                    android:layout_width="match_parent"
-                    android:layout_height="220dp"
-                    app:enableAutomaticInitialization="false" />
-            </com.google.android.material.card.MaterialCardView>
 
             <LinearLayout
                 android:id="@+id/dictationContainer"
@@ -161,7 +165,7 @@
                                 android:background="?attr/selectableItemBackgroundBorderless"
                                 android:contentDescription="@string/cd_replay_audio"
                                 android:src="@drawable/ic_replay"
-                                android:tint="?attr/ttColorTextSecondary" />
+                                app:tint="?attr/ttColorTextSecondary" />
                         </LinearLayout>
 
                         <com.google.android.material.progressindicator.LinearProgressIndicator
@@ -328,13 +332,28 @@
 
                 <TextView android:id="@+id/textTranscriptSentence" android:layout_width="match_parent" android:layout_height="wrap_content" android:textAppearance="@style/TextAppearance.TungTung.TitleLarge" />
 
-                <com.google.android.material.checkbox.MaterialCheckBox
-                    android:id="@+id/checkboxRepeat"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="@string/lesson_repeat"
-                    android:textColor="?attr/ttColorTextPrimary" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <com.google.android.material.checkbox.MaterialCheckBox
+                        android:id="@+id/checkboxRepeat"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/lesson_repeat"
+                        app:tint="?attr/ttColorTextPrimary" />
+
+                    <com.google.android.material.checkbox.MaterialCheckBox
+                        android:id="@+id/checkboxAutoScroll"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:text="@string/lesson_auto_scroll"
+                        app:tint="?attr/ttColorTextPrimary" />
+                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -405,7 +424,8 @@
                             android:gravity="center"
                             android:lineSpacingExtra="4dp"
                             android:textAppearance="@style/TextAppearance.TungTung.DisplayMedium"
-                            android:textColor="?attr/ttColorTextPrimary" />
+                            android:textColor="?attr/ttColorTextPrimary"
+                            app:tint="?attr/ttColorTextPrimary" />
 
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -419,7 +439,7 @@
                     android:backgroundTint="?attr/ttColorPrimaryTint"
                     android:src="@drawable/ic_play"
                     android:contentDescription="@string/lesson_play_sample"
-                    android:tint="?attr/ttColorPrimary" />
+                    app:tint="?attr/ttColorPrimary" />
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/buttonRecord"
@@ -492,7 +512,7 @@
                                     android:background="?attr/selectableItemBackgroundBorderless"
                                     android:contentDescription="@string/lesson_play_best_audio"
                                     android:src="@drawable/ic_play"
-                                    android:tint="@color/tt_warning"
+                                    app:tint="@color/tt_warning"
                                     android:visibility="gone" />
                             </LinearLayout>
 
@@ -550,7 +570,7 @@
                                     android:background="?attr/selectableItemBackgroundBorderless"
                                     android:contentDescription="@string/lesson_play_current_audio"
                                     android:src="@drawable/ic_play"
-                                    android:tint="@color/tt_info"
+                                    app:tint="@color/tt_info"
                                     android:visibility="gone" />
                             </LinearLayout>
 
@@ -588,6 +608,18 @@
                         app:strokeColor="?attr/ttColorPrimary" />
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonSpeakingSkip"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:text="@string/lesson_skip"
+                        android:textAllCaps="false"
+                        android:textColor="?attr/ttColorPrimary"
+                        app:strokeColor="?attr/ttColorPrimary" />
+
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/buttonSpeakingNext"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -595,6 +627,7 @@
                         android:layout_weight="1"
                         android:text="@string/lesson_next"
                         android:textAllCaps="false"
+                        android:visibility="gone"
                         app:backgroundTint="@color/tt_success" />
                 </LinearLayout>
             </LinearLayout>

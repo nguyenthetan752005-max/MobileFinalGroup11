@@ -16,6 +16,8 @@ public interface LessonRepository {
 
     LessonProgress getLessonProgress(long lessonId);
 
+    String getLessonCategorySlug(long lessonId);
+
     void saveSentenceStatus(long lessonId, long sentenceId, SentenceStatus status);
 
     void saveSpeakingAttempt(long lessonId, long sentenceId, SpeakingAttempt attempt, int passThreshold);

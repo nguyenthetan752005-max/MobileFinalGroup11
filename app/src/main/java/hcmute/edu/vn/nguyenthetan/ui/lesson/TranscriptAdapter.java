@@ -15,30 +15,42 @@ import hcmute.edu.vn.nguyenthetan.databinding.ItemTranscriptSentenceBinding;
 
 import android.view.View;
 
-public class TranscriptAdapter extends RecyclerView.Adapter<TranscriptAdapter.ViewHolder> {
+import androidx.recyclerview.widget.ListAdapter;
+import androidx.recyclerview.widget.DiffUtil;
+
+public class TranscriptAdapter extends ListAdapter<LessonTranscriptRow, TranscriptAdapter.ViewHolder> {
 
     public interface Listener {
         void onSentenceSelected(int position);
 
-        void onPlayRow(int position);
+        void onPlayRow(int position, boolean isCurrentlyPlaying);
     }
 
     private final Listener listener;
-    private final List<LessonTranscriptRow> items = new ArrayList<>();
     private boolean showStatus = true;
 
+    private static final DiffUtil.ItemCallback<LessonTranscriptRow> DIFF_CALLBACK = new DiffUtil.ItemCallback<LessonTranscriptRow>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull LessonTranscriptRow oldItem, @NonNull LessonTranscriptRow newItem) {
+            return oldItem.order == newItem.order;
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull LessonTranscriptRow oldItem, @NonNull LessonTranscriptRow newItem) {
+            return oldItem.selected == newItem.selected &&
+                   oldItem.playing == newItem.playing &&
+                   java.util.Objects.equals(oldItem.status, newItem.status) &&
+                   java.util.Objects.equals(oldItem.sentence, newItem.sentence);
+        }
+    };
+
     public TranscriptAdapter(Listener listener) {
+        super(DIFF_CALLBACK);
         this.listener = listener;
     }
 
     public void setShowStatus(boolean showStatus) {
         this.showStatus = showStatus;
-    }
-
-    public void submitList(List<LessonTranscriptRow> rows) {
-        items.clear();
-        items.addAll(rows);
-        notifyDataSetChanged();
     }
 
     @NonNull
@@ -50,12 +62,7 @@ public class TranscriptAdapter extends RecyclerView.Adapter<TranscriptAdapter.Vi
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(items.get(position), listener, showStatus);
-    }
-
-    @Override
-    public int getItemCount() {
-        return items.size();
+        holder.bind(getItem(position), listener, showStatus);
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -84,7 +91,7 @@ public class TranscriptAdapter extends RecyclerView.Adapter<TranscriptAdapter.Vi
             binding.buttonPlayRow.setImageResource(
                     row.selected && row.playing ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play
             );
-            binding.buttonPlayRow.setOnClickListener(v -> listener.onPlayRow(getBindingAdapterPosition()));
+            binding.buttonPlayRow.setOnClickListener(v -> listener.onPlayRow(getBindingAdapterPosition(), row.selected && row.playing));
         }
     }
 }

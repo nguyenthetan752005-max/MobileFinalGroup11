@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -43,6 +45,7 @@ import hcmute.edu.vn.nguyenthetan.work.AudioDownloadWorker;
 public class LessonActivity extends ThemedActivity implements TranscriptAdapter.Listener {
 
     private static final String EXTRA_LESSON_ID = "extra_lesson_id";
+    private static final String EXTRA_TARGET_SENTENCE_ID = "extra_target_sentence_id";
     private static final int RECORD_AUDIO_REQUEST_CODE = 7001;
 
     private final CommentsAdapter.CommentActionListener commentActionListener = new CommentsAdapter.CommentActionListener() {
@@ -75,10 +78,14 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
 
         @Override
         public void onDelete(long commentId) {
+            if (!userSessionStore.isLoggedIn()) {
+                requireLoginForRestrictedFeature();
+                return;
+            }
             new AlertDialog.Builder(LessonActivity.this)
                     .setTitle(R.string.comment_delete_confirm_title)
                     .setMessage(R.string.comment_delete_confirm_message)
-                    .setPositiveButton(R.string.dialog_login_required_positive, (dialog, which) -> viewModel.deleteComment(commentId))
+                    .setPositiveButton(R.string.action_delete, (dialog, which) -> viewModel.deleteComment(commentId))
                     .setNegativeButton(R.string.action_cancel, null)
                     .show();
         }
@@ -101,10 +108,17 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
     private AudioPlaybackManager audioPlaybackManager;
     private YouTubePlaybackManager youtubePlaybackManager;
     private AudioRecordingManager audioRecordingManager;
+    private final Handler autoAdvanceHandler = new Handler(Looper.getMainLooper());
+    private Runnable pendingAutoAdvanceRunnable;
 
     public static Intent newIntent(Context context, long lessonId) {
+        return newIntent(context, lessonId, -1L);
+    }
+
+    public static Intent newIntent(Context context, long lessonId, long targetSentenceId) {
         Intent intent = new Intent(context, LessonActivity.class);
         intent.putExtra(EXTRA_LESSON_ID, lessonId);
+        intent.putExtra(EXTRA_TARGET_SENTENCE_ID, targetSentenceId);
         return intent;
     }
 
@@ -172,11 +186,44 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         });
 
         viewModel.getUiState().observe(this, state -> {
+            boolean wasTranscriptSelected = latestState != null && latestState.selectedTab == LessonViewModel.TAB_TRANSCRIPT;
+            long previousSentenceId = latestState != null ? latestState.currentSentenceId : -1L;
+            LessonViewModel.UiState previousState = latestState;
             render(state);
+            maybeAutoAdvanceAfterCompletion(previousState, state);
             if (state.currentSentenceId > 0 && state.showSpeakingTab
                     && userSessionStore.isLoggedIn() && !initialSpeakingFetched) {
                 initialSpeakingFetched = true;
                 viewModel.fetchSpeakingResultsForCurrentSentence();
+            }
+            
+            boolean tabJustSelected = state.selectedTab == LessonViewModel.TAB_TRANSCRIPT && !wasTranscriptSelected;
+            boolean sentenceChanged = state.selectedTab == LessonViewModel.TAB_TRANSCRIPT && previousSentenceId != -1L && previousSentenceId != state.currentSentenceId;
+            boolean shouldAutoScroll = viewModel.isAutoScrollTranscriptMode();
+            
+            if (state.transcriptRows != null && (tabJustSelected || (sentenceChanged && shouldAutoScroll))) {
+                int targetIndex = -1;
+                for (int i = 0; i < state.transcriptRows.size(); i++) {
+                    if (state.transcriptRows.get(i).selected) {
+                        targetIndex = i;
+                        break;
+                    }
+                }
+                if (targetIndex >= 0) {
+                    int finalIndex = targetIndex;
+                    binding.scrollMain.post(() -> {
+                        if (binding.recyclerTranscript.getLayoutManager() != null) {
+                            View child = binding.recyclerTranscript.getLayoutManager().findViewByPosition(finalIndex);
+                            if (child != null) {
+                                int targetY = binding.transcriptContainer.getTop() + binding.recyclerTranscript.getTop() + child.getTop();
+                                int offset = binding.scrollMain.getHeight() / 3;
+                                binding.scrollMain.smoothScrollTo(0, Math.max(0, targetY - offset));
+                            } else {
+                                binding.scrollMain.smoothScrollTo(0, binding.transcriptContainer.getTop() + binding.recyclerTranscript.getTop());
+                            }
+                        }
+                    });
+                }
             }
         });
         viewModel.getLoadingState().observe(this, loading ->
@@ -189,7 +236,12 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
             }
         });
 
-        viewModel.load();
+        long targetSentenceId = getIntent().getLongExtra(EXTRA_TARGET_SENTENCE_ID, -1L);
+        if (targetSentenceId > 0L) {
+            viewModel.loadWithTargetSentence(targetSentenceId);
+        } else {
+            viewModel.load();
+        }
     }
 
     private void onCommentEvent(LessonViewModel.CommentOpResult result) {
@@ -252,6 +304,10 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
             @Override
             public void onProgressUpdate(long position, long duration, boolean isPlaying) {
                 viewModel.updatePlaybackProgress(position, duration, isPlaying);
+                if (latestState != null && latestState.videoLesson && !viewModel.isRepeatTranscriptMode() 
+                        && latestState.selectedTab == LessonViewModel.TAB_TRANSCRIPT) {
+                    viewModel.syncVideoSentence(position);
+                }
             }
             @Override
             public void onResetPlayback() {
@@ -293,33 +349,45 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         binding.buttonPlay.setOnClickListener(v -> handlePrimaryMediaAction(false));
         binding.buttonReplay.setOnClickListener(v -> handlePrimaryMediaAction(true));
         binding.buttonCheck.setOnClickListener(v -> {
+            cancelPendingAutoAdvance();
             if (latestState == null || safeInput().trim().isEmpty()) return;
             viewModel.submitDictationCheck();
         });
         binding.buttonSkip.setOnClickListener(v -> {
+            cancelPendingAutoAdvance();
             releaseLessonMedia(true, false);
             viewModel.submitDictationSkip();
         });
         binding.buttonPrevious.setOnClickListener(v -> {
+            cancelPendingAutoAdvance();
             releaseLessonMedia(true, false);
             viewModel.previousSentence();
         });
         binding.buttonNext.setOnClickListener(v -> {
+            cancelPendingAutoAdvance();
             releaseLessonMedia(true, false);
             viewModel.nextSentence();
         });
         binding.buttonTranscriptPrev.setOnClickListener(v -> {
+            cancelPendingAutoAdvance();
             releaseLessonMedia(true, false);
             viewModel.previousSentence();
         });
         binding.buttonTranscriptNext.setOnClickListener(v -> {
+            cancelPendingAutoAdvance();
             releaseLessonMedia(true, false);
             viewModel.nextSentence();
         });
         binding.buttonSpeakingPlay.setOnClickListener(v -> handlePrimaryMediaAction(false));
         binding.buttonSpeakingPrevious.setOnClickListener(v -> {
+            cancelPendingAutoAdvance();
             releaseLessonMedia(true, false);
             viewModel.previousSentence();
+        });
+        binding.buttonSpeakingSkip.setOnClickListener(v -> {
+            cancelPendingAutoAdvance();
+            releaseLessonMedia(true, false);
+            viewModel.skipSpeakingSentence();
         });
         binding.buttonRecord.setOnClickListener(v -> handleRecordAction());
         binding.buttonPlayBestAudio.setOnClickListener(v -> {
@@ -329,6 +397,7 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
             if (latestState != null) audioPlaybackManager.playUserAudio(latestState.currentUserAudioUrl);
         });
         binding.buttonSpeakingNext.setOnClickListener(v -> {
+            cancelPendingAutoAdvance();
             releaseLessonMedia(true, false);
             viewModel.nextSentence();
         });
@@ -341,6 +410,9 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         });
         binding.checkboxRepeat.setOnCheckedChangeListener((buttonView, isChecked) ->
                 viewModel.setRepeatTranscriptMode(isChecked));
+        binding.checkboxAutoScroll.setChecked(viewModel.isAutoScrollTranscriptMode());
+        binding.checkboxAutoScroll.setOnCheckedChangeListener((buttonView, isChecked) ->
+                viewModel.setAutoScrollTranscriptMode(isChecked));
     }
 
     private void setupTextWatchers() {
@@ -360,7 +432,10 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         latestState = state;
 
         if (previousSentenceId != -1L && previousSentenceId != state.currentSentenceId) {
-            releaseLessonMedia(false, false);
+            boolean isContinuousVideoPlay = state.videoLesson && !viewModel.isRepeatTranscriptMode() && state.selectedTab == LessonViewModel.TAB_TRANSCRIPT;
+            if (!isContinuousVideoPlay) {
+                releaseLessonMedia(false, false);
+            }
             if (state.showSpeakingTab && userSessionStore.isLoggedIn() && state.currentSentenceId > 0L) {
                 viewModel.fetchSpeakingResultsForCurrentSentence();
             }
@@ -368,7 +443,9 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
 
         if (state.videoLesson) {
             youtubePlaybackManager.ensureInitialized(state.youtubeVideoId, state.startTime, state.currentSentenceId);
-            youtubePlaybackManager.syncVideoPlayers(state.youtubeVideoId, state.startTime, state.endTime, state.currentSentenceId);
+            if (!state.playing) {
+                youtubePlaybackManager.syncVideoPlayers(state.youtubeVideoId, state.startTime, state.endTime, state.currentSentenceId);
+            }
         } else {
             youtubePlaybackManager.stopVideoPlaybackCallbacks();
             youtubePlaybackManager.pauseYoutubePlayer();
@@ -443,8 +520,9 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         binding.buttonPlayCurrentAudio.setVisibility(state.currentUserAudioUrl != null && !state.currentUserAudioUrl.trim().isEmpty() ? View.VISIBLE : View.GONE);
         binding.textCurrentTranscript.setText(state.currentTranscript);
         binding.buttonSpeakingPrevious.setVisibility(state.hasPreviousSentence ? View.VISIBLE : View.GONE);
-        binding.buttonSpeakingNext.setVisibility(state.hasNextSentence ? View.VISIBLE : View.GONE);
-        binding.buttonSpeakingNext.setEnabled(true);
+        binding.buttonSpeakingSkip.setVisibility(state.showSpeakingSkipButton ? View.VISIBLE : View.GONE);
+        binding.buttonSpeakingNext.setVisibility(state.showSpeakingNextButton ? View.VISIBLE : View.GONE);
+        binding.buttonSpeakingNext.setEnabled(state.showSpeakingNextButton);
         binding.textCommentsTitle.setText(state.commentCount == 0
                 ? getString(R.string.lesson_comments_zero)
                 : getResources().getQuantityString(
@@ -458,7 +536,7 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         binding.dictationContainer.setVisibility(state.selectedTab == LessonViewModel.TAB_DICTATION ? View.VISIBLE : View.GONE);
         binding.transcriptContainer.setVisibility(state.selectedTab == LessonViewModel.TAB_TRANSCRIPT ? View.VISIBLE : View.GONE);
         binding.speakingContainer.setVisibility(state.selectedTab == LessonViewModel.TAB_SPEAKING ? View.VISIBLE : View.GONE);
-        binding.commentsCard.setVisibility(state.selectedTab == LessonViewModel.TAB_SPEAKING ? View.GONE : View.VISIBLE);
+        binding.commentsCard.setVisibility(state.selectedTab == LessonViewModel.TAB_TRANSCRIPT ? View.GONE : View.VISIBLE);
     }
 
     private void setTextOrHide(@NonNull TextView view, String value) {
@@ -502,15 +580,21 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
 
     @Override
     public void onSentenceSelected(int position) {
+        cancelPendingAutoAdvance();
         releaseLessonMedia(true, false);
         viewModel.selectSentence(position);
     }
 
     @Override
-    public void onPlayRow(int position) {
-        releaseLessonMedia(true, false);
-        viewModel.selectSentence(position);
-        binding.getRoot().post(() -> handlePrimaryMediaAction(true));
+    public void onPlayRow(int position, boolean isCurrentlyPlaying) {
+        if (isCurrentlyPlaying) {
+            handlePrimaryMediaAction(false);
+        } else {
+            cancelPendingAutoAdvance();
+            releaseLessonMedia(true, false);
+            viewModel.selectSentence(position);
+            binding.getRoot().post(() -> handlePrimaryMediaAction(true));
+        }
     }
 
     @Override
@@ -521,6 +605,7 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
 
     @Override
     protected void onPause() {
+        cancelPendingAutoAdvance();
         releaseLessonMedia(true, false);
         trackTimeSpent();
         super.onPause();
@@ -535,6 +620,7 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
 
     @Override
     protected void onDestroy() {
+        cancelPendingAutoAdvance();
         releaseLessonMedia(false, false);
         if (youtubePlaybackManager != null) {
             youtubePlaybackManager.release();
@@ -595,7 +681,21 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
     private void handlePrimaryMediaAction(boolean replayRequested) {
         if (latestState == null) return;
         if (latestState.videoLesson) {
-            youtubePlaybackManager.toggleVideoPlayback(latestState.youtubeVideoId, latestState.startTime, latestState.endTime, latestState.currentSentenceId, replayRequested, latestState.playing);
+            if (!youtubePlaybackManager.supportsEmbeddedYoutubePlayback()
+                    || !youtubePlaybackManager.isYoutubePlayerReady()) {
+                youtubePlaybackManager.openYoutubeExternally(latestState.youtubeVideoId, latestState.startTime);
+                return;
+            }
+            boolean loopAtEnd = false;
+            Double effectiveEndTime = null;
+            if (latestState.selectedTab == LessonViewModel.TAB_DICTATION || latestState.selectedTab == LessonViewModel.TAB_SPEAKING) {
+                effectiveEndTime = latestState.endTime;
+                loopAtEnd = false;
+            } else if (viewModel.isRepeatTranscriptMode()) {
+                effectiveEndTime = latestState.endTime;
+                loopAtEnd = true;
+            }
+            youtubePlaybackManager.toggleVideoPlayback(latestState.youtubeVideoId, latestState.startTime, effectiveEndTime, latestState.currentSentenceId, replayRequested, latestState.playing, loopAtEnd);
         } else {
             if (latestState.currentAudioUrl == null || latestState.currentAudioUrl.trim().isEmpty()) {
                 Toast.makeText(this, R.string.lesson_no_audio_source, Toast.LENGTH_SHORT).show();
@@ -668,6 +768,44 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         }
     }
 
+    private void maybeAutoAdvanceAfterCompletion(LessonViewModel.UiState previousState, LessonViewModel.UiState currentState) {
+        if (previousState == null || currentState == null) {
+            return;
+        }
+        if (previousState.currentSentenceId != currentState.currentSentenceId) {
+            cancelPendingAutoAdvance();
+            return;
+        }
+        if (currentState.currentStatus != SentenceStatus.COMPLETED
+                || previousState.currentStatus == SentenceStatus.COMPLETED
+                || !currentState.hasNextSentence) {
+            return;
+        }
+        if (currentState.selectedTab != LessonViewModel.TAB_DICTATION) {
+            return;
+        }
+        scheduleAutoAdvance();
+    }
+
+    private void scheduleAutoAdvance() {
+        cancelPendingAutoAdvance();
+        pendingAutoAdvanceRunnable = () -> {
+            if (isFinishing() || latestState == null || latestState.currentStatus != SentenceStatus.COMPLETED) {
+                return;
+            }
+            releaseLessonMedia(true, false);
+            viewModel.nextSentence();
+        };
+        autoAdvanceHandler.postDelayed(pendingAutoAdvanceRunnable, 900L);
+    }
+
+    private void cancelPendingAutoAdvance() {
+        if (pendingAutoAdvanceRunnable != null) {
+            autoAdvanceHandler.removeCallbacks(pendingAutoAdvanceRunnable);
+            pendingAutoAdvanceRunnable = null;
+        }
+    }
+
     private void handleTranscriptAutoPlay() {
         if (viewModel.getSelectedTab() != LessonViewModel.TAB_TRANSCRIPT) return;
         if (viewModel.isRepeatTranscriptMode()) {
@@ -695,6 +833,8 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
         if (replyingToAuthor != null) {
             dialogBinding.textReplyingTo.setVisibility(View.VISIBLE);
             dialogBinding.textReplyingTo.setText(getString(R.string.comment_replying_to, replyingToAuthor));
+            dialogBinding.inputCommentContent.setText("@[" + replyingToAuthor + "] ");
+            dialogBinding.inputCommentContent.setSelection(dialogBinding.inputCommentContent.getText().length());
         }
 
         dialogBinding.buttonCancelComment.setOnClickListener(v -> dialog.dismiss());
@@ -705,7 +845,8 @@ public class LessonActivity extends ThemedActivity implements TranscriptAdapter.
             dialog.dismiss();
             viewModel.submitComment(parentCommentId, content);
         });
-
         dialog.show();
+        dialogBinding.inputCommentContent.requestFocus();
     }
 }
+

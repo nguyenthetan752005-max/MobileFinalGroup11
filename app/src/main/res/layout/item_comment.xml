@@ -14,13 +14,25 @@
         app:strokeWidth="0dp"
         app:cardBackgroundColor="?attr/ttColorPrimaryTint">
 
-        <TextView
-            android:id="@+id/textAvatar"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:textColor="?attr/ttColorPrimary"
-            android:textStyle="bold" />
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/imageAvatar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/textAvatar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:textColor="?attr/ttColorPrimary"
+                android:textStyle="bold" />
+        </FrameLayout>
     </com.google.android.material.card.MaterialCardView>
 
     <LinearLayout
@@ -52,10 +64,20 @@
         </LinearLayout>
 
         <TextView
-            android:id="@+id/textContent"
+            android:id="@+id/textReplyTarget"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
+            android:textAppearance="@style/TextAppearance.TungTung.LabelSmall"
+            android:textColor="?attr/ttColorPrimary"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/textContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:textColor="?attr/ttColorTextSecondary" />
 
         <LinearLayout
@@ -71,7 +93,7 @@
                 android:layout_height="28dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_thumb_up"
-                android:tint="?attr/ttColorTextMuted"
+                app:tint="?attr/ttColorTextMuted"
                 android:scaleType="centerInside"
                 android:padding="4dp" />
 
@@ -90,7 +112,7 @@
                 android:layout_marginStart="12dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_thumb_down"
-                android:tint="?attr/ttColorTextMuted"
+                app:tint="?attr/ttColorTextMuted"
                 android:scaleType="centerInside"
                 android:padding="4dp" />
 
@@ -109,7 +131,7 @@
                 android:layout_marginStart="12dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_reply"
-                android:tint="?attr/ttColorTextMuted"
+                app:tint="?attr/ttColorTextMuted"
                 android:scaleType="centerInside"
                 android:padding="4dp" />
 
@@ -128,8 +150,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:layout_marginStart="12dp"
-            android:paddingStart="12dp"
+            android:paddingStart="16dp"
             android:orientation="vertical" />
 
         <View

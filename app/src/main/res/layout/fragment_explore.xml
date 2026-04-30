@@ -99,6 +99,32 @@
             android:textColor="?attr/ttColorTextSecondary"
             android:visibility="gone" />
 
+        <LinearLayout
+            android:id="@+id/layoutExploreError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/textExploreError"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/explore_load_failed"
+                android:textColor="?attr/ttColorTextSecondary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonExploreRetry"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="@string/action_try_again" />
+        </LinearLayout>
+
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>

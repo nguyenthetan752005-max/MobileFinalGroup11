@@ -187,7 +187,7 @@
                         android:layout_marginEnd="12dp"
                         android:src="@drawable/ic_nav_profile"
                         android:contentDescription="@string/cd_edit_profile"
-                        android:tint="?attr/ttColorTextSecondary" />
+                        app:tint="?attr/ttColorTextSecondary" />
 
                     <TextView
                         android:layout_width="0dp"
@@ -445,7 +445,7 @@
                         android:layout_height="24dp"
                         android:layout_marginEnd="12dp"
                         android:src="@drawable/ic_dark_mode"
-                        android:tint="?attr/ttColorTextSecondary" />
+                        app:tint="?attr/ttColorTextSecondary" />
 
                     <TextView
                         android:layout_width="0dp"
@@ -508,7 +508,7 @@
                         android:layout_height="24dp"
                         android:layout_marginEnd="12dp"
                         android:src="@drawable/ic_notification"
-                        android:tint="?attr/ttColorTextSecondary" />
+                        app:tint="?attr/ttColorTextSecondary" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -667,14 +667,14 @@
                     android:focusable="true"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:paddingVertical="4dp">
+                    android:paddingVertical="12dp">
 
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_marginEnd="12dp"
                         android:src="@drawable/ic_dark_mode"
-                        android:tint="?attr/ttColorTextSecondary" />
+                        app:tint="?attr/ttColorTextSecondary" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -700,36 +700,13 @@
                         android:id="@+id/textAppearancePreview"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="4dp"
                         android:text="@string/settings_preview_action"
                         android:textColor="?attr/ttColorPrimary"
                         android:textStyle="bold" />
                 </LinearLayout>
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginVertical="12dp"
-                    android:background="?attr/ttColorBorder" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginEnd="12dp"
-                        android:src="@drawable/ic_language"
-                        android:tint="?attr/ttColorTextSecondary" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/settings_language_summary"
-                        android:textColor="?attr/ttColorTextSecondary" />
-                </LinearLayout>
             </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>

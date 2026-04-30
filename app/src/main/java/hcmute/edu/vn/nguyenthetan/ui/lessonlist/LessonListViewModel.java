@@ -16,12 +16,15 @@ import hcmute.edu.vn.nguyenthetan.domain.usecase.lesson.SyncSectionLessonsUseCas
 
 public class LessonListViewModel extends ViewModel {
 
+    private static final String GENERIC_ERROR = "Could not load lessons right now.";
+
     private final GetLessonCollectionUseCase getLessonCollectionUseCase;
     private final SyncCategoryCollectionUseCase syncCategoryCollectionUseCase;
     private final SyncSectionLessonsUseCase syncSectionLessonsUseCase;
     private final String categoryId;
     private final MutableLiveData<LessonCollection> collectionState = new MutableLiveData<>();
     private final MutableLiveData<Boolean> loadingState = new MutableLiveData<>(false);
+    private final MutableLiveData<String> errorState = new MutableLiveData<>();
     private final Set<Long> expandedSectionIds = new HashSet<>();
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private boolean loaded;
@@ -45,28 +48,43 @@ public class LessonListViewModel extends ViewModel {
         return loadingState;
     }
 
+    public LiveData<String> getErrorState() {
+        return errorState;
+    }
+
     public void load() {
         if (loaded) {
             return;
         }
         loaded = true;
         loadingState.setValue(true);
+        errorState.setValue(null);
         executorService.execute(() -> {
-            // Show cached data immediately
             LessonCollection cached = getLessonCollectionUseCase.execute(categoryId);
-            if (cached != null && !cached.getSections().isEmpty()) {
-                // Auto-expand first section
+            boolean hasCachedSections = cached != null && !cached.getSections().isEmpty();
+            if (hasCachedSections) {
                 expandedSectionIds.add(cached.getSections().get(0).getId());
                 collectionState.postValue(cached);
             }
-            // Sync in background and refresh
-            syncCategoryCollectionUseCase.execute(categoryId);
-            LessonCollection fresh = getLessonCollectionUseCase.execute(categoryId);
-            if (fresh != null && !fresh.getSections().isEmpty() && expandedSectionIds.isEmpty()) {
-                expandedSectionIds.add(fresh.getSections().get(0).getId());
+            Exception syncFailure = null;
+            try {
+                syncCategoryCollectionUseCase.execute(categoryId);
+            } catch (Exception exception) {
+                syncFailure = exception;
+            } finally {
+                LessonCollection fresh = getLessonCollectionUseCase.execute(categoryId);
+                boolean hasFreshSections = fresh != null && !fresh.getSections().isEmpty();
+                if (hasFreshSections && expandedSectionIds.isEmpty()) {
+                    expandedSectionIds.add(fresh.getSections().get(0).getId());
+                }
+                if (fresh != null) {
+                    collectionState.postValue(fresh);
+                }
+                if (!hasCachedSections && !hasFreshSections && syncFailure != null) {
+                    errorState.postValue(GENERIC_ERROR);
+                }
+                loadingState.postValue(false);
             }
-            collectionState.postValue(fresh);
-            loadingState.postValue(false);
         });
     }
 
@@ -82,12 +100,20 @@ public class LessonListViewModel extends ViewModel {
             expandedSectionIds.add(sectionId);
             loadingState.setValue(true);
             executorService.execute(() -> {
-                syncSectionLessonsUseCase.execute(sectionId);
-                LessonCollection collection = getLessonCollectionUseCase.execute(categoryId);
-                collectionState.postValue(collection);
-                loadingState.postValue(false);
+                try {
+                    syncSectionLessonsUseCase.execute(sectionId);
+                    LessonCollection collection = getLessonCollectionUseCase.execute(categoryId);
+                    collectionState.postValue(collection);
+                } finally {
+                    loadingState.postValue(false);
+                }
             });
         }
+    }
+
+    public void retry() {
+        loaded = false;
+        load();
     }
 
     public void refreshLocal() {

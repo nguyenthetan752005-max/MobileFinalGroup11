@@ -37,7 +37,7 @@
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/settings_notifications_title"
                     android:src="@drawable/ic_notification"
-                    android:tint="?attr/ttColorTextSecondary" />
+                    app:tint="?attr/ttColorTextSecondary" />
 
                 <TextView
                     android:id="@+id/textNotificationBadge"

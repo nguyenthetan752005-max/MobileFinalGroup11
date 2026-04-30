@@ -5,7 +5,6 @@ import java.util.List;
 import hcmute.edu.vn.nguyenthetan.domain.model.home.StreakSummary;
 import hcmute.edu.vn.nguyenthetan.domain.model.home.DailyActivity;
 
-
 public class ProfileData {
 
     private final String name;
@@ -17,6 +16,8 @@ public class ProfileData {
     private final StreakSummary streakSummary;
     private final boolean darkModeEnabled;
     private final boolean notificationsEnabled;
+    private final String avatarUrl;
+    private final String provider;
 
     public ProfileData(
             String name,
@@ -27,7 +28,9 @@ public class ProfileData {
             List<DailyActivity> dailyActivities,
             StreakSummary streakSummary,
             boolean darkModeEnabled,
-            boolean notificationsEnabled
+            boolean notificationsEnabled,
+            String avatarUrl,
+            String provider
     ) {
         this.name = name;
         this.email = email;
@@ -38,6 +41,8 @@ public class ProfileData {
         this.streakSummary = streakSummary;
         this.darkModeEnabled = darkModeEnabled;
         this.notificationsEnabled = notificationsEnabled;
+        this.avatarUrl = avatarUrl;
+        this.provider = provider;
     }
 
     public String getName() {
@@ -74,5 +79,13 @@ public class ProfileData {
 
     public boolean isNotificationsEnabled() {
         return notificationsEnabled;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public String getProvider() {
+        return provider;
     }
 }

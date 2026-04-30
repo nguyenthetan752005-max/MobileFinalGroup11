@@ -36,7 +36,7 @@ public class RegisterActivity extends ThemedActivity {
                 application.getAppContainer().getRegisterUseCase(),
                 application.getAppContainer().getGoogleAuthUseCase(),
                 application.getAppContainer().getUserSessionStore(),
-                () -> application.getAppContainer().refreshCurrentUserProfile()
+                () -> application.getAppContainer().refreshAfterAuthSuccess()
         );
         viewModel = new ViewModelProvider(this, factory).get(RegisterViewModel.class);
         viewModel.getState().observe(this, this::renderState);

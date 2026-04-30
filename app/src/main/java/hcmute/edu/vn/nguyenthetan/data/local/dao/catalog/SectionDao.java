@@ -12,6 +12,9 @@ import hcmute.edu.vn.nguyenthetan.data.local.entity.catalog.SectionEntity;
 @Dao
 public interface SectionDao {
 
+    @Query("SELECT * FROM section_local WHERE id = :sectionId LIMIT 1")
+    SectionEntity getById(long sectionId);
+
     @Query("SELECT * FROM section_local WHERE categoryId = :categoryId ORDER BY orderIndex, id")
     List<SectionEntity> getByCategoryId(long categoryId);
 

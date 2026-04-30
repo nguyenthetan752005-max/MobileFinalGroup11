@@ -17,6 +17,7 @@ final class NotificationItem {
     private final String meta;
     private final boolean read;
     private final long targetLessonId;
+    private final long targetSentenceId;
 
     NotificationItem(
             long id,
@@ -25,7 +26,8 @@ final class NotificationItem {
             @NonNull String body,
             @NonNull String meta,
             boolean read,
-            long targetLessonId
+            long targetLessonId,
+            long targetSentenceId
     ) {
         this.id = id;
         this.type = type;
@@ -34,6 +36,7 @@ final class NotificationItem {
         this.meta = meta;
         this.read = read;
         this.targetLessonId = targetLessonId;
+        this.targetSentenceId = targetSentenceId;
     }
 
     long getId() {
@@ -68,6 +71,10 @@ final class NotificationItem {
         return targetLessonId;
     }
 
+    long getTargetSentenceId() {
+        return targetSentenceId;
+    }
+
     boolean isRemote() {
         return id > 0L;
     }
@@ -77,6 +84,6 @@ final class NotificationItem {
         if (read) {
             return this;
         }
-        return new NotificationItem(id, type, title, body, meta, true, targetLessonId);
+        return new NotificationItem(id, type, title, body, meta, true, targetLessonId, targetSentenceId);
     }
 }

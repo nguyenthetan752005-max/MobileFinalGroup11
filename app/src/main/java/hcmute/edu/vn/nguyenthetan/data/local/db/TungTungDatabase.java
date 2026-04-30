@@ -36,23 +36,23 @@ import hcmute.edu.vn.nguyenthetan.data.local.entity.system.SyncStateEntity;
 
 @Database(
         entities = {
-                AppSettingsEntity.class,
                 CategoryEntity.class,
-                CommentEntity.class,
-                DailyActivityEntity.class,
+                SectionEntity.class,
+                LessonEntity.class,
+                SentenceEntity.class,
                 GuestSentenceProgressEntity.class,
+                CommentEntity.class,
                 LeaderboardEntryEntity.class,
                 LeaderboardMetaEntity.class,
-                LessonEntity.class,
                 ProfileEntity.class,
-                RecommendationEntity.class,
-                SectionEntity.class,
-                SentenceEntity.class,
                 StreakDayEntity.class,
+                DailyActivityEntity.class,
+                AppSettingsEntity.class,
                 SyncStateEntity.class,
+                RecommendationEntity.class,
                 OfflineActionEntity.class
         },
-        version = 9,
+        version = 10,
         exportSchema = false
 )
 @TypeConverters(RoomConverters.class)

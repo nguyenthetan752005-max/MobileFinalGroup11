@@ -26,6 +26,10 @@ public class LessonListActivity extends ThemedActivity implements LessonSectionA
     private ActivityLessonListBinding binding;
     private LessonListViewModel viewModel;
     private LessonSectionAdapter adapter;
+    private Boolean lastSyncing;
+    private boolean lastLoading;
+    private boolean lastCollectionEmpty = true;
+    private String latestErrorMessage;
 
     public static Intent newIntent(Context context, String categoryId) {
         Intent intent = new Intent(context, LessonListActivity.class);
@@ -71,13 +75,31 @@ public class LessonListActivity extends ThemedActivity implements LessonSectionA
         );
         viewModel = new ViewModelProvider(this, factory).get(LessonListViewModel.class);
         viewModel.getCollectionState().observe(this, this::render);
-        viewModel.getLoadingState().observe(this, loading ->
-                binding.progressLoad.setVisibility(Boolean.TRUE.equals(loading) ? View.VISIBLE : View.GONE)
-        );
+        viewModel.getLoadingState().observe(this, loading -> {
+            lastLoading = Boolean.TRUE.equals(loading);
+            binding.progressLoad.setVisibility(lastLoading ? View.VISIBLE : View.GONE);
+            renderLessonListState();
+        });
+        viewModel.getErrorState().observe(this, errorMessage -> {
+            latestErrorMessage = errorMessage;
+            renderLessonListState();
+        });
         application.getAppContainer().getSyncErrorMessage().observe(this, message -> {
             if (message != null && !message.trim().isEmpty()) {
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show();
             }
+        });
+        application.getAppContainer().getIsSyncing().observe(this, syncing -> {
+            if (Boolean.TRUE.equals(lastSyncing) && !Boolean.TRUE.equals(syncing) && viewModel != null && lastCollectionEmpty) {
+                viewModel.retry();
+            }
+            lastSyncing = syncing;
+            renderLessonListState();
+        });
+        binding.buttonLessonListRetry.setOnClickListener(v -> {
+            latestErrorMessage = null;
+            renderLessonListState();
+            viewModel.retry();
         });
         viewModel.load();
     }
@@ -88,7 +110,12 @@ public class LessonListActivity extends ThemedActivity implements LessonSectionA
         binding.textCategoryDescription.setText(collection.getDescription());
         binding.textTotalLessons.setText(collection.getTotalLessons() + " lessons");
         adapter.submitList(collection.getSections());
+        lastCollectionEmpty = collection.getSections() == null || collection.getSections().isEmpty();
+        if (!lastCollectionEmpty) {
+            latestErrorMessage = null;
+        }
         updateLessonSearchEmptyState();
+        renderLessonListState();
     }
 
     @Override
@@ -118,8 +145,27 @@ public class LessonListActivity extends ThemedActivity implements LessonSectionA
         String query = binding.inputLessonSearch.getText() == null
                 ? ""
                 : binding.inputLessonSearch.getText().toString().trim();
-        boolean showEmptyState = !query.isEmpty() && adapter.getItemCount() == 0;
+        boolean showEmptyState = !query.isEmpty()
+                && adapter.getItemCount() == 0
+                && binding.layoutLessonListError.getVisibility() != View.VISIBLE;
         binding.textNoLessonResults.setVisibility(showEmptyState ? View.VISIBLE : View.GONE);
+    }
+
+    private void renderLessonListState() {
+        boolean syncing = Boolean.TRUE.equals(lastSyncing);
+        boolean showError = lastCollectionEmpty
+                && !lastLoading
+                && !syncing
+                && latestErrorMessage != null
+                && !latestErrorMessage.trim().isEmpty();
+        binding.layoutLessonListError.setVisibility(showError ? View.VISIBLE : View.GONE);
+        binding.textLessonListError.setText(showError
+                ? latestErrorMessage
+                : getString(hcmute.edu.vn.nguyenthetan.R.string.lesson_list_load_failed));
+        binding.buttonLessonListRetry.setEnabled(!lastLoading && !syncing);
+        if (showError) {
+            binding.textNoLessonResults.setVisibility(View.GONE);
+        }
     }
 }
 

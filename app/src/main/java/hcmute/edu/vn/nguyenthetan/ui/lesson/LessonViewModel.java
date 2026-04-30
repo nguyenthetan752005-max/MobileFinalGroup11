@@ -103,6 +103,8 @@ public class LessonViewModel extends ViewModel {
         public String currentScore;
         public String currentTranscript;
         public String currentUserAudioUrl;
+        public boolean showSpeakingSkipButton;
+        public boolean showSpeakingNextButton;
         public boolean showSpeakingActions;
         public boolean speakingNextEnabled;
         public int commentCount;
@@ -150,6 +152,7 @@ public class LessonViewModel extends ViewModel {
     private boolean speakingBusy;
     private String speakingBusyLabel = "";
     private boolean repeatTranscriptMode;
+    private boolean autoScrollTranscriptMode = true;
     private boolean loaded;
 
     public LessonViewModel(
@@ -229,7 +232,50 @@ public class LessonViewModel extends ViewModel {
             currentIndex = lessonProgress.getCurrentSentenceIndex();
             currentAttempt = lessonProgress.getCurrentAttempt();
             bestAttempt = lessonSession.getBestAttempt();
-            if (loggedIn) {
+            SentenceStatus currentStatus = sentenceStatuses.get(getCurrentSentence().getId());
+            if (currentStatus != SentenceStatus.COMPLETED && currentStatus != SentenceStatus.SKIPPED) {
+                updateSentenceStatus(getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
+            }
+            comments = getCommentsUseCase.execute(getCurrentSentence().getId());
+            loaded = true;
+            publish();
+            syncCommentsForSentence(getCurrentSentence().getId());
+            loadingState.postValue(false);
+        });
+    }
+
+    public void loadWithTargetSentence(long targetSentenceId) {
+        if (loaded) {
+            return;
+        }
+        loadingState.setValue(true);
+        executorService.execute(() -> {
+            lessonSession = getLessonSessionUseCase.execute(lessonId);
+            if (lessonSession == null || lessonSession.getSentences().isEmpty()) {
+                loaded = true;
+                uiState.postValue(new UiState());
+                loadingState.postValue(false);
+                return;
+            }
+            LessonProgress lessonProgress = getLessonProgressUseCase.execute(lessonId);
+            sentenceStatuses.clear();
+            sentenceStatuses.putAll(lessonProgress.getSentenceStatuses());
+            int targetIndex = -1;
+            for (int i = 0; i < lessonSession.getSentences().size(); i++) {
+                if (lessonSession.getSentences().get(i).getId() == targetSentenceId) {
+                    targetIndex = i;
+                    break;
+                }
+            }
+            if (targetIndex >= 0) {
+                currentIndex = targetIndex;
+            } else {
+                currentIndex = lessonProgress.getCurrentSentenceIndex();
+            }
+            currentAttempt = lessonProgress.getCurrentAttempt();
+            bestAttempt = lessonSession.getBestAttempt();
+            SentenceStatus currentStatus = sentenceStatuses.get(getCurrentSentence().getId());
+            if (currentStatus != SentenceStatus.COMPLETED && currentStatus != SentenceStatus.SKIPPED) {
                 updateSentenceStatus(getCurrentSentence().getId(), SentenceStatus.IN_PROGRESS);
             }
             comments = getCommentsUseCase.execute(getCurrentSentence().getId());
@@ -285,6 +331,24 @@ public class LessonViewModel extends ViewModel {
         publish();
     }
 
+    public void syncVideoSentence(long positionMillis) {
+        if (lessonSession == null || lessonSession.getSentences().isEmpty()) return;
+        float currentSecond = positionMillis / 1000f;
+        int newIndex = -1;
+        for (int i = 0; i < lessonSession.getSentences().size(); i++) {
+            Sentence s = lessonSession.getSentences().get(i);
+            float start = s.getStartTime() != null ? s.getStartTime().floatValue() : 0f;
+            float end = s.getEndTime() != null ? s.getEndTime().floatValue() : Float.MAX_VALUE;
+            if (currentSecond >= start && currentSecond < end) {
+                newIndex = i;
+                break;
+            }
+        }
+        if (newIndex >= 0 && newIndex != currentIndex) {
+            selectSentence(newIndex, true);
+        }
+    }
+
     public void completePlayback(long durationMillis) {
         playbackDuration = Math.max(durationMillis, playbackDuration);
         playbackPosition = 0L;
@@ -292,12 +356,22 @@ public class LessonViewModel extends ViewModel {
         publish();
     }
 
-    public void setRepeatTranscriptMode(boolean repeat) {
-        this.repeatTranscriptMode = repeat;
+    public void setRepeatTranscriptMode(boolean enabled) {
+        if (repeatTranscriptMode == enabled) return;
+        repeatTranscriptMode = enabled;
+        publish();
     }
 
     public boolean isRepeatTranscriptMode() {
         return repeatTranscriptMode;
+    }
+
+    public boolean isAutoScrollTranscriptMode() {
+        return autoScrollTranscriptMode;
+    }
+
+    public void setAutoScrollTranscriptMode(boolean enabled) {
+        this.autoScrollTranscriptMode = enabled;
     }
 
     public int getSelectedTab() {
@@ -327,6 +401,16 @@ public class LessonViewModel extends ViewModel {
         publish();
     }
 
+    public void skipSpeakingSentence() {
+        Sentence current = getCurrentSentence();
+        if (current == null) return;
+        speakingBusy = false;
+        speakingBusyLabel = "";
+        recording = false;
+        updateSentenceStatus(current.getId(), SentenceStatus.SKIPPED);
+        publish();
+    }
+
     public void nextSentence() {
         selectSentence(currentIndex + 1);
     }
@@ -343,10 +427,16 @@ public class LessonViewModel extends ViewModel {
     }
 
     public void selectSentence(int index) {
+        selectSentence(index, false);
+    }
+
+    public void selectSentence(int index, boolean seamless) {
         if (lessonSession == null || index < 0 || index >= lessonSession.getSentences().size()) {
             return;
         }
-        resetPlaybackInternal();
+        if (!seamless) {
+            resetPlaybackInternal();
+        }
         currentIndex = index;
         feedback = null;
         inputText = "";
@@ -354,9 +444,12 @@ public class LessonViewModel extends ViewModel {
         bestAttempt = null;
         Sentence current = getCurrentSentence();
         if (current == null) return;
-        if (loggedIn) {
+        SentenceStatus existingStatus = sentenceStatuses.get(current.getId());
+        if (existingStatus != SentenceStatus.COMPLETED && existingStatus != SentenceStatus.SKIPPED) {
             updateSentenceStatus(current.getId(), SentenceStatus.IN_PROGRESS);
         }
+        publish(); // Publish immediately so UI state reflects new sentence
+
         // Room DB access must run off main thread
         executorService.execute(() -> {
             comments = getCommentsUseCase.execute(current.getId());
@@ -645,14 +738,16 @@ public class LessonViewModel extends ViewModel {
     // ────────────────────────────────────────────────────────────────────────
 
     private void updateSentenceStatus(long sentenceId, SentenceStatus requestedStatus) {
-        if (!loggedIn) {
-            return;
-        }
         SentenceStatus currentStatus = sentenceStatuses.get(sentenceId);
         if (currentStatus == SentenceStatus.COMPLETED) {
             return;
         }
         sentenceStatuses.put(sentenceId, requestedStatus);
+        
+        if (!loggedIn) {
+            return;
+        }
+
         // Room DB access must not happen on the main thread
         executorService.execute(() ->
                 saveSentenceStatusUseCase.execute(lessonId, sentenceId, requestedStatus)
@@ -699,8 +794,8 @@ public class LessonViewModel extends ViewModel {
         state.correctWords = feedback != null ? feedback.getCorrectWords() : "";
         state.newHint = feedback != null ? feedback.getNewHint() : "";
         state.maskedWords = feedback != null ? feedback.getMaskedWords() : "";
-        boolean currentCompleted = state.currentStatus == SentenceStatus.COMPLETED;
-        state.showNextButton = (feedback != null || currentCompleted) && state.hasNextSentence;
+        boolean currentSkipped = state.currentStatus == SentenceStatus.SKIPPED;
+        state.showNextButton = currentSkipped && state.hasNextSentence;
         state.transcriptSentence = current.getContent();
         state.transcriptRows = buildTranscriptRows();
         state.playbackTime = formatTime(playbackPosition) + " / " + formatTime(effectiveDuration);
@@ -745,6 +840,8 @@ public class LessonViewModel extends ViewModel {
         state.currentUserAudioUrl = currentAttempt != null && currentAttempt.getAudioUrl() != null && !currentAttempt.getAudioUrl().trim().isEmpty()
                 ? baseApiUrl + "api/mobile/speaking/audio/current?sentenceId=" + current.getId()
                 : null;
+        state.showSpeakingSkipButton = state.hasNextSentence && state.currentStatus != SentenceStatus.SKIPPED && state.currentStatus != SentenceStatus.COMPLETED;
+        state.showSpeakingNextButton = state.hasNextSentence && (state.currentStatus == SentenceStatus.SKIPPED || state.currentStatus == SentenceStatus.COMPLETED);
         state.showSpeakingActions = currentAttempt != null;
         state.speakingNextEnabled = !speakingBusy && currentAttempt != null && currentAttempt.getScore() >= lessonSession.getPassThreshold();
         state.commentCount = countComments(comments);

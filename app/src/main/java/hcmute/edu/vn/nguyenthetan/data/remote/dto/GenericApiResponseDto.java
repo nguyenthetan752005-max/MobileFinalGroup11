@@ -11,4 +11,7 @@ public class GenericApiResponseDto {
 
     @SerializedName("message")
     public String message;
+
+    @SerializedName(value = "avatarUrl", alternate = {"avatar_url"})
+    public String avatarUrl;
 }

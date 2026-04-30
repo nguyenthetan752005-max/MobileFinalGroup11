@@ -23,6 +23,8 @@ espressoCore = "3.6.1"
 mockito = "5.14.2"
 archUnit = "1.3.0"
 archCoreTesting = "2.2.0"
+ucrop = "2.2.8"
+swiperefreshlayout = "1.1.0"
 
 [libraries]
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
@@ -51,6 +53,8 @@ espresso-core = { group = "androidx.test.espresso", name = "espresso-core", vers
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 archunit-junit4 = { group = "com.tngtech.archunit", name = "archunit-junit4", version.ref = "archUnit" }
 arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "archCoreTesting" }
+ucrop = { group = "com.github.yalantis", name = "ucrop", version.ref = "ucrop" }
+swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

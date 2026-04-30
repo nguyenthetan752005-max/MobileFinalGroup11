@@ -19,7 +19,7 @@
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_arrow_back"
-            android:tint="?attr/ttColorTextPrimary" />
+            app:tint="?attr/ttColorTextPrimary" />
 
         <TextView
             android:layout_width="0dp"
@@ -59,6 +59,33 @@
         android:text="@string/notifications_empty"
         android:textColor="?attr/ttColorTextSecondary"
         android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/layoutNotificationsError"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingBottom="24dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/textNotificationsError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/notifications_load_failed"
+            android:textColor="?attr/ttColorTextSecondary" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonNotificationsRetry"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/action_try_again" />
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerNotifications"

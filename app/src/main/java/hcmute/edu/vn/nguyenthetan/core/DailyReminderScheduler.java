@@ -50,7 +50,7 @@ public final class DailyReminderScheduler {
         NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID,
                 context.getString(R.string.daily_reminder_channel_name),
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_HIGH
         );
         channel.setDescription(context.getString(R.string.daily_reminder_channel_description));
         notificationManager.createNotificationChannel(channel);

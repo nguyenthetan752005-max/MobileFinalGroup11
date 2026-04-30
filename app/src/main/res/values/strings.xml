@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">TungTung</string>
     <string name="nav_home">Home</string>
     <string name="nav_explore">Explore</string>
@@ -6,6 +6,7 @@
     <string name="nav_profile">Profile</string>
     <string name="explore_search_hint">Search topics</string>
     <string name="explore_no_results">No topics match your search.</string>
+    <string name="explore_load_failed">Could not load topics right now.</string>
     <string name="filter_listening">Listening</string>
     <string name="filter_speaking">Speaking</string>
     <string name="button_continue">Continue</string>
@@ -100,6 +101,7 @@
     <string name="daily_reminder_channel_description">TungTung sends a daily reminder to keep your English study streak going.</string>
     <string name="lesson_search_hint">Search lessons</string>
     <string name="lesson_search_no_results">No lessons match your search.</string>
+    <string name="lesson_list_load_failed">Could not load lessons right now.</string>
     <string name="speaking_best_attempt">Best attempt</string>
     <string name="speaking_current_attempt">Current attempt</string>
     <string name="profile_header_label">Learning profile</string>
@@ -130,7 +132,9 @@
     <string name="lesson_play_sample">Play sample</string>
     <string name="hint_comment_content">Share your thoughts...</string>
     <string name="action_cancel">Cancel</string>
+    <string name="action_try_again">Try again</string>
     <string name="action_send">Send</string>
+    <string name="action_delete">Delete</string>
     <string name="comment_replying_to">Replying to %1$s</string>
     <string name="comment_sent_success">Comment posted!</string>
     <string name="comment_sent_failed">Failed to post comment.</string>
@@ -217,6 +221,7 @@
     <string name="edit_profile_hint_new_name">Tên hiển thị mới</string>
     <string name="edit_profile_hint_current_password">Mật khẩu hiện tại</string>
     <string name="edit_profile_hint_new_password">Mật khẩu mới</string>
+    <string name="edit_profile_provider_label">Tài khoản được cung cấp bởi: %1$s</string>
 
     <!-- Forgot password -->
     <string name="forgot_password_title">Quên mật khẩu</string>
@@ -245,5 +250,6 @@
 
     <!-- Transcript -->
     <string name="lesson_repeat">Repeat</string>
+    <string name="lesson_auto_scroll">Auto Scroll</string>
 </resources>
 

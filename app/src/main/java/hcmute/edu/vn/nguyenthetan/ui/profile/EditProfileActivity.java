@@ -2,17 +2,21 @@ package hcmute.edu.vn.nguyenthetan.ui.profile;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.lifecycle.ViewModelProvider;
 
+import hcmute.edu.vn.nguyenthetan.R;
 import hcmute.edu.vn.nguyenthetan.TungTungApplication;
 import hcmute.edu.vn.nguyenthetan.core.NetworkUtils;
 import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
+import hcmute.edu.vn.nguyenthetan.data.remote.dto.UserProfileDto;
 import hcmute.edu.vn.nguyenthetan.databinding.ActivityEditProfileBinding;
 import hcmute.edu.vn.nguyenthetan.ui.auth.LoginActivity;
 import hcmute.edu.vn.nguyenthetan.ui.common.ThemedActivity;
+import retrofit2.Response;
 
 public class EditProfileActivity extends ThemedActivity {
 
@@ -43,6 +47,33 @@ public class EditProfileActivity extends ThemedActivity {
         viewModel.getState().observe(this, this::renderState);
 
         binding.inputUsername.setText(userSessionStore.getUsername());
+        applyProviderUi(null);
+
+        new Thread(() -> {
+            String provider = null;
+            try {
+                Response<UserProfileDto> response = application.getAppContainer()
+                        .getMobileApiService()
+                        .getProfile(userSessionStore.getUserId())
+                        .execute();
+                if (response.isSuccessful() && response.body() != null) {
+                    provider = response.body().provider;
+                }
+            } catch (Exception ignored) {
+            }
+
+            if (TextUtils.isEmpty(provider)) {
+                hcmute.edu.vn.nguyenthetan.domain.model.profile.ProfileData profile = application.getAppContainer().getProfileUseCase().execute();
+                if (profile != null) {
+                    provider = profile.getProvider();
+                }
+            }
+
+            String resolvedProvider = provider;
+            runOnUiThread(() -> {
+                applyProviderUi(resolvedProvider);
+            });
+        }).start();
 
         binding.buttonBack.setOnClickListener(v -> finish());
         binding.buttonUpdateUsername.setOnClickListener(v -> submitUpdateUsername());
@@ -77,6 +108,8 @@ public class EditProfileActivity extends ThemedActivity {
             case SUCCESS:
                 if (state.kind == EditProfileViewModel.UpdateKind.USERNAME) {
                     Toast.makeText(this, "Cập nhật tên thành công", Toast.LENGTH_SHORT).show();
+                    TungTungApplication application = (TungTungApplication) getApplication();
+                    application.getAppContainer().refreshCurrentUserProfile();
                     viewModel.acknowledge();
                 } else {
                     Toast.makeText(this, "Cập nhật mật khẩu thành công. Vui lòng đăng nhập lại.", Toast.LENGTH_LONG).show();
@@ -110,6 +143,28 @@ public class EditProfileActivity extends ThemedActivity {
         if (NetworkUtils.isNetworkAvailable(this)) return true;
         Toast.makeText(this, "Vui lòng kiểm tra kết nối mạng", Toast.LENGTH_SHORT).show();
         return false;
+    }
+
+    private void applyProviderUi(String provider) {
+        boolean thirdPartyAccount = isThirdPartyProvider(provider);
+        if (!TextUtils.isEmpty(provider)) {
+            String providerLabel = provider.toUpperCase(java.util.Locale.US);
+            binding.textProvider.setText(getString(R.string.edit_profile_provider_label, providerLabel));
+            binding.textProvider.setVisibility(View.VISIBLE);
+        } else {
+            binding.textProvider.setVisibility(View.GONE);
+        }
+        binding.layoutPasswordSection.setVisibility(thirdPartyAccount ? View.GONE : View.VISIBLE);
+    }
+
+    private boolean isThirdPartyProvider(String provider) {
+        if (TextUtils.isEmpty(provider)) {
+            return false;
+        }
+        String normalized = provider.trim();
+        return !normalized.equalsIgnoreCase("local")
+                && !normalized.equalsIgnoreCase("native")
+                && !normalized.equalsIgnoreCase("app");
     }
 
     private void setLoading(boolean loading) {

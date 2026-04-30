@@ -7,6 +7,8 @@ import hcmute.edu.vn.nguyenthetan.domain.model.explore.LessonCollection;
 
 public interface CatalogRepository {
 
+    void syncCategories();
+
     void syncCategoryCollection(String categorySlug);
 
     void syncSectionLessons(long sectionId);

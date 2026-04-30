@@ -81,6 +81,9 @@ public interface MobileApiService {
     @PUT("api/mobile/notifications/read-all")
     Call<GenericApiResponseDto> markAllNotificationsRead();
 
+    @DELETE("api/mobile/notifications/{notificationId}")
+    Call<GenericApiResponseDto> deleteNotification(@Path("notificationId") long notificationId);
+
     @POST("api/mobile/notifications/reminder-deliveries")
     Call<GenericApiResponseDto> recordReminderDelivery(@Body MobileReminderDeliveryRequestDto request);
 
@@ -115,6 +118,13 @@ public interface MobileApiService {
     Call<GenericApiResponseDto> updateUsername(
             @Path("userId") long userId,
             @Body UsernameUpdateRequestDto request
+    );
+
+    @Multipart
+    @POST("api/mobile/profile/{userId}/avatar")
+    Call<GenericApiResponseDto> updateAvatar(
+            @Path("userId") long userId,
+            @Part MultipartBody.Part avatar
     );
 
     @POST("api/mobile/progress/update")

@@ -6,11 +6,11 @@ import android.util.Log;
 import com.google.gson.Gson;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import hcmute.edu.vn.nguyenthetan.core.NetworkUtils;
 import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
@@ -168,22 +168,17 @@ public class RemoteNotificationSyncManager {
     }
 
     private String resolveReminderDate(long deliveredAtEpochMillis, String rawTimezone) {
-        ZoneId zoneId = resolveZoneId(rawTimezone);
-        return Instant.ofEpochMilli(deliveredAtEpochMillis)
-                .atZone(zoneId)
-                .toLocalDate()
-                .format(DateTimeFormatter.ISO_LOCAL_DATE);
+        TimeZone timeZone = resolveTimeZone(rawTimezone);
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        formatter.setTimeZone(timeZone);
+        return formatter.format(new Date(deliveredAtEpochMillis));
     }
 
-    private ZoneId resolveZoneId(String rawTimezone) {
+    private TimeZone resolveTimeZone(String rawTimezone) {
         if (rawTimezone == null || rawTimezone.trim().isEmpty()) {
-            return ZoneId.systemDefault();
+            return TimeZone.getDefault();
         }
-        try {
-            return ZoneId.of(rawTimezone.trim());
-        } catch (Exception ignored) {
-            return ZoneId.systemDefault();
-        }
+        return TimeZone.getTimeZone(rawTimezone.trim());
     }
 
     private String buildMeta(String reminderTime, String reminderTimezone) {

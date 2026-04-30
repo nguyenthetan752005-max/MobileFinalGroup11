@@ -53,8 +53,10 @@ public class RoomProfileRepository implements ProfileRepository {
                     MascotMoodResolver.Mood.ORIGIN.getId(),
                     "Guest mode",
                     "",
+                    null,
                     0,
-                    false
+                    false,
+                    "guest"
             );
         }
         List<DailyActivity> activities = new ArrayList<>();
@@ -73,7 +75,9 @@ public class RoomProfileRepository implements ProfileRepository {
                 activities,
                 RepositoryFormatters.buildStreakSummary(profile, streakDayDao.getAllOrdered()),
                 profile.darkModeEnabled,
-                profile.notificationsEnabled
+                profile.notificationsEnabled,
+                profile.avatarUrl,
+                profile.provider
         );
     }
 }

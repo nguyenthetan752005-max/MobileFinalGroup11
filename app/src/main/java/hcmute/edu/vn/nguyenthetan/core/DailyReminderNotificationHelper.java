@@ -1,5 +1,6 @@
 package hcmute.edu.vn.nguyenthetan.core;
 
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -46,7 +47,8 @@ public final class DailyReminderNotificationHelper {
                 .setContentTitle(notificationTitle)
                 .setContentText(notificationBody)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(notificationBody))
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .setAutoCancel(true)
                 .setContentIntent(targets.contentIntent);
         if (targets.lessonTitle != null && !targets.lessonTitle.trim().isEmpty()) {
@@ -66,13 +68,30 @@ public final class DailyReminderNotificationHelper {
                 targets.openAppIntent
         );
 
-        NotificationManagerCompat.from(appContext).notify(NOTIFICATION_ID, builder.build());
+        if (!DailyReminderScheduler.hasNotificationPermission(appContext)) {
+            return new ReminderNotificationRecord(
+                    notificationTitle,
+                    notificationBody,
+                    targets.lessonId,
+                    targets.lessonTitle
+            );
+        }
+        notifyReminder(appContext, builder);
         return new ReminderNotificationRecord(
                 notificationTitle,
                 notificationBody,
                 targets.lessonId,
                 targets.lessonTitle
         );
+    }
+
+    @SuppressLint("MissingPermission")
+    private static void notifyReminder(@NonNull Context appContext, @NonNull NotificationCompat.Builder builder) {
+        try {
+            NotificationManagerCompat.from(appContext).notify(NOTIFICATION_ID, builder.build());
+        } catch (SecurityException ignored) {
+            // Permission can be revoked right before notify is called.
+        }
     }
 
     @NonNull

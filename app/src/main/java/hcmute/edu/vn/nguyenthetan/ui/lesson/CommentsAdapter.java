@@ -10,13 +10,20 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import hcmute.edu.vn.nguyenthetan.databinding.ItemCommentBinding;
 import hcmute.edu.vn.nguyenthetan.domain.model.comment.Comment;
 
 public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHolder> {
+
+    private static final Pattern REPLY_PREFIX_PATTERN = Pattern.compile("^@\\[([^\\]]+)\\]\\s+(.*)$", Pattern.DOTALL);
 
     public interface CommentActionListener {
         void onLike(long commentId);
@@ -71,10 +78,10 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
         }
 
         void bind(Comment item, long currentUserId, @Nullable CommentActionListener listener) {
-            binding.textAvatar.setText(item.getAvatarLabel());
+            bindAvatar(binding, item);
             binding.textAuthor.setText(item.getAuthor());
             binding.textTime.setText(item.getTimeAgo());
-            binding.textContent.setText(item.getContent());
+            bindReplyContent(binding, item.getContent());
 
             // Like/Dislike counts
             binding.textLikeCount.setText(String.valueOf(item.getLikes()));
@@ -107,10 +114,10 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
             LayoutInflater inflater = LayoutInflater.from(binding.getRoot().getContext());
             for (Comment reply : item.getReplies()) {
                 ItemCommentBinding replyBinding = ItemCommentBinding.inflate(inflater, binding.repliesContainer, false);
-                replyBinding.textAvatar.setText(reply.getAvatarLabel());
+                bindAvatar(replyBinding, reply);
                 replyBinding.textAuthor.setText(reply.getAuthor());
                 replyBinding.textTime.setText(reply.getTimeAgo());
-                replyBinding.textContent.setText(reply.getContent());
+                bindReplyContent(replyBinding, reply.getContent());
                 replyBinding.textLikeCount.setText(String.valueOf(reply.getLikes()));
                 replyBinding.textDislikeCount.setText(String.valueOf(reply.getDislikes()));
                 replyBinding.textActions.setText("");
@@ -124,7 +131,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
                     if (listener != null) listener.onDislike(reply.getId());
                 });
                 replyBinding.buttonReply.setOnClickListener(v -> {
-                    if (listener != null) listener.onReply(reply.getId(), reply.getAuthor());
+                    if (listener != null) listener.onReply(item.getId(), reply.getAuthor());
                 });
 
                 // Long-press to delete own replies
@@ -142,10 +149,43 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
                             ViewGroup.LayoutParams.WRAP_CONTENT
                     );
                 }
-                params.setMargins(dp(16), dp(8), 0, 0);
+                params.setMargins(0, dp(8), 0, 0);
                 replyBinding.getRoot().setLayoutParams(params);
                 binding.repliesContainer.addView(replyBinding.getRoot());
             }
+        }
+
+        private void bindAvatar(ItemCommentBinding itemBinding, Comment item) {
+            String avatarUrl = item.getAvatarUrl();
+            String avatarLabel = item.getAvatarLabel();
+            itemBinding.textAvatar.setText(avatarLabel);
+            if (avatarUrl != null && !avatarUrl.trim().isEmpty()) {
+                itemBinding.imageAvatar.setVisibility(View.VISIBLE);
+                itemBinding.textAvatar.setVisibility(View.GONE);
+                Glide.with(itemBinding.imageAvatar)
+                        .load(avatarUrl.trim())
+                        .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+                        .circleCrop()
+                        .into(itemBinding.imageAvatar);
+            } else {
+                Glide.with(itemBinding.imageAvatar).clear(itemBinding.imageAvatar);
+                itemBinding.imageAvatar.setVisibility(View.GONE);
+                itemBinding.textAvatar.setVisibility(View.VISIBLE);
+            }
+        }
+
+        private void bindReplyContent(ItemCommentBinding itemBinding, String rawContent) {
+            String content = rawContent == null ? "" : rawContent.trim();
+            Matcher matcher = REPLY_PREFIX_PATTERN.matcher(content);
+            if (matcher.matches()) {
+                itemBinding.textReplyTarget.setVisibility(View.VISIBLE);
+                itemBinding.textReplyTarget.setText("Replying to @" + matcher.group(1));
+                itemBinding.textContent.setText(matcher.group(2).trim());
+                return;
+            }
+            itemBinding.textReplyTarget.setVisibility(View.GONE);
+            itemBinding.textReplyTarget.setText("");
+            itemBinding.textContent.setText(content);
         }
 
         private int dp(int value) {

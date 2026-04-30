@@ -55,8 +55,10 @@ final class ProfileSyncMapper {
                 mood.getId(),
                 mood.getLabel(),
                 "",
+                dto.avatarUrl,
                 daysSince,
-                daysSince >= 1
+                daysSince >= 1,
+                dto.provider
         ));
 
         if (dto.weeklyActivity != null && dto.weeklyActivity.size() == 7) {

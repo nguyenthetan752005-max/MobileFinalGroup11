@@ -5,6 +5,7 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.GradientDrawable;
@@ -13,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -22,6 +24,7 @@ import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -34,12 +37,17 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.yalantis.ucrop.UCrop;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -55,6 +63,7 @@ import hcmute.edu.vn.nguyenthetan.core.ReminderSettingsStore;
 import hcmute.edu.vn.nguyenthetan.core.ThemePreferenceStore;
 import hcmute.edu.vn.nguyenthetan.core.ThemeColorResolver;
 import hcmute.edu.vn.nguyenthetan.core.UserSessionStore;
+import hcmute.edu.vn.nguyenthetan.data.remote.dto.GenericApiResponseDto;
 import hcmute.edu.vn.nguyenthetan.domain.model.profile.ReminderSettings;
 import hcmute.edu.vn.nguyenthetan.databinding.DialogAppearanceSettingsBinding;
 import hcmute.edu.vn.nguyenthetan.databinding.FragmentProfileBinding;
@@ -62,8 +71,14 @@ import hcmute.edu.vn.nguyenthetan.domain.model.home.DailyActivity;
 import hcmute.edu.vn.nguyenthetan.domain.model.profile.ProfileData;
 import hcmute.edu.vn.nguyenthetan.ui.onboarding.OnboardingActivity;
 import hcmute.edu.vn.nguyenthetan.ui.common.StreakDialogFragment;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Response;
 
 public class ProfileFragment extends Fragment {
+
+    private static final String TAG = "ProfileFragment";
 
     public interface Listener {
     }
@@ -80,6 +95,7 @@ public class ProfileFragment extends Fragment {
     private String remoteDailyReminderTimezone;
     private Uri cameraPhotoUri;
     private boolean sendTestReminderAfterPermissionGrant;
+    private boolean avatarUploadInProgress;
     private final ActivityResultLauncher<String> notificationPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
                 if (!isAdded() || binding == null) {
@@ -115,15 +131,38 @@ public class ProfileFragment extends Fragment {
     private final ActivityResultLauncher<Intent> cameraLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (!isAdded() || binding == null) return;
+                revokeUriPermissionQuietly(cameraPhotoUri);
                 if (result.getResultCode() == android.app.Activity.RESULT_OK && cameraPhotoUri != null) {
-                    handleAvatarResult(cameraPhotoUri);
+                    launchAvatarCrop(cameraPhotoUri);
+                }
+            });
+    private final ActivityResultLauncher<Intent> cropLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (!isAdded() || binding == null) return;
+                if (result.getResultCode() == android.app.Activity.RESULT_OK && result.getData() != null) {
+                    Uri croppedUri = UCrop.getOutput(result.getData());
+                    if (croppedUri != null) {
+                        handleAvatarResult(croppedUri);
+                    }
+                    return;
+                }
+                if (result.getData() != null && UCrop.getError(result.getData()) != null) {
+                    Log.e(TAG, "Avatar crop failed", UCrop.getError(result.getData()));
+                    Toast.makeText(requireContext(), R.string.avatar_load_failed, Toast.LENGTH_SHORT).show();
                 }
             });
     private final ActivityResultLauncher<Intent> galleryLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (!isAdded() || binding == null) return;
                 if (result.getResultCode() == android.app.Activity.RESULT_OK && result.getData() != null && result.getData().getData() != null) {
-                    handleAvatarResult(result.getData().getData());
+                    try {
+                        Uri selectedUri = result.getData().getData();
+                        Uri internalUri = copyGalleryImageToCache(selectedUri);
+                        launchAvatarCrop(internalUri != null ? internalUri : selectedUri);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Avatar gallery import failed", e);
+                        Toast.makeText(requireContext(), R.string.avatar_load_failed, Toast.LENGTH_SHORT).show();
+                    }
                 }
             });
 
@@ -166,12 +205,12 @@ public class ProfileFragment extends Fragment {
         });
         viewModel.load();
 
-        binding.textThemeLight.setOnClickListener(v ->
-                ThemePreferenceStore.setThemeMode(requireContext(), AppCompatDelegate.MODE_NIGHT_NO)
-        );
-        binding.textThemeDark.setOnClickListener(v ->
-                ThemePreferenceStore.setThemeMode(requireContext(), AppCompatDelegate.MODE_NIGHT_YES)
-        );
+        binding.textThemeLight.setOnClickListener(v -> {
+            ThemePreferenceStore.setThemeMode(requireContext(), AppCompatDelegate.MODE_NIGHT_NO);
+        });
+        binding.textThemeDark.setOnClickListener(v -> {
+            ThemePreferenceStore.setThemeMode(requireContext(), AppCompatDelegate.MODE_NIGHT_YES);
+        });
         binding.buttonSessionAction.setOnClickListener(v -> handleSessionAction());
         binding.buttonGuestProfileCreateAccount.setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), OnboardingActivity.class))
@@ -203,6 +242,7 @@ public class ProfileFragment extends Fragment {
         boolean guestMode = isGuestMode();
         String nameToDisplay = guestMode ? getString(R.string.guest_display_name) : profileData.getName();
         binding.textAvatar.setText(guestMode ? "GU" : buildAvatar(profileData.getName()));
+        renderAvatar(profileData);
         binding.textName.setText(nameToDisplay);
         binding.textEmail.setText(guestMode ? getString(R.string.guest_profile_hint) : profileData.getEmail());
         binding.textCurrentStreak.setText(guestMode ? "--" : String.valueOf(profileData.getCurrentStreak()));
@@ -676,7 +716,7 @@ public class ProfileFragment extends Fragment {
 
     private void openCamera() {
         try {
-            File photoFile = new File(requireContext().getFilesDir(), "avatar_temp.jpg");
+            File photoFile = new File(requireContext().getFilesDir(), getCameraTempFileName());
             cameraPhotoUri = FileProvider.getUriForFile(
                     requireContext(),
                     requireContext().getPackageName() + ".fileprovider",
@@ -684,6 +724,15 @@ public class ProfileFragment extends Fragment {
             );
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             intent.putExtra(MediaStore.EXTRA_OUTPUT, cameraPhotoUri);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            for (ResolveInfo resolveInfo : requireContext().getPackageManager()
+                    .queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)) {
+                requireContext().grantUriPermission(
+                        resolveInfo.activityInfo.packageName,
+                        cameraPhotoUri,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                );
+            }
             cameraLauncher.launch(intent);
         } catch (Exception e) {
             Toast.makeText(requireContext(), R.string.avatar_camera_failed, Toast.LENGTH_SHORT).show();
@@ -693,7 +742,33 @@ public class ProfileFragment extends Fragment {
     private void openGallery() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         intent.setType("image/*");
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         galleryLauncher.launch(intent);
+    }
+
+    private void launchAvatarCrop(Uri sourceUri) {
+        try {
+            File destFile = new File(requireContext().getCacheDir(), getCroppedAvatarFileName());
+            Uri destUri = FileProvider.getUriForFile(
+                    requireContext(),
+                    requireContext().getPackageName() + ".fileprovider",
+                    destFile
+            );
+            UCrop.Options options = new UCrop.Options();
+            options.setCircleDimmedLayer(true);
+            options.setShowCropFrame(false);
+            options.setShowCropGrid(false);
+            Intent intent = UCrop.of(sourceUri, destUri)
+                    .withOptions(options)
+                    .withAspectRatio(1, 1)
+                    .withMaxResultSize(512, 512)
+                    .getIntent(requireContext());
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            cropLauncher.launch(intent);
+        } catch (Exception e) {
+            Log.e(TAG, "Launch avatar crop failed", e);
+            Toast.makeText(requireContext(), R.string.avatar_load_failed, Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void handleAvatarResult(Uri sourceUri) {
@@ -711,14 +786,88 @@ public class ProfileFragment extends Fragment {
                 return;
             }
             bitmap = compressBitmap(bitmap, 800);
-            saveAvatarImage(bitmap);
-            binding.imageAvatar.setImageBitmap(bitmap);
-            binding.imageAvatar.setVisibility(View.VISIBLE);
-            binding.textAvatar.setVisibility(View.GONE);
-            Toast.makeText(requireContext(), R.string.avatar_saved, Toast.LENGTH_SHORT).show();
+            uploadAvatar(bitmap);
         } catch (Exception e) {
+            Log.e(TAG, "Handle avatar result failed", e);
             Toast.makeText(requireContext(), R.string.avatar_load_failed, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void uploadAvatar(Bitmap bitmap) {
+        if (avatarUploadInProgress) {
+            return;
+        }
+        if (userSessionStore == null || !userSessionStore.isLoggedIn()) {
+            promptLoginRequired();
+            return;
+        }
+        long userId = userSessionStore.getUserId();
+        if (userId <= 0L) {
+            Toast.makeText(requireContext(), R.string.avatar_load_failed, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        setAvatarUploadInProgress(true);
+        TungTungApplication application = (TungTungApplication) requireActivity().getApplication();
+        new Thread(() -> {
+            String errorMessage = null;
+            boolean uploadSucceeded = false;
+            try {
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream);
+                RequestBody avatarRequest = RequestBody.create(
+                        MediaType.parse("image/jpeg"),
+                        outputStream.toByteArray()
+                );
+                MultipartBody.Part avatarPart = MultipartBody.Part.createFormData(
+                        "avatar",
+                        getAvatarUploadFileName(userId),
+                        avatarRequest
+                );
+                Response<GenericApiResponseDto> response = application.getAppContainer()
+                        .getMobileApiService()
+                        .updateAvatar(userId, avatarPart)
+                        .execute();
+                if (!response.isSuccessful() || response.body() == null || !response.body().success) {
+                    Log.e(TAG, "Avatar upload failed. HTTP " + response.code());
+                    errorMessage = extractAvatarUploadError(response);
+                    if (errorMessage != null) {
+                        Log.e(TAG, "Avatar upload error body: " + errorMessage);
+                    }
+                } else {
+                    saveAvatarImage(bitmap);
+                    application.getAppContainer().refreshCurrentUserProfile();
+                    uploadSucceeded = true;
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Avatar upload request failed", e);
+                errorMessage = e.getMessage();
+            }
+
+            if (!uploadSucceeded && (errorMessage == null || errorMessage.trim().isEmpty())) {
+                errorMessage = getString(R.string.avatar_load_failed);
+            }
+            String finalErrorMessage = normalizeAvatarErrorMessage(errorMessage);
+            if (!isAdded()) {
+                avatarUploadInProgress = false;
+                return;
+            }
+            requireActivity().runOnUiThread(() -> {
+                if (!isAdded() || binding == null) {
+                    avatarUploadInProgress = false;
+                    return;
+                }
+                setAvatarUploadInProgress(false);
+                if (finalErrorMessage != null) {
+                    Toast.makeText(requireContext(), finalErrorMessage, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                binding.imageAvatar.setImageBitmap(bitmap);
+                binding.imageAvatar.setVisibility(View.VISIBLE);
+                binding.textAvatar.setVisibility(View.GONE);
+                Toast.makeText(requireContext(), R.string.avatar_saved, Toast.LENGTH_SHORT).show();
+            });
+        }).start();
     }
 
     private void saveAvatarImage(Bitmap bitmap) {
@@ -747,8 +896,158 @@ public class ProfileFragment extends Fragment {
         binding.textAvatar.setVisibility(View.VISIBLE);
     }
 
+    private void renderAvatar(ProfileData profileData) {
+        if (binding == null || profileData == null) {
+            return;
+        }
+        String avatarUrl = profileData.getAvatarUrl();
+        if (avatarUrl != null && !avatarUrl.trim().isEmpty()) {
+            binding.imageAvatar.setVisibility(View.VISIBLE);
+            binding.textAvatar.setVisibility(View.GONE);
+            Glide.with(this)
+                    .load(avatarUrl.trim())
+                    .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+                    .circleCrop()
+                    .error(Glide.with(this).load(getAvatarFile()).circleCrop())
+                    .into(binding.imageAvatar);
+            return;
+        }
+        loadSavedAvatar();
+    }
+
     private File getAvatarFile() {
-        return new File(requireContext().getFilesDir(), "user_avatar.jpg");
+        long userId = userSessionStore == null ? -1L : userSessionStore.getUserId();
+        return new File(requireContext().getFilesDir(), getAvatarUploadFileName(userId));
+    }
+
+    private String getAvatarUploadFileName(long userId) {
+        if (userId > 0L) {
+            return "user_avatar_" + userId + ".jpg";
+        }
+        return "user_avatar_guest.jpg";
+    }
+
+    private String getCameraTempFileName() {
+        long userId = userSessionStore == null ? -1L : userSessionStore.getUserId();
+        if (userId > 0L) {
+            return "avatar_temp_" + userId + ".jpg";
+        }
+        return "avatar_temp.jpg";
+    }
+
+    private String getCroppedAvatarFileName() {
+        long userId = userSessionStore == null ? -1L : userSessionStore.getUserId();
+        if (userId > 0L) {
+            return "avatar_cropped_" + userId + ".jpg";
+        }
+        return "avatar_cropped.jpg";
+    }
+
+    private String getGalleryImportFileName(String extension) {
+        String safeExtension = (extension == null || extension.trim().isEmpty()) ? "jpg" : extension.trim().toLowerCase(Locale.US);
+        long userId = userSessionStore == null ? -1L : userSessionStore.getUserId();
+        if (userId > 0L) {
+            return "avatar_gallery_" + userId + "." + safeExtension;
+        }
+        return "avatar_gallery." + safeExtension;
+    }
+
+    private String resolveGalleryFileExtension(Uri sourceUri) {
+        if (sourceUri == null) {
+            return "jpg";
+        }
+        String mimeType = requireContext().getContentResolver().getType(sourceUri);
+        if (mimeType != null) {
+            String fromMime = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
+            if (fromMime != null && !fromMime.trim().isEmpty()) {
+                return fromMime;
+            }
+        }
+        String path = sourceUri.getLastPathSegment();
+        if (path != null) {
+            int dotIndex = path.lastIndexOf('.');
+            if (dotIndex >= 0 && dotIndex < path.length() - 1) {
+                return path.substring(dotIndex + 1).toLowerCase(Locale.US);
+            }
+        }
+        return "jpg";
+    }
+
+    private Uri copyGalleryImageToCache(Uri sourceUri) throws IOException {
+        if (sourceUri == null) {
+            return null;
+        }
+        File targetFile = new File(requireContext().getCacheDir(), getGalleryImportFileName(resolveGalleryFileExtension(sourceUri)));
+        try (InputStream inputStream = requireContext().getContentResolver().openInputStream(sourceUri);
+             OutputStream outputStream = new FileOutputStream(targetFile, false)) {
+            if (inputStream == null) {
+                return null;
+            }
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, read);
+            }
+            outputStream.flush();
+        }
+        return FileProvider.getUriForFile(
+                requireContext(),
+                requireContext().getPackageName() + ".fileprovider",
+                targetFile
+        );
+    }
+
+    private void revokeUriPermissionQuietly(Uri uri) {
+        if (uri == null || !isAdded()) {
+            return;
+        }
+        try {
+            requireContext().revokeUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            );
+        } catch (Exception ignored) {
+        }
+    }
+
+    private void setAvatarUploadInProgress(boolean inProgress) {
+        avatarUploadInProgress = inProgress;
+        if (binding == null) {
+            return;
+        }
+        binding.buttonChangeAvatar.setEnabled(!inProgress);
+        binding.buttonChangeAvatar.setAlpha(inProgress ? 0.5f : 1f);
+    }
+
+    private String extractAvatarUploadError(Response<GenericApiResponseDto> response) {
+        if (response == null) {
+            return null;
+        }
+        GenericApiResponseDto body = response.body();
+        if (body != null && body.message != null && !body.message.trim().isEmpty()) {
+            return body.message.trim();
+        }
+        try {
+            if (response.errorBody() != null) {
+                String rawError = response.errorBody().string();
+                if (rawError != null && !rawError.trim().isEmpty()) {
+                    return rawError.trim();
+                }
+            }
+        } catch (IOException ignored) {
+        }
+        return null;
+    }
+
+    private String normalizeAvatarErrorMessage(String errorMessage) {
+        if (errorMessage == null || errorMessage.trim().isEmpty()) {
+            return null;
+        }
+        String normalized = errorMessage.trim();
+        if (normalized.startsWith("{")) {
+            return getString(R.string.avatar_load_failed);
+        }
+        return normalized;
     }
 
     private Bitmap compressBitmap(Bitmap source, int maxSize) {
@@ -786,6 +1085,7 @@ public class ProfileFragment extends Fragment {
         super.onDestroyView();
         lastSyncing = null;
         sendTestReminderAfterPermissionGrant = false;
+        avatarUploadInProgress = false;
         binding = null;
     }
 }

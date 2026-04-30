@@ -9,12 +9,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingTop="8dp">
+        android:padding="20dp">
 
         <TextView
             android:id="@+id/textAppearanceDialogSummary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textAlignment="center"
             android:textAppearance="@style/TextAppearance.TungTung.BodyMedium"
             android:textColor="?attr/ttColorTextSecondary" />
 
@@ -22,15 +24,17 @@
             android:id="@+id/groupPaletteOptions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginHorizontal="8dp"
             android:orientation="vertical">
 
             <RadioButton
                 android:id="@+id/radioPaletteClassic"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingVertical="10dp"
-                android:paddingStart="8dp"
+                android:paddingVertical="14dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:textAppearance="@style/TextAppearance.TungTung.BodyLarge"
                 android:text="@string/palette_classic" />
 
@@ -38,8 +42,9 @@
                 android:id="@+id/radioPaletteOcean"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingVertical="10dp"
-                android:paddingStart="8dp"
+                android:paddingVertical="14dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:textAppearance="@style/TextAppearance.TungTung.BodyLarge"
                 android:text="@string/palette_ocean" />
 
@@ -47,8 +52,9 @@
                 android:id="@+id/radioPaletteForest"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingVertical="10dp"
-                android:paddingStart="8dp"
+                android:paddingVertical="14dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:textAppearance="@style/TextAppearance.TungTung.BodyLarge"
                 android:text="@string/palette_forest" />
 
@@ -56,16 +62,19 @@
                 android:id="@+id/radioPaletteSunset"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingVertical="10dp"
-                android:paddingStart="8dp"
+                android:paddingVertical="14dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:textAppearance="@style/TextAppearance.TungTung.BodyLarge"
                 android:text="@string/palette_sunset" />
         </RadioGroup>
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="28dp"
+            android:gravity="center"
+            android:textAlignment="center"
             android:text="@string/settings_preview_title"
             android:textColor="?attr/ttColorTextPrimary"
             android:textStyle="bold" />
@@ -74,8 +83,8 @@
             android:id="@+id/cardAppearancePreview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            app:cardCornerRadius="20dp"
+            android:layout_marginTop="12dp"
+            app:cardCornerRadius="24dp"
             app:cardElevation="0dp"
             app:strokeWidth="1dp">
 
@@ -84,22 +93,26 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:gravity="center_horizontal"
+                android:padding="24dp">
 
                 <TextView
                     android:id="@+id/textPreviewBadge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="6dp"
+                    android:layout_gravity="center_horizontal"
                     android:text="@string/settings_preview_badge"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/textPreviewTitle"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center"
+                    android:textAlignment="center"
                     android:text="@string/settings_preview_title_text"
                     android:textAppearance="@style/TextAppearance.TungTung.TitleLarge" />
 
@@ -107,7 +120,9 @@
                     android:id="@+id/textPreviewBody"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:textAlignment="center"
                     android:text="@string/settings_preview_body_text"
                     android:textAppearance="@style/TextAppearance.TungTung.BodySmall" />
 
@@ -115,45 +130,41 @@
                     android:id="@+id/cardPreviewStat"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    app:cardCornerRadius="16dp"
+                    android:layout_marginTop="24dp"
+                    app:cardCornerRadius="20dp"
                     app:cardElevation="0dp"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="12dp">
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal"
+                        android:padding="16dp">
 
-                        <LinearLayout
-                            android:layout_width="0dp"
+                        <TextView
+                            android:id="@+id/textPreviewStatLabel"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
+                            android:gravity="center"
+                            android:text="@string/settings_preview_stat_label"
+                            android:textAppearance="@style/TextAppearance.TungTung.LabelSmall" />
 
-                            <TextView
-                                android:id="@+id/textPreviewStatLabel"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/settings_preview_stat_label"
-                                android:textAppearance="@style/TextAppearance.TungTung.LabelSmall" />
-
-                            <TextView
-                                android:id="@+id/textPreviewStatValue"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="6dp"
-                                android:text="@string/settings_preview_stat_value"
-                                android:textAppearance="@style/TextAppearance.TungTung.TitleLarge" />
-                        </LinearLayout>
+                        <TextView
+                            android:id="@+id/textPreviewStatValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:gravity="center"
+                            android:text="@string/settings_preview_stat_value"
+                            android:textAppearance="@style/TextAppearance.TungTung.TitleLarge" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonPreviewAction"
                             style="@style/Widget.Material3.Button"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
                             android:text="@string/settings_preview_action"
                             android:textAllCaps="false" />
                     </LinearLayout>

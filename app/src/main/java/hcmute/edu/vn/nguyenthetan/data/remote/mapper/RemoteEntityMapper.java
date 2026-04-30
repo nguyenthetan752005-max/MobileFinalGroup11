@@ -232,6 +232,7 @@ public final class RemoteEntityMapper {
                     resolveNullableId(dto.parentCommentId),
                     dto.author,
                     dto.avatarLabel,
+                    dto.avatarUrl,
                     dto.timeAgo,
                     dto.content,
                     dto.likeCount,

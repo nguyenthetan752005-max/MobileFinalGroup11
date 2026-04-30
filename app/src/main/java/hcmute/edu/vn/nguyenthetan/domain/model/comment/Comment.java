@@ -10,6 +10,7 @@ public class Comment {
     private final long sentenceId;
     private final String author;
     private final String avatarLabel;
+    private final String avatarUrl;
     private final String timeAgo;
     private final String content;
     private final int likes;
@@ -22,6 +23,7 @@ public class Comment {
             long sentenceId,
             String author,
             String avatarLabel,
+            String avatarUrl,
             String timeAgo,
             String content,
             int likes,
@@ -33,6 +35,7 @@ public class Comment {
         this.sentenceId = sentenceId;
         this.author = author;
         this.avatarLabel = avatarLabel;
+        this.avatarUrl = avatarUrl;
         this.timeAgo = timeAgo;
         this.content = content;
         this.likes = likes;
@@ -58,6 +61,10 @@ public class Comment {
 
     public String getAvatarLabel() {
         return avatarLabel;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
     }
 
     public String getTimeAgo() {
