@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Admin Login')}"></head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="auth-container">
+        <div class="auth-card">
+            <h1>Admin Panel</h1>
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: 20px;">Đăng nhập để quản lý hệ thống</p>
+
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" style="color: red; text-align: center; margin-bottom: 15px;" th:text="${error}"></div>
+
+            <form th:action="@{/admin/login}" method="post">
+                <div class="form-group">
+                    <label for="username">Tài khoản</label>
+                    <input type="text" id="username" name="username" class="form-control" placeholder="Nhập username hoặc email" autocomplete="username" autofocus required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Mật khẩu</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Nhập mật khẩu" autocomplete="current-password" required>
+                </div>
+                <button type="submit" class="btn-submit">Đăng nhập</button>
+            </form>
+
+            <div class="auth-links">
+                <p><a href="/">Quay về trang chính</a></p>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,38 @@
+@startuml Activity_Leaderboard
+title Activity Diagram - Bảng xếp hạng (UC11)
+
+start
+
+:User truy cập /leaderboard;
+
+if (Chọn tab?) then (7 ngày)
+  :Gọi LeaderboardService.getTopUsers7Days();
+  :Truy vấn User theo activeTime7d giảm dần;
+else (30 ngày)
+  :Gọi LeaderboardService.getTopUsers30Days();
+  :Truy vấn User theo activeTime30d giảm dần;
+endif
+
+:Map kết quả thành danh sách:
+- Hạng (rank)
+- Username
+- Avatar
+- Thời gian học (formatted);
+
+:Hiển thị bảng xếp hạng;
+
+if (User đã đăng nhập?) then (Có)
+  :Highlight vị trí của User hiện tại;
+else (Không)
+endif
+
+stop
+
+note right
+  activeTime7d và activeTime30d
+  được cập nhật bởi Cron Job
+  (AdminCleanupJobService)
+  chạy mỗi giờ, tổng hợp từ
+  DailyStudyStatistic
+end note
+@enduml

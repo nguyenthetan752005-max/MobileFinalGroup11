@@ -1,0 +1,173 @@
+/* [CSS COMPONENT] TRANG TRÍ CÁC THẺ BOX.
+ * - Dùng để đổ bóng, bo góc cho các khối danh mục (Categories) ngoài màn hình chứa chủ đề nghe 
+ */
+
+
+/* ===========================
+   Categories List
+   =========================== */
+.page-title {
+    color: var(--text-primary);
+    margin-bottom: 24px;
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.category-card {
+    background: var(--bg-card);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    padding: 16px;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+    gap: 16px;
+    text-decoration: none;
+    color: inherit;
+    transition: box-shadow 0.2s ease;
+}
+
+.category-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.category-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+/* Wrapper for avatar + status badge */
+.category-avatar-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.category-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.category-name {
+    color: var(--primary);
+    font-size: 1.1rem;
+    margin: 0 0 8px 0;
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: transparent;
+    transition: text-decoration-color 0.2s;
+}
+
+.category-card:hover .category-name {
+    text-decoration-color: var(--primary);
+}
+
+.category-level {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0 0 4px 0;
+}
+
+.category-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.category-lessons {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.card-menu-dots {
+    color: var(--text-muted);
+    font-weight: bold;
+    font-size: 1.2rem;
+    line-height: 1;
+    letter-spacing: 1px;
+}
+
+.category-video-badge {
+    display: inline-block;
+    background-color: #FFD43B; /* Màu vàng đậm rực rỡ */
+    color: #000;
+    font-size: 0.65rem;       /* Chữ nhỏ hẳn lại để nổi bật tiêu đề */
+    font-weight: 800;         /* Chữ rất đậm */
+    padding: 2px 10px;        /* Padding cho dáng thon dài */
+    border-radius: 20px;      /* Bo tròn hẳn (Pill shape) */
+    text-transform: uppercase; /* Viết hoa toàn bộ */
+    line-height: normal;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Đổ bóng nhẹ tạo độ nổi */
+    flex-shrink: 0;           /* Không cho badge bị bóp méo khi tiêu đề dài */
+}
+
+/* Status Badge positioned under avatar */
+.category-status-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    margin-top: 6px;
+    text-align: center;
+    align-self: flex-start;
+}
+
+.category-status-badge.status-completed {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.category-status-badge.status-in_progress {
+    background-color: #e2e3e5;
+    color: #383d41;
+}
+
+/* Status Badge for Categories (inline version - legacy) */
+.status-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    vertical-align: middle;
+    margin-left: 8px;
+}
+
+.status-badge.status-completed {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-badge.status-in_progress {
+    background-color: #e2e3e5;
+    color: #383d41;
+}
+
+/* Các phần phụ khác */
+.category-level {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 4px 0;
+}
+
+.category-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #888;
+    font-size: 0.85rem;
+}

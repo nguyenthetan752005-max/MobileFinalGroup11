@@ -1,0 +1,54 @@
+@startuml Activity_Login
+title Activity Diagram - Đăng nhập (UC2)
+
+start
+
+if (Chọn loại tài khoản?) then (Admin)
+  :Truy cập trang /admin/login;
+  :Nhập username và password;
+  if (Validate & Authenticate Admin?) then (Sai)
+    :Hiển thị lỗi\n"Invalid credentials";
+    stop
+  else (Đúng)
+    :Tạo Session Admin;
+    :Chuyển hướng đến /admin/dashboard;
+    stop
+  endif
+else (User)
+  :Truy cập trang /login;
+
+  if (Chọn phương thức đăng nhập?) then (Google OAuth)
+    :Redirect đến Google OAuth;
+    :Xác thực với Google;
+    :Nhận provider_id từ Google;
+
+    if (Tìm User theo provider_id?) then (Không tìm thấy)
+      :Hiển thị lỗi\n"Tài khoản chưa đăng ký";
+      stop
+    else (Tìm thấy)
+      :Tạo Session User;
+      :Chuyển hướng đến /;
+      stop
+    endif
+
+  else (Form thường)
+    :Nhập username và password;
+
+    if (Tìm User theo username/email?) then (Không tìm thấy)
+      :Hiển thị lỗi\n"Sai tài khoản hoặc mật khẩu";
+      stop
+    else (Tìm thấy)
+    endif
+
+    if (So khớp password (BCrypt) & Role == USER?) then (Sai)
+      :Hiển thị lỗi\n"Sai tài khoản hoặc mật khẩu";
+      stop
+    else (Đúng)
+      :Tạo Session User;
+      :Chuyển hướng đến /;
+      stop
+    endif
+  endif
+endif
+
+@enduml

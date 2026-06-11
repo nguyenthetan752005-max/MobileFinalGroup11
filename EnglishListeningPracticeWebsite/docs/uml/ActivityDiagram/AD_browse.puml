@@ -1,0 +1,40 @@
+@startuml Activity_Browse
+title Activity Diagram - Duyệt danh mục & Xem bài học (UC3)
+
+start
+
+:Truy cập trang chủ;
+:Hệ thống tải danh sách Category\n(name, imageUrl, levelRange, type, totalLessons);
+:Hiển thị danh sách Category;
+
+:User chọn một Category;
+:Hệ thống truy vấn Section\ntheo category_id;
+:Hiển thị danh sách Section;
+
+:User chọn một Section;
+:Hệ thống truy vấn Lesson\ntheo section_id;
+:Hiển thị danh sách Lesson\n(title, level, type, totalSentences);
+
+if (User chọn Lesson?) then (Có)
+  :Chuyển đến trang Lesson;
+
+  if (Category.type?) then (VIDEO / YOUTUBE)
+    :Tải video YouTube theo youtubeVideoId;
+  else (AUDIO)
+    :Tải danh sách Sentence\ntheo lesson_id (ORDER BY order_index);
+  endif
+
+  if (Kiểm tra UserProgress?) then (Đã có tiến độ)
+    :Hiển thị tiến trình đã hoàn thành;
+    :Cho phép tiếp tục từ câu trước;
+  else (Chưa có)
+    :Tạo UserProgress mới\n(completedSentences = 0, status = IN_PROGRESS);
+  endif
+
+  :Hiển thị giao diện luyện tập;
+else (Không)
+  :Quay lại danh sách;
+endif
+
+stop
+@enduml

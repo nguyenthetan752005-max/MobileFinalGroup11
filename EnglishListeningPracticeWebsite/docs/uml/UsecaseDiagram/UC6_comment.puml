@@ -1,0 +1,19 @@
+@startuml UC_Comment
+title Use Case Diagram - Bình luận (UC6)
+
+left to right direction
+
+actor User
+
+rectangle "UC6 - Comment" {
+  User --> (Xem danh sách Comment)
+  User --> (Viết Comment mới)
+  User --> (Reply Comment)
+  User --> (Chỉnh sửa Comment của mình)
+  User --> (Xóa Comment của mình)
+
+  (Viết Comment mới) ..> (Validate nội dung) : <<include>>
+  (Reply Comment) ..> (Validate nội dung) : <<include>>
+  (Xóa Comment của mình) <.. (Soft Delete nếu có reply) : <<extend>>
+}
+@enduml

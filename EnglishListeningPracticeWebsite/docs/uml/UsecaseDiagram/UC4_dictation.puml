@@ -1,0 +1,20 @@
+@startuml UC_Dictation
+title Use Case Diagram - Luyện nghe Dictation (UC4)
+
+left to right direction
+
+actor User
+
+rectangle "UC4 - Practice Dictation" {
+  User --> (Chọn bài học Listening)
+  User --> (Nghe audio và nhập câu trả lời)
+  User --> (Kiểm tra đáp án)
+  User --> (Bỏ qua câu)
+
+  (Kiểm tra đáp án) ..> (So sánh từng từ với đáp án) : <<include>>
+  (Kiểm tra đáp án) ..> (Cập nhật UserProgress) : <<include>>
+  (Bỏ qua câu) ..> (Hiển thị đáp án đầy đủ) : <<include>>
+  (Bỏ qua câu) ..> (Cập nhật UserProgress) : <<include>>
+  (Nghe audio và nhập câu trả lời) <.. (Xem Hint danh từ riêng) : <<extend>>
+}
+@enduml

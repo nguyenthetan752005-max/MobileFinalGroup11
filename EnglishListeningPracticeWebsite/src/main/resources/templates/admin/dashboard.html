@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head('Admin Dashboard - Management')}"></head>
+
+<body th:with="resolvedInitialTab=${forceAdminOverviewTab ? 'overview' : (#strings.isEmpty(initialTab) ? 'overview' : initialTab)}"
+      th:attr="data-force-overview=${forceAdminOverviewTab},data-initial-tab=${resolvedInitialTab}">
+    <!-- Navbar -->
+    <div th:replace="~{fragments/navbar-admin :: adminNavbar}"></div>
+
+    <!-- Admin Dashboard CSS -->
+    <link rel="stylesheet" th:href="@{/css/pages/admin-dashboard.css}">
+
+    <div class="admin-layout">
+        <!-- ====== SIDEBAR ====== -->
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar-header">
+                <h2>CPanel</h2>
+                <p>Hello, <strong th:text="${admin != null ? admin.username : 'Admin'}">Admin</strong></p>
+            </div>
+            <ul class="admin-sidebar-menu">
+                <li class="admin-sidebar-item" th:classappend="${resolvedInitialTab == 'overview'} ? ' active'" onclick="switchTab('overview', this)">
+                    <div class="admin-sidebar-icon"><i class="fas fa-chart-pie"></i></div>
+                    Overview
+                </li>
+                <li class="admin-sidebar-item" th:classappend="${resolvedInitialTab == 'users'} ? ' active'" onclick="switchTab('users', this)">
+                    <div class="admin-sidebar-icon"><i class="fas fa-users"></i></div>
+                    User Management
+                </li>
+                <li class="admin-sidebar-item" th:classappend="${resolvedInitialTab == 'admins'} ? ' active'" onclick="switchTab('admins', this)">
+                    <div class="admin-sidebar-icon"><i class="fas fa-user-shield"></i></div>
+                    Admin Management
+                </li>
+                <div class="admin-sidebar-divider"></div>
+                <li class="admin-sidebar-item" th:classappend="${resolvedInitialTab == 'categories'} ? ' active'" onclick="switchTab('categories', this)">
+                    <div class="admin-sidebar-icon"><i class="fas fa-sitemap"></i></div>
+                    Categories
+                </li>
+                <li class="admin-sidebar-item" th:classappend="${resolvedInitialTab == 'sections'} ? ' active'" onclick="switchTab('sections', this)">
+                    <div class="admin-sidebar-icon"><i class="fas fa-stream"></i></div>
+                    Sections
+                </li>
+                <li class="admin-sidebar-item" th:classappend="${resolvedInitialTab == 'lessons'} ? ' active'" onclick="switchTab('lessons', this)">
+                    <div class="admin-sidebar-icon"><i class="fas fa-book-open"></i></div>
+                    Lessons
+                </li>
+                <li class="admin-sidebar-item" th:classappend="${resolvedInitialTab == 'sentences'} ? ' active'" onclick="switchTab('sentences', this)">
+                    <div class="admin-sidebar-icon"><i class="fas fa-align-left"></i></div>
+                    Sentences
+                </li>
+                <div class="admin-sidebar-divider"></div>
+                <li class="admin-sidebar-item" th:classappend="${resolvedInitialTab == 'comments'} ? ' active'" onclick="switchTab('comments', this)">
+                    <div class="admin-sidebar-icon"><i class="fas fa-comments"></i></div>
+                    Comments
+                </li>
+                <li class="admin-sidebar-item" th:classappend="${resolvedInitialTab == 'slideshows'} ? ' active'" onclick="switchTab('slideshows', this)">
+                    <div class="admin-sidebar-icon"><i class="fas fa-images"></i></div>
+                    Slideshows
+                </li>
+                <div class="admin-sidebar-divider"></div>
+                <li class="admin-sidebar-item" th:classappend="${resolvedInitialTab == 'trash'} ? ' active'" onclick="switchTab('trash', this)">
+                    <div class="admin-sidebar-icon"><i class="fas fa-trash-alt"></i></div>
+                    Recycle Bin
+                </li>
+                <li class="admin-sidebar-item" th:classappend="${resolvedInitialTab == 'settings'} ? ' active'" onclick="switchTab('settings', this)">
+                    <div class="admin-sidebar-icon"><i class="fas fa-cog"></i></div>
+                    Settings
+                </li>
+                <div class="admin-sidebar-divider"></div>
+                <li class="admin-sidebar-item" style="color: #ef4444;">
+                    <div class="admin-sidebar-icon"><i class="fas fa-sign-out-alt"></i></div>
+                    <a th:href="@{/admin/logout}" style="color: inherit; text-decoration: none; width: 100%;">Logout</a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- ====== MAIN CONTENT ====== -->
+        <main class="admin-main">
+
+            <!-- ===== OVERVIEW ===== -->
+            <div id="tab-overview" class="admin-tab-pane" th:classappend="${resolvedInitialTab == 'overview'} ? ' active'">
+                <div class="admin-main-header">
+                    <div>
+                        <h1>Overview</h1>
+                        <p>Quick statistics about users, content, and system activity.</p>
+                    </div>
+                    <button class="admin-btn admin-btn-outline" onclick="location.reload()"><i
+                            class="fas fa-sync-alt"></i> Refresh</button>
+                </div>
+
+                <div class="admin-stat-grid">
+                    <div class="admin-stat-card">
+                        <div class="admin-stat-icon users"><i class="fas fa-user-friends"></i></div>
+                        <div class="admin-stat-info">
+                            <h3>Total Users</h3>
+                            <p th:text="${totalUsers}">0</p>
+                        </div>
+                    </div>
+                    <div class="admin-stat-card">
+                        <div class="admin-stat-icon admins"><i class="fas fa-user-shield"></i></div>
+                        <div class="admin-stat-info">
+                            <h3>Admins</h3>
+                            <p th:text="${totalAdmins}">0</p>
+                        </div>
+                    </div>
+                    <div class="admin-stat-card">
+                        <div class="admin-stat-icon lessons"><i class="fas fa-layer-group"></i></div>
+                        <div class="admin-stat-info">
+                            <h3>Total Lessons</h3>
+                            <p th:text="${totalLessons}">0</p>
+                        </div>
+                    </div>
+                    <div class="admin-stat-card">
+                        <div class="admin-stat-icon time"><i class="fas fa-clock"></i></div>
+                        <div class="admin-stat-info">
+                            <h3>Practice Time</h3>
+                            <p th:text="${totalTime}">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Users -->
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2>Recently Registered</h2>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Display Name</th>
+                                    <th>Email</th>
+                                    <th>Registered</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="u : ${recentUsers}">
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <div style="width: 32px; height: 32px; background: #e0e7ff; color: #3730a3; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 13px;"
+                                                th:text="${#strings.substring(u.username, 0, 1).toUpperCase()}">U</div>
+                                            <span th:text="${u.username}">user</span>
+                                        </div>
+                                    </td>
+                                    <td th:text="${u.email}">email</td>
+                                    <td th:text="${#temporals.format(u.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-01</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(recentUsers)}" class="empty-row">
+                                    <td colspan="3">No recent users</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== USER MANAGEMENT ===== -->
+            <div id="tab-users" class="admin-tab-pane" th:classappend="${resolvedInitialTab == 'users'} ? ' active'">
+                <div class="admin-main-header">
+                    <div>
+                        <h1>User Management</h1>
+                        <p>Manage regular user accounts (role = USER).</p>
+                    </div>
+                </div>
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <div class="admin-filter-bar">
+                            <input type="text" class="admin-search-input" id="searchUsers"
+                                placeholder="Search by username, email..."
+                                oninput="filterTable('usersTable', this.value)">
+                            <select class="admin-filter-select" id="filterUserStatus"
+                                onchange="filterTableByStatus('usersTable', this.value)">
+                                <option value="active">Online</option>
+                                <option value="inactive">Offline</option>
+                            </select>
+                            <span class="admin-result-count">Top Score:</span>
+                            <select class="admin-filter-select" id="filterUserTopScore" onchange="sortUsersByTopScore(this.value)">
+                                <option value="high">Highest First</option>
+                                <option value="low">Lowest First</option>
+                            </select>
+                            <span class="admin-result-count" id="usersCount"></span>
+                        </div>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Provider</th>
+                                    <th>Top Score</th>
+                                    <th>Status</th>
+                                    <th>Registered</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="user : ${regularUsers}"
+                                    th:data-status="${user.isOnline(settingForm.onlineTimeoutMinutes) ? 'active' : 'inactive'}"
+                                    th:data-top-score="${userTopScoreMap != null and userTopScoreMap[user.id] != null ? userTopScoreMap[user.id] : 0}"
+                                    th:onclick="'openUserProfile(' + ${user.id} + ')'">
+                                    <td th:text="${user.id}">1</td>
+                                    <td>
+                                        <div style="display:flex;align-items:center;gap:10px;">
+                                            <div style="width:32px;height:32px;background:#dbeafe;color:#1d4ed8;border-radius:50%;display:flex;justify-content:center;align-items:center;font-weight:bold;font-size:13px;"
+                                                th:text="${#strings.substring(user.username, 0, 1).toUpperCase()}">U
+                                            </div>
+                                            <strong th:text="${user.username}">username</strong>
+                                        </div>
+                                    </td>
+                                    <td th:text="${user.email}">email</td>
+                                    <td><span class="admin-badge"
+                                            style="background:rgba(148,163,184,0.15);color:var(--text-secondary);"
+                                            th:text="${user.provider != null ? user.provider : 'LOCAL'}">LOCAL</span>
+                                    </td>
+                                    <td><span class="admin-badge badge-user"
+                                            th:text="${userTopScoreMap != null and userTopScoreMap[user.id] != null ? userTopScoreMap[user.id] : 0}">0</span></td>
+                                    <td>
+                                        <div style="display:flex;align-items:center;gap:6px;">
+                                            <div th:style="'width:8px;height:8px;border-radius:50%;background:' + (${user.isOnline(settingForm.onlineTimeoutMinutes)} ? '#22c55e' : '#94a3b8')"></div>
+                                            <span th:text="${user.isOnline(settingForm.onlineTimeoutMinutes) ? 'Online' : 'Offline'}"
+                                                th:style="'color:' + (${user.isOnline(settingForm.onlineTimeoutMinutes)} ? '#166534' : 'var(--text-secondary)') + ';font-weight:600;font-size:13px;'">Online</span>
+                                        </div>
+                                    </td>
+                                    <td
+                                        th:text="${user.createdAt != null ? #temporals.format(user.createdAt, 'yyyy-MM-dd') : 'N/A'}">
+                                        2024-01-01</td>
+                                    <td>
+                                        <div class="admin-action-group">
+                                            <button class="admin-btn admin-btn-danger admin-btn-small"
+                                                th:onclick="'event.stopPropagation(); deleteUser(' + ${user.id} + ')'" title="Lock Account"><i
+                                                    class="fas fa-lock"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(regularUsers)}" class="empty-row">
+                                    <td colspan="8">No users found</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== ADMIN MANAGEMENT ===== -->
+            <div id="tab-admins" class="admin-tab-pane" th:classappend="${resolvedInitialTab == 'admins'} ? ' active'">
+                <div class="admin-main-header">
+                    <div>
+                        <h1>Admin Management</h1>
+                        <p>Single administrator account currently used by the system.</p>
+                    </div>
+                </div>
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <span class="admin-result-count" id="adminsCount"></span>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" id="adminsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Registered</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:if="${admin != null}" th:onclick="openAdminSelfProfile()">
+                                    <td th:text="${admin.id}">1</td>
+                                    <td>
+                                        <div style="display:flex;align-items:center;gap:10px;">
+                                            <div style="width:32px;height:32px;background:rgba(139,92,246,0.15);color:#7c3aed;border-radius:50%;display:flex;justify-content:center;align-items:center;font-weight:bold;font-size:13px;"
+                                                th:text="${#strings.substring(admin.username, 0, 1).toUpperCase()}">A
+                                            </div>
+                                            <strong th:text="${admin.username}">admin</strong>
+                                        </div>
+                                    </td>
+                                    <td th:text="${admin.email}">admin@test.com</td>
+                                    <td><span class="admin-badge badge-admin">ADMIN</span></td>
+                                    <td><span class="admin-badge"
+                                            th:classappend="${admin.isActive != null and admin.isActive ? 'badge-active' : 'badge-inactive'}"
+                                            th:text="${admin.isActive != null and admin.isActive ? 'Online' : 'Offline'}">Active</span></td>
+                                    <td
+                                        th:text="${admin.createdAt != null ? #temporals.format(admin.createdAt, 'yyyy-MM-dd') : 'N/A'}">
+                                        2024-01-01</td>
+                                    <td>
+                                        <div class="admin-action-group">
+                                            <button class="admin-btn admin-btn-outline admin-btn-small"
+                                                onclick="event.stopPropagation(); openAdminSelfProfile()">
+                                                <i class="fas fa-id-badge"></i> Profile
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${admin == null}" class="empty-row">
+                                    <td colspan="7">No administrator account found</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== CATEGORIES ===== -->
+            <div id="tab-categories" class="admin-tab-pane" th:classappend="${resolvedInitialTab == 'categories'} ? ' active'">
+                <div class="admin-main-header">
+                    <div>
+                        <h1>Categories</h1>
+                        <p>Quản lý danh mục chính, tìm kiếm và lọc theo practice type.</p>
+                    </div>
+                </div>
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <div class="admin-filter-bar">
+                            <button class="admin-btn admin-btn-primary admin-btn-small" onclick="createCategory()">
+                                <i class="fas fa-plus"></i> New Category
+                            </button>
+                            <input type="text" class="admin-search-input" id="searchCategories"
+                                   placeholder="Search categories..."
+                                   oninput="filterCategoriesByType(document.getElementById('filterCategoryType').value)">
+                            <span class="admin-result-count">Practice:</span>
+                            <select class="admin-filter-select" id="filterCategoryPractice" onchange="filterCategoriesByType(document.getElementById('filterCategoryType').value)">
+                                <option value="LISTENING">LISTENING</option>
+                                <option value="SPEAKING">SPEAKING</option>
+                            </select>
+                            <span class="admin-result-count">Media Type:</span>
+                            <select class="admin-filter-select" id="filterCategoryType" onchange="filterCategoriesByType(this.value)">
+                                <option value="AUDIO">AUDIO</option>
+                                <option value="VIDEO">VIDEO</option>
+                            </select>
+                            <span class="admin-result-count">Level:</span>
+                            <select class="admin-filter-select" id="filterCategoryLevel" onchange="filterCategoriesByType(document.getElementById('filterCategoryType').value)">
+                                <option value="">All Levels</option>
+                                <option th:each="level : ${categoryLevelOptions}" th:value="${level}" th:text="${level}">A1</option>
+                            </select>
+                            <span class="admin-result-count">Status:</span>
+                            <select class="admin-filter-select" id="filterCategoryStatus" onchange="filterCategoriesByType(document.getElementById('filterCategoryType').value)">
+                                <option value="">All Status</option>
+                                <option value="PUBLISHED">PUBLISHED</option>
+                                <option value="DRAFT">DRAFT</option>
+                            </select>
+                            <span class="admin-result-count" id="categoriesCount"></span>
+                        </div>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" id="categoriesTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Practice</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Lessons</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="c : ${categories}"
+                                    th:data-id="${c.id}"
+                                    th:data-name="${c.name}"
+                                    th:data-image-url="${c.imageUrl}"
+                                    th:data-cloud-image-id="${c.cloudImageId}"
+                                    th:data-level-range="${c.levelRange}"
+                                    th:data-description="${c.description}"
+                                    th:data-status="${c.status != null ? c.status.name() : ''}"
+                                    th:data-order-index="${c.orderIndex}"
+                                    th:data-folder-name="${c.folderName}"
+                                    th:data-category-type="${c.type != null ? c.type.name() : ''}"
+                                    th:data-category-practice="${c.practiceType != null ? c.practiceType.name() : ''}"
+                                    th:data-category-levels="${categoryLevelsMap[c.id]}">
+                                    <td>
+                                        <strong th:text="${c.name}">Category</strong>
+                                        <div style="font-size: 11px; color: var(--text-secondary);"
+                                             th:text="${c.levelRange}">A1-A2</div>
+                                    </td>
+                                    <td>
+                                        <span class="admin-badge"
+                                              th:classappend="${c.practiceType.name() == 'SPEAKING'} ? ' badge-speaking' : ' badge-listening'"
+                                              th:text="${c.practiceType}">LISTENING</span>
+                                    </td>
+                                    <td>
+                                        <span class="admin-badge"
+                                              th:classappend="${c.type != null and c.type.name() == 'VIDEO'} ? ' badge-admin' : (${c.type != null and c.type.name() == 'AUDIO'} ? ' badge-user' : ' badge-inactive')"
+                                              th:text="${c.type != null ? c.type.name() : 'N/A'}">AUDIO</span>
+                                    </td>
+                                    <td>
+                                        <span class="admin-badge"
+                                              th:classappend="${c.status != null and c.status.name() == 'PUBLISHED'} ? ' badge-active' : ' badge-inactive'"
+                                              th:text="${c.status != null ? c.status.name() : 'N/A'}">DRAFT</span>
+                                    </td>
+                                    <td th:text="${c.totalLessons}">0</td>
+                                    <td>
+                                        <div class="admin-action-group">
+                                            <button class="admin-btn admin-btn-outline admin-btn-small" th:onclick="'editCategory(' + ${c.id} + ')'">
+                                                <i class="fas fa-pen"></i>
+                                            </button>
+                                            <button class="admin-btn admin-btn-danger admin-btn-small" th:onclick="'deleteCategory(' + ${c.id} + ')'">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(categories)}" class="empty-row">
+                                    <td colspan="6">No categories</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== SECTIONS ===== -->
+            <div id="tab-sections" class="admin-tab-pane" th:classappend="${resolvedInitialTab == 'sections'} ? ' active'">
+                <div class="admin-main-header">
+                    <div>
+                        <h1>Sections</h1>
+                        <p>Lọc theo category và tìm kiếm section.</p>
+                    </div>
+                </div>
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <div class="admin-filter-bar">
+                            <button class="admin-btn admin-btn-primary admin-btn-small" onclick="createSection()">
+                                <i class="fas fa-plus"></i> New Section
+                            </button>
+                            <span class="admin-result-count">Category:</span>
+                            <select class="admin-filter-select" id="sectionsCategoryFilter" onchange="onSectionsCategoryChange()">
+                                <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}">Category</option>
+                            </select>
+                            <span class="admin-result-count">Status:</span>
+                            <select class="admin-filter-select" id="filterSectionStatus" onchange="onSectionsCategoryChange()">
+                                <option value="">All Status</option>
+                                <option value="PUBLISHED">PUBLISHED</option>
+                                <option value="DRAFT">DRAFT</option>
+                            </select>
+                            <input type="text" class="admin-search-input" id="searchSections"
+                                   placeholder="Search sections..." oninput="onSectionsCategoryChange()">
+                            <span class="admin-result-count" id="sectionsCount"></span>
+                        </div>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" id="sectionsTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="empty-row">
+                                    <td colspan="4">Select a Category to load Sections</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== LESSONS ===== -->
+            <div id="tab-lessons" class="admin-tab-pane" th:classappend="${resolvedInitialTab == 'lessons'} ? ' active'">
+                <div class="admin-main-header">
+                    <div>
+                        <h1>Lessons</h1>
+                        <p>Lọc theo category, section và tìm kiếm lesson.</p>
+                    </div>
+                </div>
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <div class="admin-filter-bar">
+                            <button class="admin-btn admin-btn-primary admin-btn-small" onclick="createLesson()">
+                                <i class="fas fa-plus"></i> New Lesson
+                            </button>
+                            <span class="admin-result-count">Category:</span>
+                            <select class="admin-filter-select" id="lessonsCategoryFilter" onchange="onLessonsCategoryChange()">
+                                <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}">Category</option>
+                            </select>
+                            <span class="admin-result-count">Section:</span>
+                            <select class="admin-filter-select" id="lessonsSectionFilter" onchange="renderLessonsTable()">
+                            </select>
+                            <span class="admin-result-count">Level:</span>
+                            <select class="admin-filter-select" id="filterLessonLevel" onchange="renderLessonsTable()">
+                                <option value="">All Levels</option>
+                                <option th:each="level : ${lessonLevelOptions}" th:value="${level}" th:text="${level}">A1</option>
+                            </select>
+                            <span class="admin-result-count">Status:</span>
+                            <select class="admin-filter-select" id="filterLessonStatus" onchange="renderLessonsTable()">
+                                <option value="">All Status</option>
+                                <option value="PUBLISHED">PUBLISHED</option>
+                                <option value="DRAFT">DRAFT</option>
+                            </select>
+                            <input type="text" class="admin-search-input" id="searchLessons"
+                                   placeholder="Search lessons..." oninput="renderLessonsTable()">
+                            <span class="admin-result-count" id="lessonsCount"></span>
+                        </div>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" id="lessonsTable">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Level</th>
+                                    <th>Type</th>
+                                    <th>Section</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="empty-row">
+                                    <td colspan="6">Select a Category to load Lessons</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== SENTENCES ===== -->
+            <div id="tab-sentences" class="admin-tab-pane" th:classappend="${resolvedInitialTab == 'sentences'} ? ' active'">
+                <div class="admin-main-header">
+                    <div>
+                        <h1>Sentences + Media</h1>
+                        <p>Quản lý sentence và media source chung theo category → section → lesson.</p>
+                    </div>
+                </div>
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <div class="admin-filter-bar">
+                            <button class="admin-btn admin-btn-primary admin-btn-small" onclick="createSentence()">
+                                <i class="fas fa-plus"></i> New Sentence
+                            </button>
+                            <span class="admin-result-count">Category:</span>
+                            <select class="admin-filter-select" id="sentencesCategoryFilter" onchange="onSentencesCategoryChange()">
+                                <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}">Category</option>
+                            </select>
+                            <span class="admin-result-count">Section:</span>
+                            <select class="admin-filter-select" id="sentencesSectionFilter" onchange="onSentencesSectionChange()">
+                            </select>
+                            <span class="admin-result-count">Lesson:</span>
+                            <select class="admin-filter-select" id="sentencesLessonFilter" onchange="renderSentencesTable()">
+                            </select>
+                            <span class="admin-result-count">Status:</span>
+                            <select class="admin-filter-select" id="filterSentenceStatus" onchange="renderSentencesTable()">
+                                <option value="">All Status</option>
+                                <option value="PUBLISHED">PUBLISHED</option>
+                                <option value="DRAFT">DRAFT</option>
+                            </select>
+                            <input type="text" class="admin-search-input" id="searchSentences"
+                                   placeholder="Search sentences..." oninput="renderSentencesTable()">
+                            <select class="admin-filter-select" id="sentencesPageSize" onchange="onSentencesPageSizeChange()">
+                                <option value="20">20 / page</option>
+                                <option value="50">50 / page</option>
+                                <option value="100">100 / page</option>
+                            </select>
+                            <span class="admin-result-count" id="sentencesCount"></span>
+                        </div>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" id="sentencesTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Sentence</th>
+                                    <th>Lesson</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Media Source</th>
+                                    <th>Check</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="empty-row">
+                                    <td colspan="8">Select a Category to load Sentences</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="admin-panel-header" style="border-top: 1px solid var(--border-color); border-bottom: none;">
+                        <div class="admin-filter-bar" style="width: 100%; justify-content: flex-end;">
+                            <button class="admin-btn admin-btn-outline admin-btn-small" id="sentencesPrevBtn" onclick="goSentencesPage(-1)">
+                                <i class="fas fa-chevron-left"></i> Prev
+                            </button>
+                            <span class="admin-result-count" id="sentencesPageInfo">Page 1 / 1</span>
+                            <button class="admin-btn admin-btn-outline admin-btn-small" id="sentencesNextBtn" onclick="goSentencesPage(1)">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== COMMENTS ===== -->
+            <div id="tab-comments" class="admin-tab-pane" th:classappend="${resolvedInitialTab == 'comments'} ? ' active'">
+                <div class="admin-main-header">
+                    <div>
+                        <h1>Comments</h1>
+                        <p>Moderate user comments (hide / delete).</p>
+                    </div>
+                </div>
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <div class="admin-filter-bar">
+                            <input type="text" class="admin-search-input" id="searchComments"
+                                   placeholder="Search by user, sentence, or comment content..."
+                                   oninput="filterComments()">
+                            <span class="admin-result-count">Hidden:</span>
+                            <select class="admin-filter-select" id="filterCommentHidden" onchange="filterComments()">
+                                <option value="">All</option>
+                                <option value="visible">Visible</option>
+                                <option value="hidden">Hidden</option>
+                            </select>
+                            <span class="admin-result-count" id="commentsCount"></span>
+                        </div>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" id="commentsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>User</th>
+                                    <th>Sentence</th>
+                                    <th>Content</th>
+                                    <th>Created</th>
+                                    <th>Hidden</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="c : ${recentComments}"
+                                    th:data-hidden="${c.isHidden != null and c.isHidden ? 'hidden' : 'visible'}"
+                                    th:data-username="${c.user != null ? c.user.username : ''}"
+                                    th:data-sentence="${c.sentence != null ? c.sentence.content : ''}"
+                                    th:data-comment-content="${c.content}">
+                                    <td th:text="${c.id}">1</td>
+                                    <td th:text="${c.user != null ? c.user.username : 'N/A'}">user</td>
+                                    <td th:text="${c.sentence != null ? #strings.abbreviate(c.sentence.content,40) : 'N/A'}">sentence</td>
+                                    <td th:text="${#strings.abbreviate(c.content, 80)}">content</td>
+                                    <td th:text="${#temporals.format(c.createdAt, 'yyyy-MM-dd HH:mm')}">time</td>
+                                    <td th:text="${c.isHidden ? 'Yes' : 'No'}">No</td>
+                                    <td>
+                                        <div class="admin-action-group">
+                                            <button class="admin-btn admin-btn-outline admin-btn-small"
+                                                th:onclick="'toggleCommentHide(' + ${c.id} + ')'">
+                                                <i class="fas fa-eye-slash"></i>
+                                            </button>
+                                            <button class="admin-btn admin-btn-danger admin-btn-small"
+                                                th:onclick="'adminDeleteComment(' + ${c.id} + ')'">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(recentComments)}" class="empty-row">
+                                    <td colspan="7">No comments found</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== SLIDESHOWS ===== -->
+            <div id="tab-slideshows" class="admin-tab-pane" th:classappend="${resolvedInitialTab == 'slideshows'} ? ' active'">
+                <div class="admin-main-header">
+                    <div>
+                        <h1>Slideshows</h1>
+                        <p>Manage homepage slideshow items.</p>
+                    </div>
+                </div>
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <div class="admin-filter-bar">
+                            <button class="admin-btn admin-btn-primary admin-btn-small" onclick="createSlideshow()">
+                                <i class="fas fa-plus"></i> New Slideshow
+                            </button>
+                            <input type="text" class="admin-search-input" id="searchSlideshows"
+                                   placeholder="Search slideshows..."
+                                   oninput="filterSlideshows()">
+                            <span class="admin-result-count">Status:</span>
+                            <select class="admin-filter-select" id="filterSlideshowStatus" onchange="filterSlideshows()">
+                                <option value="">All</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                            <span class="admin-result-count">Position:</span>
+                            <select class="admin-filter-select" id="filterSlideshowPosition" onchange="filterSlideshows()">
+                                <option value="">All</option>
+                                <option value="HOME">HOME</option>
+                            </select>
+                            <span class="admin-result-count" id="slideshowsCount"></span>
+                        </div>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" id="slideshowsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Image</th>
+                                    <th>Link</th>
+                                    <th>Position</th>
+                                    <th>Order</th>
+                                    <th>Active</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="s : ${slideshows}"
+                                    th:data-id="${s.id}"
+                                    th:data-title="${s.title}"
+                                    th:data-image-url="${s.imageUrl}"
+                                    th:data-cloud-image-id="${s.cloudImageId}"
+                                    th:data-link-url="${s.linkUrl}"
+                                    th:data-display-order="${s.displayOrder}"
+                                    th:data-position="${s.position}"
+                                    th:data-status="${s.isActive != null and s.isActive ? 'active' : 'inactive'}">
+                                    <td th:text="${s.id}">1</td>
+                                    <td>
+                                        <strong th:text="${s.title}">Title</strong>
+                                    </td>
+                                    <td>
+                                        <a th:href="${s.imageUrl}" target="_blank" th:if="${s.imageUrl != null}">
+                                            <img th:src="${s.imageUrl}" alt="Slide image" style="width: 96px; height: 54px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border-color);">
+                                        </a>
+                                        <span th:if="${s.imageUrl == null}" class="admin-badge badge-inactive">No Image</span>
+                                    </td>
+                                    <td th:text="${s.linkUrl != null ? s.linkUrl : 'N/A'}">link</td>
+                                    <td th:text="${s.position}">HOME</td>
+                                    <td th:text="${s.displayOrder}">0</td>
+                                    <td>
+                                        <span class="admin-badge"
+                                              th:classappend="${s.isActive} ? ' badge-active' : ' badge-inactive'"
+                                              th:text="${s.isActive} ? 'Active' : 'Inactive'">Active</span>
+                                    </td>
+                                    <td th:text="${#temporals.format(s.createdAt, 'yyyy-MM-dd')}">date</td>
+                                    <td>
+                                        <div class="admin-action-group">
+                                            <button class="admin-btn admin-btn-outline admin-btn-small"
+                                                th:onclick="'toggleSlideshowActive(' + ${s.id} + ')'">
+                                                <i class="fas fa-power-off"></i>
+                                            </button>
+                                            <button class="admin-btn admin-btn-outline admin-btn-small"
+                                                th:onclick="'editSlideshow(' + ${s.id} + ')'">
+                                                <i class="fas fa-pen"></i>
+                                            </button>
+                                            <button class="admin-btn admin-btn-danger admin-btn-small"
+                                                th:onclick="'deleteSlideshow(' + ${s.id} + ')'">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(slideshows)}" class="empty-row">
+                                    <td colspan="9">No slides defined</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== RECYCLE BIN ===== -->
+            <div id="tab-trash" class="admin-tab-pane" th:classappend="${resolvedInitialTab == 'trash'} ? ' active'">
+                <div class="admin-main-header">
+                    <div>
+                        <h1>Recycle Bin</h1>
+                        <p>Manage soft-deleted records. Restore or permanently remove items.</p>
+                    </div>
+                </div>
+
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2>Locked Accounts</h2>
+                        <div class="admin-filter-bar">
+                            <input type="text" class="admin-search-input" placeholder="Search deleted users..."
+                                oninput="filterTable('trashUsersTable', this.value)" style="min-width:200px;">
+                        </div>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" id="trashUsersTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Email (Modified)</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="u : ${deletedUsers}">
+                                    <td th:text="${u.id}">1</td>
+                                    <td th:text="${u.username}">deleted_user</td>
+                                    <td th:text="${u.email}">user@deleted</td>
+                                    <td>
+                                        <div class="admin-action-group">
+                                            <button class="admin-btn admin-btn-primary admin-btn-small"
+                                                th:onclick="'restoreUser(' + ${u.id} + ')'"><i class="fas fa-undo"></i>
+                                                Restore</button>
+                                            <button class="admin-btn admin-btn-danger admin-btn-small"
+                                                th:onclick="'hardDeleteUser(' + ${u.id} + ')'"><i class="fas fa-trash"></i>
+                                                Delete Forever</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(deletedUsers)}" class="empty-row">
+                                    <td colspan="4">No locked accounts</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2>Deleted Categories</h2>
+                        <div class="admin-filter-bar">
+                            <input type="text" class="admin-search-input" placeholder="Search deleted categories..."
+                                oninput="filterTable('trashCategoriesTable', this.value)" style="min-width:200px;">
+                        </div>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" id="trashCategoriesTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Practice</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="c : ${deletedCategories}">
+                                    <td th:text="${c.id}">1</td>
+                                    <td th:text="${c.name}">Category</td>
+                                    <td th:text="${c.practiceType}">LISTENING</td>
+                                    <td><span class="admin-badge badge-inactive" th:text="${c.status}">ARCHIVED</span></td>
+                                    <td>
+                                        <div class="admin-action-group">
+                                            <button class="admin-btn admin-btn-primary admin-btn-small"
+                                                th:onclick="'restoreCategory(' + ${c.id} + ')'">
+                                                <i class="fas fa-undo"></i> Restore
+                                            </button>
+                                            <button class="admin-btn admin-btn-danger admin-btn-small"
+                                                th:onclick="'hardDeleteCategory(' + ${c.id} + ')'">
+                                                <i class="fas fa-trash"></i> Delete Forever
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(deletedCategories)}" class="empty-row">
+                                    <td colspan="5">No deleted categories</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2>Deleted Sections</h2>
+                        <div class="admin-filter-bar">
+                            <input type="text" class="admin-search-input" placeholder="Search deleted sections..."
+                                oninput="filterTable('trashSectionsTable', this.value)" style="min-width:200px;">
+                        </div>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" id="trashSectionsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="s : ${deletedSections}">
+                                    <td th:text="${s.id}">1</td>
+                                    <td th:text="${s.name}">Section</td>
+                                    <td th:text="${s.category != null ? s.category.name : 'N/A'}">Category</td>
+                                    <td><span class="admin-badge badge-inactive" th:text="${s.status}">ARCHIVED</span></td>
+                                    <td>
+                                        <div class="admin-action-group">
+                                            <button class="admin-btn admin-btn-primary admin-btn-small"
+                                                th:onclick="'restoreSection(' + ${s.id} + ')'">
+                                                <i class="fas fa-undo"></i> Restore
+                                            </button>
+                                            <button class="admin-btn admin-btn-danger admin-btn-small"
+                                                th:onclick="'hardDeleteSection(' + ${s.id} + ')'">
+                                                <i class="fas fa-trash"></i> Delete Forever
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(deletedSections)}" class="empty-row">
+                                    <td colspan="5">No deleted sections</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2>Deleted Lessons</h2>
+                        <div class="admin-filter-bar">
+                            <input type="text" class="admin-search-input" placeholder="Search deleted lessons..."
+                                oninput="filterTable('trashLessonsTable', this.value)" style="min-width:200px;">
+                        </div>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" id="trashLessonsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Section</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="l : ${deletedLessons}">
+                                    <td th:text="${l.id}">1</td>
+                                    <td th:text="${l.title}">Lesson</td>
+                                    <td th:text="${l.section != null ? l.section.name : 'N/A'}">Section</td>
+                                    <td><span class="admin-badge badge-inactive" th:text="${l.status}">ARCHIVED</span></td>
+                                    <td>
+                                        <div class="admin-action-group">
+                                            <button class="admin-btn admin-btn-primary admin-btn-small"
+                                                th:onclick="'restoreLesson(' + ${l.id} + ')'">
+                                                <i class="fas fa-undo"></i> Restore
+                                            </button>
+                                            <button class="admin-btn admin-btn-danger admin-btn-small"
+                                                th:onclick="'hardDeleteLesson(' + ${l.id} + ')'">
+                                                <i class="fas fa-trash"></i> Delete Forever
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(deletedLessons)}" class="empty-row">
+                                    <td colspan="5">No deleted lessons</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2>Deleted Sentences</h2>
+                        <div class="admin-filter-bar">
+                            <input type="text" class="admin-search-input" placeholder="Search deleted sentences..."
+                                oninput="filterTable('trashSentencesTable', this.value)" style="min-width:200px;">
+                        </div>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" id="trashSentencesTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Content</th>
+                                    <th>Lesson</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="s : ${deletedSentences}">
+                                    <td th:text="${s.id}">1</td>
+                                    <td th:text="${s.content}">Sentence content</td>
+                                    <td th:text="${s.lesson != null ? s.lesson.title : 'N/A'}">Lesson</td>
+                                    <td><span class="admin-badge badge-inactive" th:text="${s.status}">ARCHIVED</span></td>
+                                    <td>
+                                        <div class="admin-action-group">
+                                            <button class="admin-btn admin-btn-primary admin-btn-small"
+                                                th:onclick="'restoreSentence(' + ${s.id} + ')'">
+                                                <i class="fas fa-undo"></i> Restore
+                                            </button>
+                                            <button class="admin-btn admin-btn-danger admin-btn-small"
+                                                th:onclick="'hardDeleteSentence(' + ${s.id} + ')'">
+                                                <i class="fas fa-trash"></i> Delete Forever
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(deletedSentences)}" class="empty-row">
+                                    <td colspan="5">No deleted sentences</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2>Deleted Comments</h2>
+                        <div class="admin-filter-bar">
+                            <input type="text" class="admin-search-input" placeholder="Search deleted comments..."
+                                oninput="filterTable('trashCommentsTable', this.value)" style="min-width:200px;">
+                        </div>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" id="trashCommentsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>User</th>
+                                    <th>Sentence</th>
+                                    <th>Content</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="c : ${deletedComments}">
+                                    <td th:text="${c.id}">1</td>
+                                    <td th:text="${c.user != null ? c.user.username : 'N/A'}">user</td>
+                                    <td th:text="${c.sentence != null ? #strings.abbreviate(c.sentence.content,40) : 'N/A'}">sentence</td>
+                                    <td th:text="${#strings.abbreviate(c.content, 70)}">content</td>
+                                    <td>
+                                        <div class="admin-action-group">
+                                            <button class="admin-btn admin-btn-primary admin-btn-small"
+                                                th:onclick="'restoreComment(' + ${c.id} + ')'">
+                                                <i class="fas fa-undo"></i> Restore
+                                            </button>
+                                            <button class="admin-btn admin-btn-danger admin-btn-small"
+                                                th:onclick="'hardDeleteComment(' + ${c.id} + ')'">
+                                                <i class="fas fa-trash"></i> Delete Forever
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(deletedComments)}" class="empty-row">
+                                    <td colspan="5">No deleted comments</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2>Deleted Slideshows</h2>
+                        <div class="admin-filter-bar">
+                            <input type="text" class="admin-search-input" placeholder="Search deleted slideshows..."
+                                oninput="filterTable('trashSlideshowsTable', this.value)" style="min-width:200px;">
+                        </div>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" id="trashSlideshowsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Position</th>
+                                    <th>Order</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="s : ${deletedSlideshows}">
+                                    <td th:text="${s.id}">1</td>
+                                    <td th:text="${s.title}">Slideshow</td>
+                                    <td th:text="${s.position}">HOME</td>
+                                    <td th:text="${s.displayOrder}">0</td>
+                                    <td>
+                                        <div class="admin-action-group">
+                                            <button class="admin-btn admin-btn-primary admin-btn-small"
+                                                th:onclick="'restoreSlideshow(' + ${s.id} + ')'">
+                                                <i class="fas fa-undo"></i> Restore
+                                            </button>
+                                            <button class="admin-btn admin-btn-danger admin-btn-small"
+                                                th:onclick="'hardDeleteSlideshow(' + ${s.id} + ')'">
+                                                <i class="fas fa-trash"></i> Delete Forever
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(deletedSlideshows)}" class="empty-row">
+                                    <td colspan="5">No deleted slideshows</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== SETTINGS ===== -->
+            <div id="tab-settings" class="admin-tab-pane" th:classappend="${resolvedInitialTab == 'settings'} ? ' active'">
+                <div class="admin-main-header">
+                    <div>
+                        <h1>Settings</h1>
+                        <p>System-wide configuration.</p>
+                    </div>
+                    <button type="submit" form="adminSettingsForm" class="admin-btn admin-btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+                </div>
+                <div class="admin-panel" style="padding: 32px;">
+                    <div th:if="${settingsSuccess}" class="admin-alert admin-alert-success" th:text="${settingsSuccess}" style="margin-bottom:16px;padding:14px 16px;border-radius:12px;background:#ecfdf3;color:#166534;border:1px solid #bbf7d0;"></div>
+                    <div th:if="${settingsError}" class="admin-alert admin-alert-error" th:text="${settingsError}" style="margin-bottom:16px;padding:14px 16px;border-radius:12px;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;"></div>
+                    <form id="adminSettingsForm" th:action="@{/admin/settings}" th:object="${settingForm}" method="post">
+                        <h3 style="margin-top:0;margin-bottom:24px;color:var(--text-primary);font-size:18px;">General
+                            Information</h3>
+                        <div class="admin-form-group">
+                            <label>Site Name</label>
+                            <input type="text" class="admin-form-control" th:field="*{siteName}" maxlength="150" required>
+                        </div>
+                        <div class="admin-form-group">
+                            <label>SEO Meta Description</label>
+                            <textarea class="admin-form-control" th:field="*{seoMetaDescription}"
+                                rows="3" maxlength="500" required></textarea>
+                        </div>
+                        <hr style="border:0;border-top:1px solid var(--border-color);margin:32px 0;">
+                        <h3 style="margin-top:0;margin-bottom:24px;color:var(--text-primary);font-size:18px;">Feature
+                            Configuration</h3>
+                        <div class="admin-grid-2">
+                            <div class="admin-form-group">
+                                <label>Max Recent Users on Overview</label>
+                                <input type="number" class="admin-form-control" th:field="*{maxRecentUsersOnDashboard}" min="1" max="100" required>
+                                <span class="admin-form-help">Controls the size of the `Recently Registered` table on the overview tab.</span>
+                            </div>
+                            <div class="admin-form-group">
+                                <label>Speaking Pass Threshold (&gt;= %)</label>
+                                <input type="number" class="admin-form-control" th:field="*{speakingPassThreshold}" min="0" max="100" required>
+                                <span class="admin-form-help">Used by speaking practice to mark a sentence as completed.</span>
+                            </div>
+                        </div>
+                        <div class="admin-grid-2">
+                            <div class="admin-form-group">
+                                <label>Online Timeout Minutes</label>
+                                <input type="number" class="admin-form-control" th:field="*{onlineTimeoutMinutes}" min="1" max="1440" required>
+                                <span class="admin-form-help">Controls how long a user stays marked online after the last activity heartbeat.</span>
+                            </div>
+                            <div class="admin-form-group">
+                                <label>Reminder Timezone</label>
+                                <input type="text" class="admin-form-control" th:field="*{dailyReminderTimezone}" maxlength="80" required>
+                                <span class="admin-form-help">Example: `Asia/Ho_Chi_Minh`, `Asia/Bangkok`, `UTC`.</span>
+                            </div>
+                        </div>
+                        <div class="admin-form-group">
+                            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                                <input type="checkbox" th:field="*{allowUserRegistration}"
+                                    style="width:18px;height:18px;accent-color:var(--primary);">
+                                Allow User Registration
+                            </label>
+                            <span class="admin-form-help">Unchecking will block new signups from both `/register` and Google OAuth account creation.</span>
+                        </div>
+                        <div class="admin-form-group">
+                            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                                <input type="checkbox" th:field="*{dailyReminderEnabled}"
+                                    style="width:18px;height:18px;accent-color:var(--primary);">
+                                Enable Daily Reminder For Mobile App
+                            </label>
+                            <span class="admin-form-help">When enabled, the mobile app uses this global reminder schedule to show and later send daily study reminders.</span>
+                        </div>
+                        <div class="admin-form-group">
+                            <label>Daily Reminder Time</label>
+                            <input type="time" class="admin-form-control" th:field="*{dailyReminderTime}" required>
+                            <span class="admin-form-help">Mobile reminder message: `Hôm nay bạn đã học tiếng anh chưa, nếu chưa hãy học cùng Tung Tung nhé!`</span>
+                        </div>
+                        <div style="display:flex;justify-content:flex-end;margin-top:24px;">
+                            <button type="submit" class="admin-btn admin-btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ===== ADMIN PROFILE ===== -->
+            <div id="tab-profile" class="admin-tab-pane" th:classappend="${resolvedInitialTab == 'profile'} ? ' active'">
+                <div class="admin-main-header">
+                    <div>
+                        <h1>Admin Profile</h1>
+                        <p>Your account information and session details.</p>
+                    </div>
+                </div>
+                <div class="admin-profile-card">
+                    <div class="admin-profile-avatar">
+                        <img th:if="${admin.avatarUrl != null}" th:src="${admin.avatarUrl}" alt="Avatar">
+                        <span th:if="${admin.avatarUrl == null}"
+                            th:text="${#strings.substring(admin.username, 0, 1).toUpperCase()}">A</span>
+                    </div>
+                    <div class="admin-profile-info">
+                        <div class="label">Username</div>
+                        <div class="value" th:text="${admin.username}">admin</div>
+                        <div class="label">Email</div>
+                        <div class="value" th:text="${admin.email}">admin@test.com</div>
+                        <div class="label">Role</div>
+                        <div class="value"><span class="admin-badge badge-admin" th:text="${admin.role}">ADMIN</span>
+                        </div>
+                    </div>
+                    <div class="admin-profile-grid">
+                        <div>
+                            <div class="label">Account Status</div>
+                            <div class="value"><span class="admin-badge badge-active">Active</span></div>
+                        </div>
+                        <div>
+                            <div class="label">Created At</div>
+                            <div class="value"
+                                th:text="${admin.createdAt != null ? #temporals.format(admin.createdAt, 'yyyy-MM-dd HH:mm') : 'N/A'}">
+                                2024-01-01</div>
+                        </div>
+                        <div>
+                            <div class="label">Provider</div>
+                            <div class="value" th:text="${admin.provider != null ? admin.provider : 'LOCAL'}">LOCAL
+                            </div>
+                        </div>
+                        <div>
+                            <div class="label">Account ID</div>
+                            <div class="value" th:text="${'#' + admin.id}">#1</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div id="adminEntityModal" class="admin-modal" aria-hidden="true">
+        <div class="admin-modal-backdrop" onclick="closeAdminEntityModal()"></div>
+        <div class="admin-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="adminEntityModalTitle">
+            <div class="admin-modal-header">
+                <div>
+                    <h2 id="adminEntityModalTitle">Edit</h2>
+                    <p id="adminEntityModalSubtitle">Fill in the required fields.</p>
+                </div>
+                <button type="button" class="admin-btn admin-btn-outline admin-btn-small" onclick="closeAdminEntityModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="adminEntityForm" class="admin-modal-form" onsubmit="submitAdminEntityForm(event)">
+                <div id="adminEntityFormFields" class="admin-grid-2"></div>
+                <div id="adminEntityFormError" class="admin-form-alert" hidden></div>
+                <div class="admin-modal-actions">
+                    <button type="button" class="admin-btn admin-btn-outline" onclick="closeAdminEntityModal()">Cancel</button>
+                    <button type="submit" class="admin-btn admin-btn-primary" id="adminEntitySubmitBtn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard JS -->
+    <script th:src="@{/js/main.js}" defer></script>
+    <script th:src="@{/js/page/admin/admin-dashboard.js}"></script>
+</body>
+
+</html>

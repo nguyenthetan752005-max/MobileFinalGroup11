@@ -1,0 +1,47 @@
+<!-- FRAGMENT CẮT RỜI: HƯỚNG DẪN 4 BƯỚC HỌC -->
+<!-- Chỉ dùng để nhúng vào Trang chủ -->
+
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<section th:fragment="how-it-works" class="how-it-works">
+    <div class="container">
+        <h2 class="section-title">How Practicing Dictation Improves Your English Skills</h2>
+        <p class="section-subtitle">When practicing exercises at our website, you will go through 4 main steps,<br>all of them are equally important!</p>
+
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-icon">
+                    <img th:src="@{/images/icons/listentotheaudio.png}" alt="Listen">
+                </div>
+                <h3 class="step-number">1. Listen to the audio</h3>
+                <p>Through the exercises, you will have to listen a lot; that's the key to improving your listening skills in any learning method.</p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-icon">
+                    <img th:src="@{/images/icons/typewhatyouhear.png}" alt="Type">
+                </div>
+                <h3 class="step-number">2. Type what you hear</h3>
+                <p>Typing what you hear forces you to focus on every detail which helps you become better at pronunciation, spelling and writing.</p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-icon">
+                    <img th:src="@{/images/icons/checkandcorrect.png}" alt="Check">
+                </div>
+                <h3 class="step-number">3. Check &amp; correct</h3>
+                <p>Error correction is important for your listening accuracy and reading comprehension, it's best to learn from mistakes.</p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-icon">
+                    <img th:src="@{/images/icons/readitoutloud.png}" alt="Speak">
+                </div>
+                <h3 class="step-number">4. Read it out loud</h3>
+                <p>After completing a sentence, try to read it out loud. It will greatly improve your pronunciation &amp; speaking skills!</p>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

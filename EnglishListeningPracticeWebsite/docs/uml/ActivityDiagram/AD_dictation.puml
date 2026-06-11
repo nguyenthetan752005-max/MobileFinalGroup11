@@ -1,0 +1,50 @@
+@startuml Activity_Dictation
+title Activity Diagram - Luyện nghe Dictation (UC4)
+
+start
+
+:Chọn Lesson;
+:Tải cấu trúc Lesson & Sentences;
+
+if (Loại bài học (Category.practiceType)?) then (YOUTUBE / VIDEO)
+  :Tải video YouTube;
+else (AUDIO)
+  :Chuẩn bị danh sách audio / hiển thị audioPlayer;
+endif
+
+:Hiển thị giao diện dictation;
+
+repeat
+  :Phát audio / video của câu hiện tại;
+
+  repeat
+    :User nhập nội dung nghe được;
+    :So sánh nội dung với sentence.content;
+
+    if (Kết quả?) then (Sai)
+      :Highlight các lỗi sai (màu đỏ);
+      if (User chọn?) then (Nghe lại)
+        :Phát lại audio;
+      else (Skip / Bỏ qua)
+        :Gọi API skipSentence(userId, sentenceId);
+        :Lưu status = "SKIPPED";
+        :Hiển thị đáp án đầy đủ;
+        break
+      endif
+    else (Đúng)
+      :Gọi API completeSentence(userId, sentenceId);
+      :Lưu status = "COMPLETED";
+      break
+    endif
+  repeat while (Chưa đúng?)
+  
+  if (Còn câu tiếp theo?) then (Có)
+    :Chuyển sang câu tiếp theo;
+  else (Không)
+    :Hoàn thành bài học;
+    :Hiển thị tổng kết (hoạt ảnh);
+    stop
+  endif
+repeat while (Đang học)
+
+@enduml

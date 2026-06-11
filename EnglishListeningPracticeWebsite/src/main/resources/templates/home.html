@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<!-- GIAO DIỆN TRANG CHỦ THEO CHIỀU DỌC (LANDING PAGE) -->
+<!-- Trang giải thích ứng dụng làm gì, cách học thế nào, gom các Fragment lại -->
+
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Home')}"></head>
+<body>
+    <!-- Navbar -->
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <!-- Page Content -->
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container hero-container">
+                <div class="hero-content">
+                    <h1>Practice English with dictation exercises</h1>
+                    <p class="hero-lead">Dictation is a method to learn languages by listening and writing down what you hear. It is a <strong>highly effective method!</strong></p>
+                    <p class="hero-sub">This website contains thousands of audio recordings &amp; videos to help English learners practice easily and improve quickly.</p>
+                    <a href="/exercises" class="btn btn-primary btn-lg">Start Now</a>
+                </div>
+                <div class="hero-slideshow">
+                    <div th:replace="~{fragments/home/slideshow :: slideshow}"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Divider -->
+        <div class="section-divider"></div>
+
+        <!-- How It Works -->
+        <div th:replace="~{fragments/home/how-it-works :: how-it-works}"></div>
+
+        <!-- Divider -->
+        <div class="section-divider"></div>
+
+        <!-- FAQ Section -->
+        <div th:replace="~{fragments/home/faq :: faq}"></div>    </main>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!-- FRAGMENT CẮT RỜI: KHU VỰC BÌNH LUẬN (COMMENTS SECTION) -->
+<!-- Nhúng vào trang bài học qua cú pháp th:replace. Dữ liệu giả (hardcode) để demo giao diện. -->
+
+<div th:fragment="comments" class="comments-section" id="lessonComments" style="display:none;">
+    <div class="comments-header">
+        <h3>Comments (<span id="commentCount">3</span>)</h3>
+        <select class="comments-sort" id="commentSort">
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="best">Best</option>
+        </select>
+    </div>
+
+    <div class="comments-list" id="commentsList">
+        <!-- Bình luận sẽ được tải động từ API và hiển thị ở đây -->
+        <p style="text-align: center; color: #6b7280; padding: 20px 0;">Chưa có bình luận nào. Hãy là người đầu tiên!</p>
+    </div>
+
+    <button class="write-comment-btn" id="writeCommentBtn">
+        <i class="fas fa-pen"></i> Write a comment
+    </button>
+</div>

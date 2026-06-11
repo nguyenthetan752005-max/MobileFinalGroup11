@@ -1,0 +1,47 @@
+@startuml Sequence_Login
+title Sequence Diagram - Đăng nhập (UC2)
+
+actor Guest as G
+participant "Login Page" as V
+participant "AuthController" as AC
+participant "AuthService" as AS
+participant "UserRepository" as UR
+database "Database" as DB
+
+G -> V : Truy cập /login
+V --> G : Hiển thị form login
+G -> V : Nhập username/email, password
+V -> AC : POST /login
+AC -> AS : authenticateUser(username/email, password)
+AS -> UR : findByUsername(username)
+UR -> DB : SELECT FROM users\nWHERE username = ?
+DB --> UR : User / null
+UR --> AS : User / null
+
+alt Không tìm thấy bằng username
+    AS -> UR : findByEmail(username)
+    UR -> DB : SELECT FROM users\nWHERE email = ?
+    DB --> UR : User / null
+    UR --> AS : User / null
+end
+
+alt User không tồn tại
+    AS --> AC : Optional.empty()
+    AC --> V : Hiển thị lỗi "Sai tài khoản..."
+    V --> G : Lỗi đăng nhập
+else User tồn tại
+    AS -> AS : Verify password (BCrypt) & check Role==USER
+
+    alt Password sai hoặc không phải USER
+        AS --> AC : Optional.empty()
+        AC --> V : Hiển thị lỗi "Sai tài khoản..."
+        V --> G : Lỗi đăng nhập
+    else Hợp lệ
+        AS --> AC : Optional.of(User)
+        AC -> AC : Tạo Session
+        AC --> V : Redirect /
+        V --> G : Chuyển đến trang chủ
+    end
+end
+
+@enduml

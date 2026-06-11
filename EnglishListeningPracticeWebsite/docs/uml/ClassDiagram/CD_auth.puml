@@ -1,0 +1,151 @@
+@startuml Class_Diagram_Auth
+title Class Diagram - Authentication & User Management Module
+
+skinparam classAttributeIconSize 0
+
+' ==========================================
+'   CONTROLLER LAYER
+' ==========================================
+package "Controller" {
+    class AuthController {
+        + showLoginPage(): String
+        + login(username, password, session): String
+        + showRegisterPage(): String
+        + register(user, model): String
+        + logout(session): String
+    }
+    class PasswordResetController {
+        + showForgotPasswordPage(): String
+        + processForgotPassword(email): String
+        + showResetPasswordPage(token): String
+        + processResetPassword(token, password): String
+    }
+    class ProfileController {
+        + showProfile(session, model): String
+        + updateUsername(userId, newUsername): ResponseEntity
+        + updateAvatar(userId, file): ResponseEntity
+        + changePassword(userId, token): ResponseEntity
+    }
+    class AdminAuthController {
+        + showAdminLogin(): String
+        + adminLogin(username, password, session): String
+        + adminDashboard(session, model): String
+    }
+}
+
+' ==========================================
+'   SERVICE LAYER
+' ==========================================
+package "Service" {
+    interface AuthService <<interface>> {
+        + register(user): User
+        + authenticate(username, password): Optional<User>
+        + authenticateAdmin(username, password): Optional<User>
+        + authenticateUser(username, password): Optional<User>
+        + findByEmail(email): Optional<User>
+        + updatePassword(user, newPassword): void
+    }
+    class AuthServiceImpl {
+        -- BCrypt hashing --
+        -- Legacy plain-text fallback --
+    }
+
+    interface UserService <<interface>> {
+        + findById(id): Optional<User>
+        + updateUsername(id, newUsername): void
+        + updateAvatarUrl(id, avatarUrl): void
+        + updateAvatar(id, url, publicId): void
+        + adminUpdateBasicInfo(id, ...): void
+        + adminUpdatePassword(id, newPwd): void
+        + softDeleteUser(id): void
+        + hardDeleteUser(id): void
+        + restoreUser(id): void
+        + updateActiveStatus(id, active): void
+    }
+    class UserServiceImpl
+
+    interface PasswordResetService <<interface>> {
+        + createTokenForUser(user): String
+        + sendResetEmail(email, token): void
+        + sendProfilePasswordChangeEmail(email, token): void
+        + sendAdminPasswordChangeEmail(email, token): void
+        + resetPassword(token, newPassword): void
+    }
+    class PasswordResetServiceImpl
+}
+
+' ==========================================
+'   REPOSITORY LAYER
+' ==========================================
+package "Repository" {
+    interface UserRepository <<Spring Data JPA>> {
+        + findByUsername(username): Optional<User>
+        + findByEmail(email): Optional<User>
+        + findByProviderAndProviderId(provider, id): Optional<User>
+        + findByRole(role): List<User>
+        + findTop10ByOrderByCreatedAtDesc(): List<User>
+    }
+    interface PasswordResetTokenRepository <<Spring Data JPA>> {
+        + findByToken(token): Optional<PasswordResetToken>
+        + findByUser(user): Optional<PasswordResetToken>
+    }
+}
+
+' ==========================================
+'   ENTITY LAYER
+' ==========================================
+package "Entity" {
+    class User {
+        - id : Long
+        - username : String
+        - email : String
+        - password : String
+        - role : Role
+        - isActive : Boolean
+        - isDeleted : Boolean
+        - avatarUrl : String
+        - avatarPublicId : String
+        - provider : String
+        - providerId : String
+    }
+    class PasswordResetToken {
+        - id : Long
+        - token : String
+        - expiryDate : LocalDateTime
+        - user : User
+    }
+    enum Role {
+        ADMIN
+        USER
+    }
+}
+
+' ==========================================
+'   RELATIONSHIPS
+' ==========================================
+AuthController --> AuthService
+AuthController ..> UserRepository : session lookup
+PasswordResetController --> PasswordResetService
+PasswordResetController --> AuthService
+ProfileController --> UserService
+ProfileController --> PasswordResetService
+AdminAuthController --> AuthService
+AdminAuthController --> UserService
+
+AuthServiceImpl ..|> AuthService
+UserServiceImpl ..|> UserService
+PasswordResetServiceImpl ..|> PasswordResetService
+
+AuthService --> UserRepository
+UserService --> UserRepository
+PasswordResetService --> PasswordResetTokenRepository
+PasswordResetService --> UserRepository
+PasswordResetService --> AuthService
+
+UserRepository ..> User
+PasswordResetTokenRepository ..> PasswordResetToken
+
+User *-- Role
+PasswordResetToken --> User : user_id
+
+@enduml

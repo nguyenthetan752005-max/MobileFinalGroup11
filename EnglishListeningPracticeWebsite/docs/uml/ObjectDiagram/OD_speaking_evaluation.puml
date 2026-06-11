@@ -1,0 +1,52 @@
+@startuml
+title Object Diagram - Speaking Evaluation Snapshot
+
+skinparam shadowing false
+skinparam objectAttributeIconSize 0
+
+object "user1 : User" as user1 {
+  id = 7
+  username = "studentA"
+  role = USER
+}
+
+object "sentence8 : Sentence" as sentence8 {
+  id = 7008
+  content = "I would like a cup of coffee."
+  orderIndex = 8
+}
+
+object "audioFile : MultipartFile" as audioFile {
+  filename = "speech.wav"
+  contentType = "audio/wav"
+}
+
+object "currentResult : SpeakingResult" as currentResult {
+  resultType = CURRENT
+  score = 82
+  recognizedText = "I would like cup of coffee"
+  userAudioUrl = "https://cloudinary/.../current.wav"
+}
+
+object "bestResult : SpeakingResult" as bestResult {
+  resultType = BEST
+  score = 90
+  recognizedText = "I would like a cup of coffee"
+  userAudioUrl = "https://cloudinary/.../best.wav"
+}
+
+object "responseDto : SpeakingResultDTO" as responseDto {
+  score = 82
+  transcribedText = "I would like cup of coffee"
+  feedback = "Missing article a. Speak more clearly."
+}
+
+user1 -- currentResult
+user1 -- bestResult
+sentence8 -- currentResult
+sentence8 -- bestResult
+audioFile ..> currentResult : evaluated into
+currentResult ..> responseDto : mapped to
+bestResult ..> responseDto : embedded as bestResult
+
+@enduml

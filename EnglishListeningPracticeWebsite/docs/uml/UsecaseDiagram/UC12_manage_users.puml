@@ -1,0 +1,21 @@
+@startuml UC_ManageUsers
+title Use Case Diagram - Quản lý người dùng (UC12 - Admin)
+
+left to right direction
+
+actor Admin
+
+rectangle "UC12 - Manage Users" {
+  Admin --> (Xem danh sách Users)
+  Admin --> (Xem danh sách Admins)
+  Admin --> (Chỉnh sửa thông tin User)
+  Admin --> (Đổi mật khẩu User)
+  Admin --> (Khóa / Mở khóa tài khoản)
+  Admin --> (Soft Delete User)
+  Admin --> (Restore User từ thùng rác)
+  Admin --> (Hard Delete User vĩnh viễn)
+
+  (Chỉnh sửa thông tin User) ..> (Đổi Role) : <<include>>
+  (Chỉnh sửa thông tin User) ..> (Cập nhật username, avatar) : <<include>>
+}
+@enduml

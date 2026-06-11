@@ -1,0 +1,49 @@
+@startuml Activity_Register
+title Activity Diagram - Đăng ký tài khoản (UC1)
+
+start
+
+:Truy cập trang /register;
+
+if (Chọn phương thức đăng ký?) then (Google OAuth)
+  :Redirect đến Google OAuth;
+  :Xác thực với Google;
+  :Nhận thông tin provider, provider_id, email;
+
+  if (Email đã tồn tại trong hệ thống?) then (Có)
+    :Liên kết tài khoản hiện có;
+  else (Chưa)
+    :Tạo User mới\n(provider, provider_id, avatar_url);
+    :Lưu User vào Database;
+  endif
+
+else (Form thường)
+  :Nhập username, email, password;
+
+  if (Validate dữ liệu nhập?) then (Không hợp lệ)
+    :Hiển thị thông báo lỗi;
+    stop
+  else (Hợp lệ)
+  endif
+
+  if (Username đã tồn tại?) then (Có)
+    :Hiển thị lỗi "Username đã tồn tại";
+    stop
+  else (Chưa)
+  endif
+
+  if (Email đã tồn tại?) then (Có)
+    :Hiển thị lỗi "Email đã tồn tại";
+    stop
+  else (Chưa)
+  endif
+
+  :Mã hóa password (BCrypt);
+  :Gán role = Role.USER;
+  :Lưu User vào Database;
+endif
+
+:Chuyển hướng đến trang /login;
+
+stop
+@enduml

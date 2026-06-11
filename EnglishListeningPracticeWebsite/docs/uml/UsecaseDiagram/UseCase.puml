@@ -1,0 +1,56 @@
+@startuml
+title Use Case Diagram - English Listening Practice Website (Tổng quan)
+left to right direction
+
+actor Guest
+actor User
+actor Admin
+actor "Wit.AI API" as WitAI <<External>>
+actor "Groq AI API" as Groq <<External>>
+actor "Cloudinary" as Cloud <<External>>
+actor "Email Server" as Mail <<External>>
+
+User --|> Guest
+Admin --|> User
+
+rectangle "Authentication & Profile" {
+  Guest --> (UC1: Đăng ký)
+  Guest --> (UC2: Đăng nhập)
+  Guest --> (UC10: Đặt lại mật khẩu)
+  User --> (UC13: Cập nhật hồ sơ)
+  User --> (Đăng xuất)
+}
+
+rectangle "Learning & Practice" {
+  Guest --> (UC3: Duyệt danh mục & bài học)
+  User --> (UC4: Luyện nghe Dictation)
+  User --> (UC5: Luyện nói Speaking)
+  User --> (UC8: Theo dõi tiến độ)
+  User --> (UC11: Xem bảng xếp hạng)
+}
+
+rectangle "Social" {
+  User --> (UC6: Bình luận)
+  User --> (UC7: Đánh giá bình luận)
+}
+
+rectangle "Admin Management" {
+  Admin --> (UC9: Quản lý nội dung)
+  Admin --> (UC12: Quản lý người dùng)
+  Admin --> (Quản lý Slideshow)
+  Admin --> (Cấu hình hệ thống)
+  Admin --> (Kiểm duyệt bình luận)
+}
+
+' External actor connections
+(UC5: Luyện nói Speaking) --> WitAI
+(UC5: Luyện nói Speaking) --> Groq
+(UC9: Quản lý nội dung) --> Cloud
+(UC13: Cập nhật hồ sơ) --> Cloud
+(UC10: Đặt lại mật khẩu) --> Mail
+
+' Include relationships
+(UC4: Luyện nghe Dictation) ..> (UC8: Theo dõi tiến độ) : <<include>>
+(UC5: Luyện nói Speaking) ..> (UC8: Theo dõi tiến độ) : <<include>>
+
+@enduml

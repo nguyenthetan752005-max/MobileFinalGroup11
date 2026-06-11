@@ -1,0 +1,42 @@
+@startuml
+title Object Diagram - Study Tracking And Leaderboard Snapshot
+
+skinparam shadowing false
+skinparam objectAttributeIconSize 0
+
+object "user1 : User" as user1 {
+  id = 7
+  username = "studentA"
+  totalActiveTime = 15400
+  activeTime7d = 4200
+  activeTime30d = 9800
+}
+
+object "dailyStatToday : DailyStudyStatistic" as dailyStatToday {
+  id = 1101
+  studyDate = "2026-04-03"
+  activeTimeSeconds = 900
+}
+
+object "dailyStatYesterday : DailyStudyStatistic" as dailyStatYesterday {
+  id = 1102
+  studyDate = "2026-04-02"
+  activeTimeSeconds = 1200
+}
+
+object "trackingPayload : Map" as trackingPayload {
+  durationSeconds = 45
+}
+
+object "leaderboardRow7d : Map" as leaderboardRow7d {
+  rank = 4
+  username = "studentA"
+  activeTime = "1h 10m"
+}
+
+user1 -- dailyStatToday
+user1 -- dailyStatYesterday
+trackingPayload ..> dailyStatToday : increments
+user1 ..> leaderboardRow7d : transformed into
+
+@enduml

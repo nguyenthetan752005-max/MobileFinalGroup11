@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <div th:replace="~{fragments/head :: head('My Profile')}"></div>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <style>
+        .profile-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: var(--bg-color, #ffffff);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            color: var(--text-color, #333333);
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color, #eeeeee);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #4CAF50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin-right: 20px;
+            text-transform: uppercase;
+        }
+
+        .profile-info {
+            flex-grow: 1;
+        }
+
+        .profile-info h2 {
+            margin: 0 0 5px 0;
+            font-size: 28px;
+        }
+
+        .profile-info p {
+            margin: 0 0 10px 0;
+            color: #666666;
+            font-size: 16px;
+        }
+
+        .badge-role {
+            background: #4CAF50;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .profile-details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .detail-card {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #eeeeee;
+        }
+
+        .detail-card strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #666666;
+            text-transform: uppercase;
+        }
+
+        .detail-card span {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .profile-actions {
+            margin-top: 40px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+
+        .btn-edit {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background-color: #1976D2;
+        }
+
+        .btn-logout {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .btn-logout:hover {
+            background-color: #d32f2f;
+        }
+
+        .btn-password {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-password:hover {
+            background-color: #f57c00;
+        }
+
+        /* Dark mode overrides */
+        body.dark-mode .profile-container {
+            background-color: #2c2c2c;
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-mode .profile-header {
+            border-bottom-color: #444444;
+        }
+
+        body.dark-mode .detail-card {
+            background-color: #383838;
+            border-color: #444444;
+        }
+
+        body.dark-mode .profile-info p,
+        body.dark-mode .detail-card strong {
+            color: #aaaaaa;
+        }
+
+        /* Biến khung cắt của Cropper thành hình tròn */
+        .cropper-view-box,
+        .cropper-face {
+            border-radius: 50%;
+        }
+
+        /* Tùy chỉnh để phần bên ngoài vòng tròn tối hơn, giúp nổi bật vùng chọn */
+        .cropper-modal {
+            opacity: 0.6;
+        }
+
+        /* Đảm bảo ảnh trong khung cắt không bị lệch */
+        .cropper-view-box {
+            outline: 1px solid #2196F3;
+            outline-color: rgba(33, 150, 243, 0.75);
+        }
+    </style>
+</head>
+
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="profile-container">
+        <div th:if="${successMessage}"
+            style="background-color: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-bottom: 20px;"
+            th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}"
+            style="background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 20px;"
+            th:text="${errorMessage}"></div>
+
+        <div class="profile-header">
+            <!-- Hiển thị thư mục Avatar URL nếu có, nếu không thì lấy chữ cái đầu của Username -->
+            <div th:if="${user.avatarUrl != null}" style="margin-right: 20px; cursor: pointer; position: relative;"
+                onclick="document.getElementById('avatarInput').click();" title="Nhấn để thay đổi ảnh">
+                <img th:src="${user.avatarUrl}" alt="Avatar"
+                    style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #4CAF50;">
+                <div
+                    style="position: absolute; bottom: 0; right: 0; background: #fff; border-radius: 50%; padding: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                    📷</div>
+            </div>
+            <div th:unless="${user.avatarUrl != null}" class="profile-avatar"
+                style="cursor: pointer; position: relative;" onclick="document.getElementById('avatarInput').click();"
+                title="Nhấn để thay đổi ảnh">
+                <span th:text="${#strings.substring(user.username, 0, 1)}">U</span>
+                <div
+                    style="position: absolute; bottom: 0; right: 0; background: #fff; border-radius: 50%; padding: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); font-size: 14px; color: #333;">
+                    📷</div>
+            </div>
+
+            <div class="profile-info">
+                <div id="nameDisplayBox" style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                    <h2 th:text="${user.username}" style="margin: 0;">Username</h2>
+                    <button onclick="toggleEditName()"
+                        style="background: none; border: none; cursor: pointer; color: #2196F3; font-weight: bold; font-size: 14px;">[
+                        Sửa ]</button>
+                </div>
+
+                <form id="editNameForm" action="/profile/update-name" method="POST"
+                    style="display: none; align-items: center; gap: 10px; margin-bottom: 5px;">
+                    <input type="text" name="newUsername" th:value="${user.username}" required
+                        style="padding: 6px; border-radius: 4px; border: 1px solid #ccc; font-size: 16px;">
+                    <button type="submit" class="badge-role"
+                        style="border: none; cursor: pointer; padding: 6px 15px;">Lưu</button>
+                    <button type="button" onclick="toggleEditName()"
+                        style="background: none; border: none; cursor: pointer; color: #666; font-weight: bold;">Hủy</button>
+                </form>
+
+                <p th:text="${user.email}">user@example.com</p>
+                <span class="badge-role" th:text="${user.role}">USER</span>
+            </div>
+        </div>
+
+        <div class="profile-details-grid">
+            <div class="detail-card">
+                <strong>Ngày tham gia</strong>
+                <span th:text="${#temporals.format(user.createdAt, 'dd/MM/yyyy')}">...</span>
+            </div>
+            <div class="detail-card">
+                <strong>Tổng thời gian học</strong>
+                <span th:text="${formattedActiveTime}">0 phút</span>
+            </div>
+            <div class="detail-card">
+                <strong>Tài khoản liên kết</strong>
+                <span th:text="${user.provider != null ? user.provider : 'Mật khẩu cục bộ (Email)'}">LOCAL</span>
+            </div>
+            <div class="detail-card">
+                <strong>Trạng thái</strong>
+                <span th:style="${user.isActive != null and user.isActive} ? 'color: #4CAF50;' : 'color: #f44336;'"
+                      th:text="${user.isActive != null and user.isActive ? 'Active' : 'Inactive'}">Active</span>
+            </div>
+        </div>
+
+        <div class="profile-actions">
+            <form action="/profile/request-password-change" method="POST" style="margin: 0;">
+                <button type="submit" class="btn-action btn-password">
+                    Gửi link đổi mật khẩu qua email
+                </button>
+            </form>
+            <a href="/logout" class="btn-action btn-logout">Đăng xuất</a>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <!-- Avatar Upload Elements -->
+    <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+    <div id="cropperModal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 20px; border-radius: 8px; width: 400px; max-width: 90%; color: #333;">
+            <h3 style="margin-top: 0; margin-bottom: 20px;">Chỉnh sửa ảnh đại diện</h3>
+            <div style="width: 100%; height: 300px; background: #eee;">
+                <img id="imageToCrop" style="max-width: 100%; display: block;">
+            </div>
+            <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button onclick="closeCropper()"
+                    style="padding: 8px 15px; border: none; background: #ccc; cursor: pointer; border-radius: 4px; font-weight: bold;">Hủy</button>
+                <button onclick="uploadAvatar()" id="uploadBtn"
+                    style="padding: 8px 15px; border: none; background: #2196F3; color: white; cursor: pointer; border-radius: 4px; font-weight: bold;">Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/page/user/profile.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,64 @@
+@startuml Sequence_ManageContent
+title Sequence Diagram - Quản lý nội dung Admin (UC9)
+
+actor Admin as A
+participant "Admin Dashboard" as V
+participant "CategoryController" as AC
+participant "CategoryService" as AS
+participant "CloudinaryService" as Cloud
+database "Database" as DB
+
+== Xem danh sách ==
+A -> V : Truy cập trang quản lý
+V -> AC : GET /admin/dashboard
+AC -> AS : getAllCategories()
+AS -> DB : SELECT * FROM categories WHERE is_deleted = false
+DB --> AS : List<Category>
+AS --> AC : List<Category>
+AC --> V : Render danh sách
+V --> A : Hiển thị danh sách Category
+
+== Thêm Category mới ==
+A -> V : Nhấn "Thêm mới"
+A -> V : Nhập name, file ảnh, levelRange, type, practiceType
+V -> AC : POST /admin/category
+AC -> Cloud : uploadFile(file)
+Cloud --> AC : imageUrl, cloudImageId
+AC -> AS : createCategory(categoryDTO)
+AS -> DB : INSERT INTO categories\n(name, image_url, cloud_image_id, level_range, type, practice_type, ...)
+DB --> AS : Saved Category
+AS --> AC : Category
+AC --> V : Redirect danh sách
+V --> A : Hiển thị thành công
+
+== Thêm Lesson + Sentences ==
+A -> V : Chọn Section → Thêm Lesson
+V -> AC : POST /admin/lesson
+AC -> AS : createLesson(lessonDTO)
+AS -> DB : INSERT INTO lessons(...)
+DB --> AS : Saved Lesson
+AS --> AC : Lesson
+
+A -> V : Thêm Sentences cho Lesson
+V -> AC : POST /admin/sentence
+AC -> Cloud : upload audio file
+Cloud --> AC : audioUrl, cloudAudioId
+AC -> AS : createSentence(sentenceDTO, audioUrl, cloudAudioId)
+AS -> DB : INSERT INTO sentences(...)
+DB --> AS : OK
+
+AS --> AC : Success
+AC --> V : Cập nhật
+V --> A : Hiển thị Lesson + Sentences
+
+== Xóa Category (Soft Delete) ==
+A -> V : Nhấn Xóa Category
+V -> AC : POST /admin/category/{id}/delete
+AC -> AS : softDeleteCategory(id)
+AS -> DB : UPDATE categories SET is_deleted = true WHERE id = ?
+DB --> AS : OK
+AS --> AC : Success
+AC --> V : Redirect danh sách
+V --> A : Hiển thị thành công
+
+@enduml

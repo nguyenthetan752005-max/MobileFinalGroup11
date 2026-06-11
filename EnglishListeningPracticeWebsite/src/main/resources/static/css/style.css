@@ -1,0 +1,19 @@
+/* [CSS MASTER] FILE CHÍNH ĐỂ GOM TẤT CẢ CSS LẠI.
+ * - Dùng để Nối (Import) toàn bộ CSS thư mục con vào 1 file duy nhất cho HTML gọi dễ dàng 
+ */
+
+@import url('base/global.css');
+@import url('base/responsive.css');
+@import url('layout/navbar.css');
+@import url('layout/footer.css');
+@import url('components/cards.css');
+@import url('components/dividers.css');
+@import url('components/search-bar.css');
+@import url('components/accordion.css');
+@import url('components/comments.css');
+@import url('pages/home.css');
+@import url('pages/auth.css');
+@import url('pages/sections.css');
+@import url('pages/lesson-detail.css');
+@import url('pages/admin-login.css');
+@import url('pages/speaking.css');

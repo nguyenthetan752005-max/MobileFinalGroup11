@@ -1,0 +1,222 @@
+/* [CSS PAGE] GIAO DIỆN TRANG CHỦ THEO CHIỀU DỌC.
+ * - Trang trí các khối Hero Banner, Hướng dẫn 4 bước học, Câu hỏi thường gặp 
+ */
+
+
+/* ===========================
+   Hero Section
+   =========================== */
+.hero {
+    padding: 60px 0 50px;
+    background: var(--bg-body);
+}
+
+.hero-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+}
+
+.hero-content {
+    flex: 1;
+    max-width: 50%;
+}
+
+.hero-slideshow {
+    flex: 1;
+    max-width: 50%;
+    min-width: 0;
+}
+
+@media (max-width: 991px) {
+    .hero-container {
+        flex-direction: column;
+    }
+    
+    .hero-content {
+        max-width: 100%;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .hero-slideshow {
+        max-width: 100%;
+        width: 100%;
+    }
+}
+
+.hero h1 {
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1.3;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+}
+
+.hero-lead {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    line-height: 1.7;
+}
+
+.hero-lead strong {
+    color: var(--primary);
+}
+
+.hero-sub {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin-bottom: 28px;
+    line-height: 1.7;
+}
+
+/* ===========================
+   How It Works
+   =========================== */
+.how-it-works {
+    padding: 70px 0;
+    background: var(--bg-body);
+}
+
+.section-title {
+    font-size: 24px;
+    font-weight: 700;
+    text-align: center;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+.section-subtitle {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 48px;
+    line-height: 1.7;
+}
+
+.steps-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 28px;
+}
+
+.step-card {
+    text-align: center;
+    padding: 24px 16px;
+}
+
+.step-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 20px;
+}
+
+.step-icon img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+.step-number {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 10px;
+}
+
+.step-card p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+/* ===========================
+   Exercises Preview
+   =========================== */
+.exercises-preview {
+    padding: 70px 0;
+    background: var(--bg-section);
+}
+
+.topics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.topic-card {
+    display: block;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 28px 24px;
+    text-align: center;
+    transition: all var(--transition);
+    cursor: pointer;
+}
+
+.topic-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.topic-icon {
+    font-size: 36px;
+    margin-bottom: 14px;
+}
+
+.topic-card h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.topic-card p {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+/* ===========================
+   FAQ
+   =========================== */
+.faq {
+    padding: 70px 0;
+    background: var(--bg-body);
+}
+
+.faq-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-top: 40px;
+}
+
+.faq-column {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.faq-block h4 {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.faq-block p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.faq-block a:hover {
+    text-decoration: none !important;
+}

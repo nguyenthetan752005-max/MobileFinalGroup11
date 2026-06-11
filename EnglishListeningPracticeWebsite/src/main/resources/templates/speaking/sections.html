@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<!-- GIAO DIỆN DANH SÁCH BÀI HỌC THEO TỪNG SECTION - SPEAKING -->
+<!-- Tương tự exercises/sections.html nhưng dành cho phần Speaking -->
+
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${category.name})}"></head>
+<body style="display: flex; flex-direction: column; min-height: 100vh;">
+
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="container" style="flex: 1; padding-top: 30px; padding-bottom: 100px;">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb" style="margin-bottom: 20px; font-size: 0.95rem; color: var(--text-secondary);">
+            <a th:href="@{/speaking-exercises}" style="color: var(--primary); text-decoration: none;">Speaking exercises</a>
+            <span style="margin: 0 8px;">/</span>
+            <span th:text="${category.name}" style="color: var(--text-primary);">Category Name</span>
+        </div>
+
+        <!-- Header Row: Title & Search -->
+        <div class="page-header-row">
+            <h1 class="page-title" th:text="${category.name}">Category Name</h1>
+
+            <!-- Search & Filter Component -->
+            <div class="search-filter-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search lessons...">
+                <select id="levelFilter" class="level-select">
+                    <option value="All levels">All levels</option>
+                    <option th:each="lvl : ${levels}" th:value="${lvl}" th:text="${lvl}"></option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Vòng lặp các Section -->
+        <div class="section-group" th:each="dto, iterStat : ${sections}">
+            
+            <!-- Accordion Header -->
+            <div class="section-header collapsed" onclick="toggleSection(this)">
+                <h2 class="section-title">
+                    <span th:text="${dto.section.name}">Section 1</span>
+                    <span class="lesson-count" th:text="'(' + ${dto.lessons.size()} + ' lessons)'">(11 lessons)</span>
+                    <span th:if="${dto.sectionStatus != null}" 
+                          th:class="'status-badge status-' + ${dto.sectionStatus.name().toLowerCase()}"
+                          th:text="${dto.sectionStatus.name() == 'COMPLETED' ? 'Completed' : 'In Progress'}"></span>
+                </h2>
+                <span class="toggle-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </span>
+            </div>
+
+            <!-- Accordion Body (Các Lesson) -->
+            <div class="lessons-grid" style="display: none;">
+                <a th:href="@{'/speaking/lesson/' + ${lesson.id}}" class="lesson-card" th:each="lesson : ${dto.lessons}" th:attr="data-level=${lesson.level}">
+                    <h3 class="lesson-title">
+                        <span th:text="${lesson.title}">1. First snowfall</span>
+                        <span th:if="${dto.lessonStatuses != null and dto.lessonStatuses.get(lesson.id) != null}" 
+                              th:class="'status-badge status-' + ${dto.lessonStatuses.get(lesson.id).name().toLowerCase()}"
+                              th:text="${dto.lessonStatuses.get(lesson.id).name() == 'COMPLETED' ? 'Completed' : 'In Progress'}"></span>
+                    </h3>
+                    <p class="lesson-meta" th:text="${lesson.totalSentences} + ' parts - Vocab level: ' + ${lesson.level}">21 parts - Vocab level: A1</p>
+                </a>
+            </div>
+            
+        </div>
+
+        <!-- No Results Message -->
+        <div id="noResultsMsg" style="display: none; text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 1.1rem; background: var(--bg-card); border: 1px dashed var(--border-color); border-radius: 8px;">
+            No lessons match your search criteria.
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script src="/js/page/shared/sections-filter.js?v=1.1"></script>
+</body>
+</html>

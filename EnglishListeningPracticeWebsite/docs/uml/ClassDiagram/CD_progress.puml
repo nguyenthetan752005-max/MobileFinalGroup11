@@ -1,0 +1,146 @@
+@startuml Class_Diagram_Progress
+title Class Diagram - Progress Tracking & Leaderboard Module
+
+skinparam classAttributeIconSize 0
+
+' ==========================================
+'   CONTROLLER LAYER
+' ==========================================
+package "Controller" {
+    class UserProgressController {
+        + completeSentence(userId, sentenceId): ResponseEntity
+        + skipSentence(userId, sentenceId): ResponseEntity
+    }
+    class TrackingController {
+        + trackActiveTime(username, seconds): ResponseEntity
+    }
+    class LeaderboardController {
+        + showLeaderboard(tab, session, model): String
+    }
+    class InfoPageController {
+        + showProgressPage(session, model): String
+    }
+}
+
+' ==========================================
+'   SERVICE LAYER
+' ==========================================
+package "Service" {
+    interface UserProgressService <<interface>> {
+        + getProgress(userId, sentenceId): Optional<UserProgress>
+        + getProgressByUserId(userId): List<UserProgress>
+        + getProgressByUserIdAndLessonId(userId, lessonId): List<UserProgress>
+        + getUserProgressMapAsStrings(userId, lessonId): Map<Long, String>
+        + updateProgress(userId, sentenceId): UserProgress
+        + completeSentence(userId, sentenceId): UserProgress
+        + skipSentence(userId, sentenceId): UserProgress
+        + getLessonStatus(userId, lessonId): UserProgressStatus
+        + getSectionStatus(userId, sectionId): UserProgressStatus
+        + getCategoryStatus(userId, categoryId): UserProgressStatus
+        + getInProgressLessons(userId): List<InProgressLessonDTO>
+    }
+    class UserProgressServiceImpl
+
+    interface StudyTrackingService <<interface>> {
+        + addActiveSeconds(username, seconds): void
+    }
+    class StudyTrackingServiceImpl
+
+    interface LeaderboardService <<interface>> {
+        + refreshLeaderboardCaches(): void
+        + getTopUsers7Days(): List<Map<String, Object>>
+        + getTopUsers30Days(): List<Map<String, Object>>
+    }
+    class LeaderboardServiceImpl
+
+    class AdminCleanupJobService <<@Scheduled>> {
+        + refreshLeaderboardCaches(): void
+        + resetDailyActiveStatuses(): void
+    }
+}
+
+' ==========================================
+'   REPOSITORY LAYER
+' ==========================================
+package "Repository" {
+    interface UserProgressRepository <<Spring Data JPA>> {
+        + findByUser_IdAndSentence_Id(userId, sentenceId): Optional<UserProgress>
+        + findByUser_Id(userId): List<UserProgress>
+        + findByUserIdAndLessonId(userId, lessonId): List<UserProgress>
+        + countByUserIdAndLessonIdAndStatus(userId, lessonId, status): long
+        + countByUserIdAndSectionIdAndStatus(userId, sectionId, status): long
+        + countByUserIdAndCategoryIdAndStatus(userId, catId, status): long
+        + findLessonIdsWithProgressByUserId(userId): List<Long>
+    }
+    interface DailyStudyStatisticRepository <<Spring Data JPA>> {
+        + findByUserAndStudyDate(user, date): Optional<DailyStudyStatistic>
+        + getTotalSecondsByUserSince(userId, since): Optional<Long>
+    }
+}
+
+' ==========================================
+'   DTO LAYER
+' ==========================================
+package "DTO" {
+    class InProgressLessonDTO {
+        - lessonId : Long
+        - lessonTitle : String
+        - categoryName : String
+        - sectionName : String
+        - practiceType : String
+        - totalSentences : int
+        - completedSentences : int
+        - progressPercent : int
+        - firstUncompletedSentenceId : Long
+        - firstUncompletedSentenceIndex : int
+    }
+}
+
+' ==========================================
+'   ENTITY LAYER
+' ==========================================
+package "Entity" {
+    class UserProgress {
+        - id : Long
+        - status : UserProgressStatus
+        - lastAccessed : LocalDateTime
+        - user : User
+        - sentence : Sentence
+    }
+    class DailyStudyStatistic {
+        - id : Long
+        - studyDate : LocalDate
+        - activeTimeSeconds : Integer
+        - user : User
+    }
+    enum UserProgressStatus {
+        IN_PROGRESS
+        COMPLETED
+        SKIPPED
+    }
+}
+
+' ==========================================
+'   DEPENDENCIES
+' ==========================================
+UserProgressController --> UserProgressService
+TrackingController --> StudyTrackingService
+LeaderboardController --> LeaderboardService
+InfoPageController --> UserProgressService
+
+UserProgressServiceImpl ..|> UserProgressService
+StudyTrackingServiceImpl ..|> StudyTrackingService
+LeaderboardServiceImpl ..|> LeaderboardService
+
+UserProgressService --> UserProgressRepository
+StudyTrackingService --> DailyStudyStatisticRepository
+LeaderboardService --> DailyStudyStatisticRepository
+AdminCleanupJobService --> LeaderboardService
+
+UserProgressRepository ..> UserProgress
+DailyStudyStatisticRepository ..> DailyStudyStatistic
+
+UserProgress *-- UserProgressStatus
+UserProgressService ..> InProgressLessonDTO
+
+@enduml

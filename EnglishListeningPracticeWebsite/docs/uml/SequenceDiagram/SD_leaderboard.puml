@@ -1,0 +1,39 @@
+@startuml Sequence_Leaderboard
+title Sequence Diagram - Bảng xếp hạng (UC11)
+
+actor User as U
+participant "Leaderboard Page" as V
+participant "LeaderboardController" as LC
+participant "LeaderboardService" as LS
+database "Database" as DB
+
+U -> V : Truy cập /leaderboard?tab=7d
+V -> LC : GET /leaderboard?tab=7d
+LC -> LS : getTopUsers7Days()
+LS -> DB : SELECT id, username, avatar_url, active_time_7d\nFROM users\nWHERE role = 'USER' AND is_deleted = false\nORDER BY active_time_7d DESC\nLIMIT 50
+DB --> LS : List<User>
+LS -> LS : Format thành List<Map<String, Object>>\n(rank, username, avatarUrl, formattedTime)
+LS --> LC : List<Map<String, Object>>
+LC --> V : Render leaderboard.html
+V --> U : Hiển thị bảng xếp hạng 7 ngày
+
+opt User chuyển sang tab 30 ngày
+    U -> V : Nhấn tab "30 ngày"
+    V -> LC : GET /leaderboard?tab=30d
+    LC -> LS : getTopUsers30Days()
+    LS -> DB : SELECT ... ORDER BY active_time_30d DESC
+    DB --> LS : List<User>
+    LS --> LC : List<Map<String, Object>>
+    LC --> V : Render leaderboard.html
+    V --> U : Hiển thị bảng xếp hạng 30 ngày
+end
+
+== Background: Cron Job refresh cache ==
+note over LS, DB
+  AdminCleanupJobService chạy mỗi giờ:
+  1. Tổng hợp DailyStudyStatistic 7 ngày → activeTime7d
+  2. Tổng hợp DailyStudyStatistic 30 ngày → activeTime30d
+  3. UPDATE users SET active_time_7d = ?, active_time_30d = ?
+end note
+
+@enduml

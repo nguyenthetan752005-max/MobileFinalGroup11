@@ -1,0 +1,42 @@
+@startuml Sequence_Register
+title Sequence Diagram - Đăng ký tài khoản (UC1)
+
+actor Guest as G
+participant "Register Page" as V
+participant "AuthController" as AC
+participant "AuthService" as AS
+participant "UserRepository" as UR
+database "Database" as DB
+
+G -> V : Truy cập /register
+V --> G : Hiển thị form đăng ký
+G -> V : Nhập username, email, password
+V -> AC : POST /register
+AC -> AS : register(user)
+
+AS -> UR : findByEmail(email)
+UR -> DB : SELECT FROM users\nWHERE email = ?
+DB --> UR : User / null
+UR --> AS : Result
+
+AS -> UR : findByUsername(username)
+UR -> DB : SELECT FROM users\nWHERE username = ?
+DB --> UR : User / null
+UR --> AS : Result
+
+alt Email/Username đã tồn tại
+    AS --> AC : Throw RuntimeException
+    AC --> V : Hiển thị lỗi
+    V --> G : Hiển thị lỗi "Email/Username đã tồn tại"
+else Hợp lệ
+    AS -> AS : Hash password (BCrypt)
+    AS -> UR : save(user)
+    UR -> DB : INSERT INTO users\n(username, email, password, role, created_at)
+    DB --> UR : Saved User
+    UR --> AS : User
+    AS --> AC : Success
+    AC --> V : Redirect /login
+    V --> G : Chuyển đến trang Login
+end
+
+@enduml

@@ -1,0 +1,137 @@
+/* [CSS BASE] CHỨA CÁC BIẾN (VARIABLES) VÀ RESET CSS.
+ * - Định nghĩa mã màu chuẩn của trang web (--primary-color, --text-color...)
+ * - Xóa bỏ margin/padding dư thừa mặc định của trình duyệt
+ * - Thiết lập Font chữ mặc định (Inter) cho toàn trang 
+ */
+
+/* ===========================
+   CSS Variables & Reset
+   =========================== */
+:root {
+    --primary: #e67300;
+    --primary-hover: #cc6600;
+    --primary-light: #fff3e0;
+
+    --bg-body: #ffffff;
+    --bg-section: #f9fafb;
+    --bg-card: #ffffff;
+    --bg-navbar: #ffffff;
+    --bg-footer: #1e293b;
+
+    --text-primary: #1a1a1a;
+    --text-secondary: #555555;
+    --text-muted: #888888;
+    --text-footer: #cbd5e1;
+    --text-footer-heading: #f1f5f9;
+
+    --border-color: #e5e7eb;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
+
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --container-width: 1140px;
+
+    --transition: 0.25s ease;
+}
+
+/* Dark Mode */
+html[data-theme="dark"], 
+[data-theme="dark"] body {
+    --bg-body: #0f172a;
+    --bg-section: #1e293b;
+    --bg-card: #1e293b;
+    --bg-navbar: #1e293b;
+
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+
+    --border-color: #334155;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Reset */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-family);
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-primary);
+    background-color: var(--bg-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: color var(--transition);
+}
+
+ul {
+    list-style: none;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+.container {
+    width: 100%;
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* ===========================
+   Buttons
+   =========================== */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-family);
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: #ffffff;
+    padding: 10px 28px;
+    font-size: 15px;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(230, 115, 0, 0.35);
+}
+
+.btn-lg {
+    padding: 14px 36px;
+    font-size: 16px;
+    border-radius: var(--radius-md);
+}
+

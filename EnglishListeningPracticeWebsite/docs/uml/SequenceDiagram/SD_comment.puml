@@ -1,0 +1,49 @@
+@startuml Sequence_Comment
+title Sequence Diagram - Bình luận câu nghe (UC6)
+
+actor User as U
+participant "Lesson Page" as V
+participant "CommentController" as CMC
+participant "CommentService" as CMS
+database "Database" as DB
+
+== Tải danh sách Comment ==
+U -> V : Xem trang Lesson, chọn Sentence
+V -> CMC : GET /sentence/{id}/comments
+CMC -> CMS : getTopLevelCommentsWithVotes(sentenceId)
+CMS -> DB : SELECT c.* FROM comments c WHERE c.sentence_id = ? AND parent_id IS NULL
+DB --> CMS : List<Comment>
+
+loop Mỗi Comment
+    CMS -> DB : countVotes(comment_id, true/false)
+    DB --> CMS : likeCount, dislikeCount
+    CMS -> CMS : populateVoteCounts
+end
+
+CMS -> CMS : Map thành DTO
+CMS --> CMC : List<CommentDTO>
+CMC --> V : Render comments
+V --> U : Hiển thị comments với lượt vote
+
+== Viết Comment mới ==
+U -> V : Nhập nội dung comment
+V -> CMC : POST /comment
+CMC -> CMS : addComment(sentenceId, userId, content, null)
+CMS -> DB : INSERT INTO comments\n(content, sentence_id, user_id,\nparent_id = NULL, created_at)
+DB --> CMS : Saved Comment
+CMS --> CMC : Comment
+CMC --> V : Comment mới
+V --> U : Hiển thị comment vừa tạo
+
+== Reply Comment ==
+U -> V : Nhấn Reply trên comment
+U -> V : Nhập nội dung reply
+V -> CMC : POST /comment
+CMC -> CMS : addComment(sentenceId, userId, content, parentId)
+CMS -> DB : INSERT INTO comments\n(content, sentence_id, user_id,\nparent_id = ?, created_at)
+DB --> CMS : Saved Comment
+CMS --> CMC : Reply Comment
+CMC --> V : Reply mới
+V --> U : Hiển thị reply dưới comment gốc
+
+@enduml

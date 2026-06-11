@@ -1,0 +1,63 @@
+@startuml Sequence_UpdateProfile
+title Sequence Diagram - Cập nhật hồ sơ (UC13)
+
+actor User as U
+participant "Profile Page" as V
+participant "ProfileController" as PC
+participant "UserService" as US
+participant "CloudinaryService" as Cloud
+participant "PasswordResetService" as PRS
+database "Database" as DB
+
+== Xem Profile ==
+U -> V : Truy cập /profile
+V -> PC : GET /profile
+PC -> PC : Lấy User từ HttpSession
+PC --> V : Render profile.html (userData)
+V --> U : Hiển thị trang Profile
+
+== Đổi Username ==
+U -> V : Nhập username mới → Nhấn Lưu
+V -> PC : PUT /profile/username\n{userId, newUsername}
+PC -> US : updateUsername(id, newUsername)
+US -> DB : SELECT FROM users WHERE username = ?
+DB --> US : User / null
+
+alt Username đã tồn tại
+    US --> PC : Throw Exception
+    PC --> V : Lỗi "Username đã tồn tại"
+    V --> U : Hiển thị lỗi
+else Username hợp lệ
+    US -> DB : UPDATE users SET username = ? WHERE id = ?
+    DB --> US : OK
+    US --> PC : OK
+    PC -> PC : Cập nhật Session
+    PC --> V : Thành công
+    V --> U : Hiển thị username mới
+end
+
+== Đổi Avatar ==
+U -> V : Chọn ảnh → Upload
+V -> PC : POST /profile/avatar\n{userId, file}
+PC -> Cloud : uploadImage(file)
+Cloud --> PC : {url, publicId}
+PC -> US : updateAvatar(id, url, publicId)
+US -> DB : UPDATE users SET avatar_url = ?, avatar_public_id = ?\nWHERE id = ?
+DB --> US : OK
+US --> PC : OK
+PC -> PC : Cập nhật Session
+PC --> V : {avatarUrl}
+V --> U : Hiển thị avatar mới
+
+== Đổi mật khẩu ==
+U -> V : Nhấn "Đổi mật khẩu"
+V -> PC : POST /profile/change-password\n{userId}
+PC -> PRS : createTokenForUser(user)
+PRS -> DB : INSERT INTO password_reset_tokens(...)
+DB --> PRS : token
+PC -> PRS : sendProfilePasswordChangeEmail(email, token)
+PRS --> PC : OK
+PC --> V : "Đã gửi email xác nhận"
+V --> U : Thông báo kiểm tra email
+
+@enduml

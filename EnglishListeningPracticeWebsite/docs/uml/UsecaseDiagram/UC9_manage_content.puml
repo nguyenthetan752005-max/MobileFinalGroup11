@@ -1,0 +1,31 @@
+@startuml UC_ManageContent
+title Use Case Diagram - Quản lý nội dung (UC9 - Admin)
+
+left to right direction
+
+actor Admin
+actor "Cloudinary" as Cloud
+
+rectangle "UC9 - Manage Content" {
+  Admin --> (Quản lý Category)
+  Admin --> (Quản lý Section)
+  Admin --> (Quản lý Lesson)
+  Admin --> (Quản lý Sentence)
+
+  (Quản lý Category) ..> (CRUD Category) : <<include>>
+  (Quản lý Section) ..> (CRUD Section) : <<include>>
+  (Quản lý Lesson) ..> (CRUD Lesson) : <<include>>
+  (Quản lý Sentence) ..> (CRUD Sentence) : <<include>>
+
+  (Quản lý Category) ..> (Upload ảnh) : <<include>>
+  (Quản lý Sentence) ..> (Upload audio) : <<include>>
+
+  (Upload ảnh) --> Cloud
+  (Upload audio) --> Cloud
+
+  (CRUD Category) <.. (Soft Delete / Restore) : <<extend>>
+  (CRUD Section) <.. (Soft Delete / Restore) : <<extend>>
+  (CRUD Lesson) <.. (Soft Delete / Restore) : <<extend>>
+  (CRUD Sentence) <.. (Soft Delete / Restore) : <<extend>>
+}
+@enduml

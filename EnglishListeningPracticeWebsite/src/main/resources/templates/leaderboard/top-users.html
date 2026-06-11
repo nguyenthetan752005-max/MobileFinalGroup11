@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<!-- GIAO DIỆN TRANG BẢNG XẾP HẠNG (LEADERBOARD PAGE) -->
+<!-- Hiển thị Top 30 users theo 7 ngày và 30 ngày gần nhất -->
+
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Top Users')}"></head>
+<body>
+    <!-- Navbar -->
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <!-- Page Content -->
+    <link rel="stylesheet" th:href="@{/css/leaderboard.css}">
+    <main class="leaderboard-page">
+
+        <div class="leaderboard-container">
+            <!-- TOP 7 DAYS -->
+            <div class="leaderboard-card">
+                <div class="card-header">
+                    <h2>Top 30 users (last 7 days)</h2>
+                    <p th:if="${currentUserTime7d != null}" th:text="'Your active time: ' + ${currentUserTime7d}"></p>
+                </div>
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th class="lb-rank">#</th>
+                            <th>Username</th>
+                            <th class="lb-active-time">Active time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="row : ${top7Days}">
+                            <td class="lb-rank" th:text="${row.rank}">1</td>
+                            <td>
+                                <div class="lb-user-info">
+                                    <div class="lb-avatar"
+                                         th:text="${row.initial}"
+                                         th:style="'background-color: ' + ${row.avatarColor}">A</div>
+                                    <div>
+                                        <span class="lb-username" th:text="${row.username}">Username</span>
+                                        <i class="fas fa-trophy lb-trophy" th:if="${row.rank == 1}"></i>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="lb-active-time" th:text="${row.activeTime}">0+ hours</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(top7Days)}">
+                            <td colspan="3" class="lb-empty">No data yet. Keep studying!</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- TOP 30 DAYS -->
+            <div class="leaderboard-card">
+                <div class="card-header">
+                    <h2>Top 30 users (last 30 days)</h2>
+                    <p th:if="${currentUserTime30d != null}" th:text="'Your active time: ' + ${currentUserTime30d}"></p>
+                </div>
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th class="lb-rank">#</th>
+                            <th>Username</th>
+                            <th class="lb-active-time">Active time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="row : ${top30Days}">
+                            <td class="lb-rank" th:text="${row.rank}">1</td>
+                            <td>
+                                <div class="lb-user-info">
+                                    <div class="lb-avatar"
+                                         th:text="${row.initial}"
+                                         th:style="'background-color: ' + ${row.avatarColor}">A</div>
+                                    <div>
+                                        <span class="lb-username" th:text="${row.username}">Username</span>
+                                        <i class="fas fa-trophy lb-trophy" th:if="${row.rank == 1}"></i>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="lb-active-time" th:text="${row.activeTime}">0+ hours</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(top30Days)}">
+                            <td colspan="3" class="lb-empty">No data yet. Keep studying!</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

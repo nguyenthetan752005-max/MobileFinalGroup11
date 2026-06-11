@@ -1,0 +1,40 @@
+@startuml Sequence_TrackProgress
+title Sequence Diagram - Theo dõi tiến độ (UC8)
+
+actor User as U
+participant "Progress Page" as V
+participant "UserProgressController" as PC
+participant "UserProgressService" as PS
+database "Database" as DB
+
+U -> V : Truy cập trang Tiến độ
+V -> PC : GET /api/progress/in-progress?userId=?
+PC -> PS : getInProgressLessons(userId)
+
+PS -> DB : SELECT DISTINCT l.id FROM user_progress up JOIN sentences s ON up.sentence_id = s.id JOIN lessons l ON s.lesson_id = l.id WHERE up.user_id = ?
+DB --> PS : List<Long> (lessonIds)
+
+loop Mỗi lessonId
+    PS -> DB : SELECT COUNT(*) FROM sentences WHERE lesson_id = ?
+    DB --> PS : totalSentences
+    
+    PS -> DB : SELECT COUNT(*) FROM user_progress WHERE user_id = ? AND lesson_id = ? AND status = 'COMPLETED'
+    DB --> PS : completedCount
+
+    PS -> DB : SELECT l, s, c FROM lessons l JOIN sections s ON l.section_id = s.id JOIN categories c ON s.category_id = c.id WHERE l.id = ?
+    DB --> PS : Lesson, Section, Category
+    
+    PS -> PS : Xây dựng InProgressLessonDTO
+end
+
+PS --> PC : List<InProgressLessonDTO>
+PC --> V : Render danh sách InProgressLessonDTO
+V --> U : Hiển thị danh sách tiến độ
+
+opt User chọn tiếp tục bài chưa hoàn thành
+    U -> V : Nhấn "Tiếp tục" trên bài đã chọn
+    V -> V : Redirect đến trang Lesson với thông tin điều hướng
+    V --> U : Mở bài học để tiếp tục
+end
+
+@enduml

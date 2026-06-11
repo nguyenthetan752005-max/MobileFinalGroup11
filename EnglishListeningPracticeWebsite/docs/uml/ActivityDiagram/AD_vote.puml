@@ -1,0 +1,33 @@
+@startuml Activity_Vote
+title Activity Diagram - Đánh giá bình luận (UC7)
+
+start
+
+:Xem danh sách Comment trong Sentence;
+
+if (User đã đăng nhập?) then (Chưa)
+  :Hiển thị thông báo\n"Đăng nhập để vote";
+  stop
+else (Rồi)
+endif
+
+:User nhấn Like hoặc Dislike\ntrên một Comment;
+
+:Truy vấn CommentVote\ntheo comment_id + user_id;
+
+if (Đã vote trước đó?) then (Chưa vote)
+  :Tạo CommentVote mới\n(is_like, comment_id, user_id);
+  :Lưu vào Database;
+  :Cập nhật số lượng vote trên UI;
+
+elseif (Đã vote cùng loại\n(ví dụ: đã Like, nhấn Like lại)) then
+  :Xóa CommentVote\n(bỏ vote);
+  :Cập nhật số lượng vote trên UI;
+
+else (Đã vote khác loại\n(ví dụ: đã Like, nhấn Dislike))
+  :Cập nhật is_like\n trong CommentVote;
+  :Cập nhật số lượng vote trên UI;
+endif
+
+stop
+@enduml

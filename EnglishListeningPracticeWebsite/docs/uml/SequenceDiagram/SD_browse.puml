@@ -1,0 +1,33 @@
+@startuml Sequence_Browse
+title Sequence Diagram - Duyệt danh mục (UC3)
+
+actor User as U
+participant "Browser" as V
+participant "CategoryController" as CC
+participant "CategoryService" as CS
+database "Database" as DB
+
+U -> V : Truy cập trang chủ
+V -> CC : GET /
+CC -> CS : getPublishedCategoriesByPracticeType(LISTENING)
+CS -> DB : SELECT * FROM categories WHERE is_deleted=false AND status='PUBLISHED'
+DB --> CS : List<Category>
+CS --> CC : List<Category>
+CC --> V : Hiển thị danh mục\n(imageUrl, levelRange, type, practiceType, totalLessons)
+V --> U : Trang chủ với danh mục
+
+U -> V : Chọn Category
+V -> CC : GET /category/{id}/sections
+CC -> CS : getSectionWithLessonsDTOs(categoryId, user, practiceType)
+CS -> DB : SELECT FROM sections WHERE category_id = ? AND is_deleted=false
+DB --> CS : List<Section>
+CS -> DB : SELECT FROM lessons WHERE section_id IN (...)
+DB --> CS : List<Lesson>
+CS -> DB : Lấy tiến độ học tập của user cho các lessons (tùy chọn)
+DB --> CS : UserProgress data
+CS -> CS : Map thành List<SectionWithLessonsDTO>
+CS --> CC : List<SectionWithLessonsDTO>
+CC --> V : Render sections.html (Accordion)
+V --> U : Hiển thị danh sách Section & Bài học bên trong cùng lúc
+
+@enduml

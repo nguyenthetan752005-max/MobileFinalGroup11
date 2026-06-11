@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<!-- FRAGMENT: NAVBAR RIÊNG CHO TRANG ADMIN (chỉ tên web + toggle sáng/tối) -->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav th:fragment="adminNavbar" class="navbar admin-navbar">
+    <div class="navbar-container">
+        <!-- Web name -->
+        <a href="/" class="navbar-brand">
+            <span class="brand-icon">🎧</span>
+            <span class="brand-text">EnglishListening</span>
+        </a>
+
+        <!-- Theme toggle only -->
+        <div class="nav-right">
+            <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme" type="button">
+                <img class="icon-sun" th:src="@{/images/mode/sun.png}" alt="Light Mode" width="20" height="20">
+                <img class="icon-moon" th:src="@{/images/mode/moon.png}" alt="Dark Mode" width="20" height="20" style="display: none;">
+            </button>
+        </div>
+    </div>
+</nav>
+</body>
+</html>
+

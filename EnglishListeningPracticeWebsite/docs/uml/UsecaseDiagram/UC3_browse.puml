@@ -1,0 +1,19 @@
+@startuml UC_Browse
+title Use Case Diagram - Duyệt danh mục & bài học (UC3)
+
+left to right direction
+
+actor Guest
+actor User
+User --|> Guest
+
+rectangle "UC3 - Browse Categories & Lessons" {
+  Guest --> (Xem trang chủ)
+  Guest --> (Xem danh mục Category)
+  Guest --> (Xem danh sách Section & Lesson)
+
+  (Xem trang chủ) ..> (Hiển thị Slideshow banner) : <<include>>
+  (Xem trang chủ) ..> (Tải danh mục Listening & Speaking) : <<include>>
+  (Xem danh sách Section & Lesson) ..> (Hiển thị tiến độ User) : <<include>>
+}
+@enduml

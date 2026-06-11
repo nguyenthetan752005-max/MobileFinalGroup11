@@ -1,0 +1,45 @@
+@startuml Activity_ManageUsers
+title Activity Diagram - Quản lý người dùng (UC12 - Admin)
+
+start
+
+:Admin truy cập Admin Dashboard;
+:Chọn tab Quản lý người dùng;
+:Hiển thị danh sách Users & Admins;
+
+if (Hành động?) then (Chỉnh sửa User)
+  :Chọn User cần chỉnh sửa;
+  :Cập nhật username, avatarUrl, isActive, role;
+  :Lưu thay đổi;
+  :Hiển thị thành công;
+
+elseif (Đổi mật khẩu User) then 
+  :Chọn User cần đổi mật khẩu;
+  :Nhập mật khẩu mới;
+  :Mã hóa BCrypt và lưu;
+  :Gửi email thông báo đến User;
+  :Hiển thị thành công;
+
+elseif (Khóa / Mở khóa tài khoản) then
+  :Chọn User;
+  :Toggle isActive = true/false;
+  :Lưu thay đổi;
+
+elseif (Soft Delete User) then
+  :Chọn User cần xóa;
+  :Đánh dấu isDeleted = true;
+  :User chuyển vào Thùng rác;
+
+elseif (Restore User) then
+  :Chọn User từ Thùng rác;
+  :Đặt isDeleted = false;
+  :User khôi phục về danh sách;
+
+else (Hard Delete User)
+  :Chọn User từ Thùng rác;
+  :Xóa vĩnh viễn User khỏi Database;
+  :Cascade xóa tất cả dữ liệu liên quan;
+endif
+
+stop
+@enduml

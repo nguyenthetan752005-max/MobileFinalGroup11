@@ -1,0 +1,68 @@
+@startuml Sequence_ManageUsers
+title Sequence Diagram - Quản lý người dùng (UC12 - Admin)
+
+actor Admin as A
+participant "Admin Dashboard" as V
+participant "AdminAuthController" as AC
+participant "AdminDashboardService" as ADS
+participant "UserService" as US
+participant "PasswordResetService" as PRS
+database "Database" as DB
+
+== Tải danh sách Users ==
+A -> V : Truy cập Admin Dashboard
+V -> AC : GET /admin/dashboard
+AC -> ADS : getDashboardData()
+ADS -> DB : SELECT * FROM users WHERE role='USER' AND is_deleted=false
+DB --> ADS : List<User> (regularUsers)
+ADS -> DB : SELECT * FROM users WHERE role='ADMIN'
+DB --> ADS : List<User> (adminUsers)
+ADS -> DB : SELECT * FROM users WHERE is_deleted=true
+DB --> ADS : List<User> (deletedUsers)
+ADS --> AC : AdminDashboardDTO
+AC --> V : Render dashboard
+V --> A : Hiển thị tab quản lý Users
+
+== Chỉnh sửa User ==
+A -> V : Chọn User → Nhấn Sửa
+A -> V : Cập nhật username, avatarUrl, isActive, role
+V -> AC : POST /admin/user/{id}/update
+AC -> US : adminUpdateBasicInfo(id, username, avatarUrl, isActive, role)
+US -> DB : UPDATE users SET ... WHERE id = ?
+DB --> US : OK
+US --> AC : OK
+AC --> V : Hiển thị thành công
+V --> A : Thông báo cập nhật thành công
+
+== Đổi mật khẩu User ==
+A -> V : Nhấn "Đổi mật khẩu" cho User
+V -> AC : POST /admin/user/{id}/change-password
+AC -> US : adminUpdatePassword(id, newPassword)
+US -> US : BCrypt.hashpw(newPassword)
+US -> DB : UPDATE users SET password = ? WHERE id = ?
+DB --> US : OK
+AC -> PRS : sendAdminPasswordChangeEmail(email, token)
+PRS --> AC : OK
+AC --> V : Thành công
+V --> A : Thông báo đã đổi mật khẩu
+
+== Soft Delete User ==
+A -> V : Nhấn Xóa User
+V -> AC : POST /admin/user/{id}/delete
+AC -> US : softDeleteUser(id)
+US -> DB : UPDATE users SET is_deleted = true WHERE id = ?
+DB --> US : OK
+US --> AC : OK
+AC --> V : User chuyển vào Thùng rác
+V --> A : Thông báo đã xóa
+
+== Restore User ==
+A -> V : Nhấn Khôi phục User từ Thùng rác
+V -> AC : POST /admin/user/{id}/restore
+AC -> US : restoreUser(id)
+US -> DB : UPDATE users SET is_deleted = false WHERE id = ?
+DB --> US : OK
+AC --> V : User khôi phục
+V --> A : Thông báo khôi phục thành công
+
+@enduml

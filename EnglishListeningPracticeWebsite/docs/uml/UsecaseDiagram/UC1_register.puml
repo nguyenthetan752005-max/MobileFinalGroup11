@@ -1,0 +1,15 @@
+@startuml UC_Register
+title Use Case Diagram - Đăng ký tài khoản (UC1)
+
+left to right direction
+
+actor Guest
+
+rectangle "UC1 - Register" {
+  Guest --> (Đăng ký tài khoản)
+  (Đăng ký tài khoản) ..> (Kiểm tra email trùng) : <<include>>
+  (Đăng ký tài khoản) ..> (Kiểm tra username trùng) : <<include>>
+  (Đăng ký tài khoản) ..> (Mã hóa mật khẩu BCrypt) : <<include>>
+  (Đăng ký tài khoản) <.. (Đăng ký bằng Google OAuth) : <<extend>>
+}
+@enduml

@@ -1,0 +1,120 @@
+@startuml
+title Object Diagram - System Overview Snapshot
+
+skinparam shadowing false
+skinparam objectAttributeIconSize 0
+
+object "user1 : User" as user1 {
+  id = 7
+  username = "studentA"
+  role = USER
+  provider = GOOGLE
+  totalActiveTime = 15400
+}
+
+object "admin1 : User" as admin1 {
+  id = 1
+  username = "admin"
+  role = ADMIN
+}
+
+object "category1 : Category" as category1 {
+  id = 1
+  name = "Daily Conversation"
+  practiceType = LISTENING
+}
+
+object "section1 : Section" as section1 {
+  id = 101
+  name = "Travel"
+}
+
+object "lesson1 : Lesson" as lesson1 {
+  id = 1001
+  title = "At The Airport"
+  totalSentences = 12
+}
+
+object "sentence1 : Sentence" as sentence1 {
+  id = 5001
+  orderIndex = 1
+  content = "Where is the check-in counter?"
+}
+
+object "progress1 : UserProgress" as progress1 {
+  id = 901
+  status = IN_PROGRESS
+}
+
+object "dictationResult : DictationResultDTO" as dictationResult {
+  isCorrect = false
+  matchedCount = 3
+}
+
+object "speakingCurrent : SpeakingResult" as speakingCurrent {
+  resultType = CURRENT
+  score = 82
+}
+
+object "speakingBest : SpeakingResult" as speakingBest {
+  resultType = BEST
+  score = 90
+}
+
+object "comment1 : Comment" as comment1 {
+  id = 3001
+  content = "This sentence is useful."
+  isHidden = false
+}
+
+object "vote1 : CommentVote" as vote1 {
+  id = 4001
+  isLike = true
+}
+
+object "resetToken1 : PasswordResetToken" as resetToken1 {
+  token = "550e8400-e29b-41d4-a716-446655440000"
+}
+
+object "dailyStat1 : DailyStudyStatistic" as dailyStat1 {
+  studyDate = "2026-04-03"
+  activeTimeSeconds = 900
+}
+
+object "leaderboardRow : Map" as leaderboardRow {
+  rank = 4
+  username = "studentA"
+  activeTime = "1h 10m"
+}
+
+object "categoryReq : AdminCategoryRequest" as categoryReq {
+  name = "Basic Speaking"
+  practiceType = SPEAKING
+}
+
+category1 -- section1 : contains
+section1 -- lesson1 : contains
+lesson1 -- sentence1 : contains
+
+user1 -- progress1
+progress1 -- sentence1
+dictationResult ..> sentence1 : checks
+
+user1 -- speakingCurrent
+user1 -- speakingBest
+sentence1 -- speakingCurrent
+sentence1 -- speakingBest
+
+user1 -- comment1
+sentence1 -- comment1
+comment1 -- vote1
+user1 -- vote1
+
+user1 -- resetToken1
+user1 -- dailyStat1
+user1 ..> leaderboardRow : summarized as
+
+admin1 ..> categoryReq : manages content
+admin1 ..> comment1 : moderates
+
+@enduml

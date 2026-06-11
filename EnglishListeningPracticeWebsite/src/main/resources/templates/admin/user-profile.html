@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <div th:replace="~{fragments/head :: head('User Profile Detail')}"></div>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+</head>
+<body th:attr="data-upload-endpoint=${isSelfAdmin} ? '/admin/profile/update-avatar' : ''">
+<div th:replace="~{fragments/navbar-admin :: adminNavbar}"></div>
+<link rel="stylesheet" th:href="@{/css/pages/admin-dashboard.css}">
+
+<main class="admin-main" style="max-width: 1200px; margin: 0 auto;">
+    <div th:if="${successMessage}" class="admin-panel" style="padding: 16px 24px; background: rgba(34, 197, 94, 0.12); color: #166534; border: 1px solid rgba(34, 197, 94, 0.2);">
+        <strong th:text="${successMessage}">Success</strong>
+    </div>
+    <div th:if="${errorMessage}" class="admin-panel" style="padding: 16px 24px; background: rgba(239, 68, 68, 0.12); color: #991b1b; border: 1px solid rgba(239, 68, 68, 0.2);">
+        <strong th:text="${errorMessage}">Error</strong>
+    </div>
+
+    <div class="admin-main-header">
+        <div>
+            <h1 th:text="${isSelfAdmin} ? 'Admin Profile' : 'Account Detail'">User Detail</h1>
+            <p th:text="${isSelfAdmin} ? 'Your administrator account information.' : 'Profile and learning progress overview.'">Profile and learning progress overview.</p>
+        </div>
+        <a class="admin-btn admin-btn-outline" th:href="@{/admin/dashboard(tab=${returnTab})}">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <div class="admin-stat-grid">
+        <div class="admin-stat-card"><div class="admin-stat-info"><h3>Account</h3><p th:text="${userDetail.username}">name</p></div></div>
+        <div class="admin-stat-card" th:if="${!isSelfAdmin and userDetail.role != null and userDetail.role.name() == 'USER'}"><div class="admin-stat-info"><h3>Top Score</h3><p th:text="${topScore}">0</p></div></div>
+        <div class="admin-stat-card" th:if="${!isSelfAdmin and userDetail.role != null and userDetail.role.name() == 'USER'}"><div class="admin-stat-info"><h3>Avg Score</h3><p th:text="${avgScore}">0.0</p></div></div>
+        <div class="admin-stat-card" th:if="${isSelfAdmin}"><div class="admin-stat-info"><h3>Role</h3><p th:text="${userDetail.role}">ADMIN</p></div></div>
+        <div class="admin-stat-card" th:if="${isSelfAdmin}"><div class="admin-stat-info"><h3>Provider</h3><p th:text="${userDetail.provider != null ? userDetail.provider : 'LOCAL'}">LOCAL</p></div></div>
+        <div class="admin-stat-card"><div class="admin-stat-info"><h3>Status</h3><p style="display:flex;align-items:center;gap:6px;"><span th:style="'width:8px;height:8px;border-radius:50%;background:' + (${userDetail.isOnline != null and userDetail.isOnline} ? '#22c55e' : '#94a3b8')"></span><span th:text="${userDetail.isOnline != null and userDetail.isOnline ? 'Online' : 'Offline'}">Offline</span></p></div></div>
+        <div class="admin-stat-card" th:if="${isSelfAdmin}"><div class="admin-stat-info"><h3>Created</h3><p th:text="${userDetail.createdAt != null ? #temporals.format(userDetail.createdAt, 'yyyy-MM-dd') : 'N/A'}">N/A</p></div></div>
+    </div>
+
+    <div class="admin-panel" style="padding: 24px;" th:if="${isSelfAdmin}">
+        <div class="admin-panel-header" style="padding: 0 0 16px 0; border: none;">
+            <h2>Avatar</h2>
+        </div>
+        <div style="display:flex; align-items:center; gap:24px; flex-wrap:wrap;">
+            <div th:if="${userDetail.avatarUrl != null}" style="cursor:pointer; position:relative;" onclick="triggerAvatarPicker()" title="Nhấn để thay đổi ảnh">
+                <img th:src="${userDetail.avatarUrl}" alt="Avatar" style="width:120px; height:120px; border-radius:50%; object-fit:cover; border:2px solid #16a34a;">
+            </div>
+            <div th:unless="${userDetail.avatarUrl != null}" style="width:120px; height:120px; border-radius:50%; background:#dbeafe; color:#1d4ed8; display:flex; align-items:center; justify-content:center; font-size:42px; font-weight:bold; cursor:pointer;"
+                 onclick="triggerAvatarPicker()" th:text="${#strings.substring(userDetail.username, 0, 1).toUpperCase()}">A</div>
+            <div>
+                <p style="margin:0 0 8px 0; color:var(--text-secondary);">Ảnh đại diện mới sẽ được upload lên ImageKit và thay thế ảnh cũ.</p>
+                <button type="button" class="admin-btn admin-btn-primary" onclick="triggerAvatarPicker()">
+                    <i class="fas fa-camera"></i> Change Avatar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-grid-2" th:if="${canEditUser}">
+        <div class="admin-panel" style="padding: 24px;">
+            <div class="admin-panel-header" style="padding: 0 0 16px 0; border: none;">
+                <h2>Basic Information</h2>
+            </div>
+            <form th:action="@{'/admin/users/' + ${userDetail.id} + '/profile/update'}" method="post">
+                <div class="admin-form-group">
+                    <label>Username</label>
+                    <input type="text" name="username" class="admin-form-control" th:value="${userDetail.username}" required>
+                </div>
+                <div class="admin-form-group">
+                    <label>Email</label>
+                    <input type="email" class="admin-form-control" th:value="${userDetail.email}" disabled>
+                    <span class="admin-form-help">Email chỉ được xem, không cho phép chỉnh sửa.</span>
+                </div>
+                <div class="admin-form-group">
+                    <label>Avatar URL</label>
+                    <input type="text" name="avatarUrl" class="admin-form-control" th:value="${userDetail.avatarUrl}">
+                </div>
+                <div class="admin-form-group">
+                    <label>Role</label>
+                    <select name="role" class="admin-form-control">
+                        <option th:each="role : ${roles}" th:value="${role}" th:text="${role}" th:selected="${role == userDetail.role}">USER</option>
+                    </select>
+                </div>
+                <div class="admin-form-group">
+                    <label>Status</label>
+                    <select name="isActive" class="admin-form-control">
+                        <option value="true" th:selected="${userDetail.isActive != null and userDetail.isActive}">Active</option>
+                        <option value="false" th:selected="${userDetail.isActive == null or !userDetail.isActive}">Inactive</option>
+                    </select>
+                </div>
+                <div class="admin-form-group">
+                    <label>Provider</label>
+                    <input type="text" class="admin-form-control" th:value="${userDetail.provider != null ? userDetail.provider : 'LOCAL'}" disabled>
+                </div>
+                <div class="admin-form-group">
+                    <label>Created At</label>
+                    <input type="text" class="admin-form-control" th:value="${userDetail.createdAt != null ? #temporals.format(userDetail.createdAt, 'yyyy-MM-dd HH:mm') : 'N/A'}" disabled>
+                </div>
+                <div class="admin-form-group">
+                    <label>Total Active Time</label>
+                    <input type="text" class="admin-form-control" th:value="${userDetail.totalActiveTime != null ? userDetail.totalActiveTime + ' min' : '0 min'}" disabled>
+                </div>
+                <button type="submit" class="admin-btn admin-btn-primary">
+                    <i class="fas fa-save"></i> Save User Info
+                </button>
+            </form>
+        </div>
+
+        <div class="admin-panel" style="padding: 24px;">
+            <div class="admin-panel-header" style="padding: 0 0 16px 0; border: none;">
+                <h2>Reset Password</h2>
+            </div>
+            <form th:action="@{'/admin/users/' + ${userDetail.id} + '/profile/password'}" method="post">
+                <div class="admin-form-group">
+                    <label>New Password</label>
+                    <input type="password" name="newPassword" class="admin-form-control" minlength="6" required>
+                </div>
+                <div class="admin-form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" name="confirmPassword" class="admin-form-control" minlength="6" required>
+                </div>
+                <span class="admin-form-help">Admin có thể đặt lại mật khẩu trực tiếp cho người dùng. Email sẽ không bị thay đổi.</span>
+                <div style="margin-top: 16px;">
+                    <button type="submit" class="admin-btn admin-btn-danger">
+                        <i class="fas fa-key"></i> Update Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="admin-panel" style="padding: 24px;" th:if="${canEditSelfAdmin}">
+        <div class="admin-panel-header" style="padding: 0 0 16px 0; border: none;">
+            <h2>Edit My Admin Information</h2>
+        </div>
+        <form th:action="@{/admin/profile/update}" method="post">
+            <div class="admin-grid-2">
+                <div class="admin-form-group">
+                    <label>Username</label>
+                    <input type="text" name="username" class="admin-form-control" th:value="${userDetail.username}" required>
+                </div>
+                <div class="admin-form-group">
+                    <label>Email</label>
+                    <input type="email" class="admin-form-control" th:value="${userDetail.email}" disabled>
+                    <span class="admin-form-help">Email không được phép chỉnh sửa.</span>
+                </div>
+                <div class="admin-form-group admin-field-span-2">
+                    <label>Avatar URL</label>
+                    <input type="text" name="avatarUrl" class="admin-form-control" th:value="${userDetail.avatarUrl}">
+                    <span class="admin-form-help">Bạn cũng có thể thay ảnh trực tiếp bằng nút Change Avatar ở phía trên.</span>
+                </div>
+            </div>
+            <button type="submit" class="admin-btn admin-btn-primary">
+                <i class="fas fa-save"></i> Save My Info
+            </button>
+        </form>
+    </div>
+
+    <div class="admin-panel" style="padding: 24px;" th:if="${isSelfAdmin}">
+        <div class="admin-panel-header" style="padding: 0 0 16px 0; border: none;">
+            <h2>Admin Password Security</h2>
+        </div>
+        <form th:action="@{/admin/profile/request-password-change}" method="post">
+            <p style="margin-top: 0; color: var(--text-secondary);">
+                Gửi link xác nhận đổi mật khẩu về email admin hiện tại. Sau khi đổi thành công, phiên đăng nhập sẽ bị đăng xuất.
+            </p>
+            <div class="admin-form-group">
+                <label>Email nhận link</label>
+                <input type="email" class="admin-form-control" th:value="${userDetail.email}" disabled>
+            </div>
+            <button type="submit" class="admin-btn admin-btn-danger">
+                <i class="fas fa-envelope"></i> Send Password Reset Link
+            </button>
+        </form>
+    </div>
+
+    <div class="admin-panel">
+        <div class="admin-panel-header"><h2>Full Account Information</h2></div>
+        <div class="admin-table-wrapper">
+            <table class="admin-table">
+                <tbody>
+                <tr><th style="width: 240px;">User ID</th><td th:text="${userDetail.id}">1</td></tr>
+                <tr><th>Username</th><td th:text="${userDetail.username}">username</td></tr>
+                <tr><th>Email</th><td th:text="${userDetail.email}">user@example.com</td></tr>
+                <tr><th>Role</th><td th:text="${userDetail.role}">USER</td></tr>
+                <tr><th>Avatar URL</th><td th:text="${userDetail.avatarUrl != null ? userDetail.avatarUrl : 'N/A'}">N/A</td></tr>
+                <tr><th>Provider</th><td th:text="${userDetail.provider != null ? userDetail.provider : 'LOCAL'}">LOCAL</td></tr>
+                <tr><th>Provider ID</th><td th:text="${userDetail.providerId != null ? userDetail.providerId : 'N/A'}">N/A</td></tr>
+                <tr><th>Total Active Time</th><td th:text="${userDetail.totalActiveTime != null ? userDetail.totalActiveTime : 0}">0</td></tr>
+                <tr><th>Active Time 7d</th><td th:text="${userDetail.activeTime7d != null ? userDetail.activeTime7d : 0}">0</td></tr>
+                <tr><th>Active Time 30d</th><td th:text="${userDetail.activeTime30d != null ? userDetail.activeTime30d : 0}">0</td></tr>
+                <tr><th>Deleted</th><td th:text="${userDetail.isDeleted != null and userDetail.isDeleted ? 'Yes' : 'No'}">No</td></tr>
+                <tr><th>Active</th><td th:text="${userDetail.isActive != null and userDetail.isActive ? 'Yes' : 'No'}">Yes</td></tr>
+                <tr><th>Created At</th><td th:text="${userDetail.createdAt != null ? #temporals.format(userDetail.createdAt, 'yyyy-MM-dd HH:mm:ss') : 'N/A'}">N/A</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="admin-panel" th:if="${!isSelfAdmin and userDetail.role != null and userDetail.role.name() == 'USER'}">
+        <div class="admin-panel-header"><h2>Progress Summary</h2></div>
+        <div style="padding: 16px 24px;">
+            <span class="admin-badge badge-active">Completed: <span th:text="${progressCompleted}">0</span></span>
+            <span class="admin-badge" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b;">In Progress: <span th:text="${progressInProgress}">0</span></span>
+            <span class="admin-badge badge-inactive">Skipped: <span th:text="${progressSkipped}">0</span></span>
+        </div>
+    </div>
+
+    <div class="admin-panel" th:if="${!isSelfAdmin and userDetail.role != null and userDetail.role.name() == 'USER'}">
+        <div class="admin-panel-header"><h2>Recent Learning Activity</h2></div>
+        <div class="admin-table-wrapper">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Category</th>
+                    <th>Section</th>
+                    <th>Lesson</th>
+                    <th>Sentence</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${recentProgress}">
+                    <td th:text="${p.lastAccessed != null ? #temporals.format(p.lastAccessed, 'yyyy-MM-dd HH:mm') : 'N/A'}">2026-01-01</td>
+                    <td th:text="${p.sentence != null and p.sentence.lesson != null and p.sentence.lesson.section != null and p.sentence.lesson.section.category != null ? p.sentence.lesson.section.category.name : 'N/A'}">Category</td>
+                    <td th:text="${p.sentence != null and p.sentence.lesson != null and p.sentence.lesson.section != null ? p.sentence.lesson.section.name : 'N/A'}">Section</td>
+                    <td th:text="${p.sentence != null and p.sentence.lesson != null ? p.sentence.lesson.title : 'N/A'}">Lesson</td>
+                    <td th:text="${p.sentence != null ? #strings.abbreviate(p.sentence.content, 50) : 'N/A'}">Sentence</td>
+                    <td th:text="${p.status}">COMPLETED</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(recentProgress)}" class="empty-row">
+                    <td colspan="6">No progress records</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+<input type="file" id="avatarInput" accept="image/*" style="display:none;" th:if="${isSelfAdmin}">
+<div id="cropperModal" th:if="${isSelfAdmin}"
+     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center;">
+    <div style="background:white; padding:20px; border-radius:8px; width:400px; max-width:90%; color:#333;">
+        <h3 style="margin-top:0; margin-bottom:20px;">Chỉnh sửa ảnh đại diện</h3>
+        <div style="width:100%; height:300px; background:#eee;">
+            <img id="imageToCrop" style="max-width:100%; display:block;">
+        </div>
+        <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+            <button type="button" onclick="closeCropper()" style="padding:8px 15px; border:none; background:#ccc; cursor:pointer; border-radius:4px; font-weight:bold;">Hủy</button>
+            <button type="button" onclick="uploadAvatar()" id="uploadBtn" style="padding:8px 15px; border:none; background:#2196F3; color:white; cursor:pointer; border-radius:4px; font-weight:bold;">Lưu</button>
+        </div>
+    </div>
+</div>
+<script th:if="${isSelfAdmin}" th:src="@{/js/page/user/profile.js}"></script>
+</body>
+</html>

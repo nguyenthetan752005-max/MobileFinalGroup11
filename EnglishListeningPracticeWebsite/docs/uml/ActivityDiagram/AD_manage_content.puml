@@ -1,0 +1,77 @@
+@startuml Activity_ManageContent
+title Activity Diagram - Quản lý nội dung (UC9 - Admin)
+
+start
+
+:Admin đăng nhập (role = ROLE_ADMIN);
+:Chuyển đến trang Admin Dashboard;
+
+if (Chọn chức năng quản lý?) then (Quản lý Category)
+  if (Thao tác?) then (Thêm mới)
+    :Nhập name, file ảnh, levelRange, type, practiceType;
+    :Upload file ảnh lên Cloudinary;
+    :Lưu Category mới;
+  elseif (Sửa) then
+    :Chọn Category cần sửa;
+    :Cập nhật thông tin;
+    :Lưu thay đổi;
+  else (Xóa)
+    :Chọn Category cần xóa;
+    :Đánh dấu isDeleted = true (Soft Delete);
+  endif
+
+elseif (Quản lý Section) then
+  if (Thao tác?) then (Thêm mới)
+    :Chọn Category cha;
+    :Nhập name, description;
+    :Lưu Section mới;
+  elseif (Sửa) then
+    :Cập nhật Section;
+  else (Xóa)
+    :Đánh dấu isDeleted = true (Soft Delete);
+  endif
+
+elseif (Quản lý Lesson) then
+  if (Thao tác?) then (Thêm mới)
+    :Chọn Section cha;
+    :Nhập title, level, youtubeVideoId, totalSentences;
+    :Lưu Lesson mới;
+  elseif (Sửa) then
+    :Cập nhật Lesson;
+  else (Xóa)
+    :Đánh dấu isDeleted = true (Soft Delete);
+  endif
+
+elseif (Quản lý Sentence) then
+  if (Thao tác?) then (Thêm mới)
+    :Chọn Lesson cha;
+    :Nhập content, startTime, endTime, orderIndex;
+    :Upload file audio lên Cloudinary;
+    :Lưu Sentence mới;
+  elseif (Sửa) then
+    :Cập nhật Sentence;
+  else (Xóa)
+    :Đánh dấu isDeleted = true (Soft Delete);
+  endif
+
+elseif (Quản lý Slideshow) then
+  if (Thao tác?) then (Thêm mới)
+    :Nhập title, linkUrl, position, displayOrder;
+    :Upload file ảnh lên Cloudinary;
+    :Lưu Slideshow mới;
+  elseif (Sửa) then
+    :Cập nhật Slideshow;
+  else (Xóa)
+    :Đánh dấu isDeleted = true (Soft Delete);
+  endif
+
+else (Cài đặt hệ thống)
+  :Cập nhật thông số site (tên, meta);
+  :Cấu hình tính năng;
+  :Lưu AppSettings;
+endif
+
+:Hiển thị kết quả thao tác;
+
+stop
+@enduml

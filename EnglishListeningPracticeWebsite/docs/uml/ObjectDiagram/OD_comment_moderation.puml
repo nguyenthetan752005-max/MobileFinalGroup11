@@ -1,0 +1,58 @@
+@startuml
+title Object Diagram - Comment And Moderation Snapshot
+
+skinparam shadowing false
+skinparam objectAttributeIconSize 0
+
+object "studentA : User" as studentA {
+  id = 7
+  username = "studentA"
+  role = USER
+}
+
+object "studentB : User" as studentB {
+  id = 8
+  username = "studentB"
+  role = USER
+}
+
+object "admin1 : User" as admin1 {
+  id = 1
+  username = "admin"
+  role = ADMIN
+}
+
+object "sentence5 : Sentence" as sentence5 {
+  id = 5005
+  content = "Could you help me find this address?"
+}
+
+object "commentRoot : Comment" as commentRoot {
+  id = 3001
+  content = "This sentence is difficult but useful."
+  isHidden = false
+  isDeleted = false
+}
+
+object "commentReply : Comment" as commentReply {
+  id = 3002
+  content = "Try slowing the audio to 0.75x."
+  isHidden = true
+  isDeleted = false
+}
+
+object "vote1 : CommentVote" as vote1 {
+  id = 4001
+  isLike = true
+}
+
+studentA -- commentRoot : writes
+studentB -- commentReply : writes
+commentRoot -- commentReply : parent of
+studentA -- vote1
+commentRoot -- vote1
+sentence5 -- commentRoot
+sentence5 -- commentReply
+admin1 ..> commentReply : toggles hidden status
+
+@enduml

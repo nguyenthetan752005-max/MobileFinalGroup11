@@ -1,0 +1,18 @@
+@startuml UC_TrackProgress
+title Use Case Diagram - Theo dõi tiến độ (UC8)
+
+left to right direction
+
+actor User
+
+rectangle "UC8 - Track Progress" {
+  User --> (Xem trang Tiến độ học tập)
+  User --> (Xem thống kê thời gian học)
+  User --> (Tiếp tục bài đang học)
+
+  (Xem trang Tiến độ học tập) ..> (Tải danh sách InProgressLessons) : <<include>>
+  (Xem thống kê thời gian học) ..> (Tính activeTime 7 ngày) : <<include>>
+  (Xem thống kê thời gian học) ..> (Tính activeTime 30 ngày) : <<include>>
+  (Tiếp tục bài đang học) ..> (Điều hướng đến câu chưa hoàn thành) : <<include>>
+}
+@enduml

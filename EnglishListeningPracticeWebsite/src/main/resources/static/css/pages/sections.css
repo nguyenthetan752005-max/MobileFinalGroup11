@@ -1,0 +1,23 @@
+/* [CSS PAGE] GIAO DIỆN TỔNG HỢP SECTION.
+ * - Hiển thị danh sách Bài học lồng trong Section khi người dùng ấn vào 1 Chủ đề 
+ */
+
+
+/* ===========================
+   Page Header
+   =========================== */
+.page-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap; /* responsive */
+    gap: 16px;
+}
+
+.page-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}

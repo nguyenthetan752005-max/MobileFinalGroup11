@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<!-- FRAGMENT CẮT RỜI: THANH ĐIỀU HƯỚNG (NAVBAR) -->
+<!-- Khu vực Logo, Tên Web, thanh Menu nằm trên cùng màn hình. Nhúng vào mọi trang. -->
+
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav th:fragment="navbar" class="navbar">
+    <div class="navbar-container">
+        <!-- Logo -->
+        <a href="/" class="navbar-brand">
+            <span class="brand-icon">🎧</span>
+            <span class="brand-text" th:text="${appSiteName != null ? appSiteName : 'EnglishListening'}">EnglishListening</span>
+        </a>
+
+        <!-- Nav Links (Desktop) -->
+        <ul class="nav-links">
+            <li><a href="/exercises" class="nav-link">Listening exercises</a></li>
+            <li><a href="/speaking-exercises" class="nav-link">Speaking exercises</a></li>
+            <li><a href="/top-users" class="nav-link">Top users</a></li>
+        </ul>
+
+        <!-- Right Section -->
+        <div class="nav-right">
+            <!-- In-progress Dropdown for logged-in users -->
+            <th:block th:unless="${session.loggedInUser == null}">
+                <div class="inprogress-dropdown">
+                    <button class="nav-link inprogress-dropdown-btn" id="inprogressBtn">
+                        <span>In-progress</span>
+                        <span class="inprogress-badge" id="inprogressCount">0</span>
+                        <span style="font-size: 10px;">▼</span>
+                    </button>
+                    <div class="inprogress-dropdown-content" id="inprogressDropdown">
+                        <div class="inprogress-loading">Loading...</div>
+                    </div>
+                </div>
+            </th:block>
+            
+            <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">
+                <img class="icon-sun" th:src="@{/images/mode/sun.png}" alt="Light Mode" width="20" height="20">
+                <img class="icon-moon" th:src="@{/images/mode/moon.png}" alt="Dark Mode" width="20" height="20" style="display: none;">
+            </button>
+            
+            <th:block th:if="${session.loggedInUser == null}">
+                <a href="/login" class="nav-link btn-login">Login</a>
+                <a th:if="${registrationEnabled}" href="/register" class="nav-link">Register</a>
+            </th:block>
+            <th:block th:unless="${session.loggedInUser == null}">
+                <div class="user-dropdown">
+                    <button class="nav-link user-dropdown-btn" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; font-family: inherit; font-size: inherit; color: inherit;">
+                        <span th:if="${session.loggedInUser.avatarUrl == null}" class="avatar-sm" th:text="${#strings.substring(session.loggedInUser.username, 0, 1)}">U</span>
+                        <img th:unless="${session.loggedInUser.avatarUrl == null}" th:src="${session.loggedInUser.avatarUrl}" class="avatar-sm" alt="Avatar">
+                        <span th:text="${session.loggedInUser.username}"></span>
+                        <span style="font-size: 10px;">▼</span>
+                    </button>
+                    <div class="dropdown-content">
+                        <a href="/profile">My Profile</a>
+                        <a href="/my-comments">My Comments</a>
+                        <a href="/logout" style="color: #f44336;">Logout</a>
+                    </div>
+                </div>
+
+                <style>
+                    .user-dropdown { position: relative; display: inline-block; }
+                    .user-dropdown-btn { outline: none; }
+                    .user-dropdown-btn .avatar-sm {
+                        background-color: #4CAF50; color: white; width: 28px; height: 28px;
+                        border-radius: 50%; display: inline-flex; align-items: center;
+                        justify-content: center; font-size: 14px; font-weight: bold; object-fit: cover;
+                    }
+                    .dropdown-content {
+                        display: none; position: absolute; right: 0; top: 100%;
+                        background-color: var(--card-bg, #ffffff); min-width: 160px;
+                        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 1000;
+                        border-radius: 8px; overflow: hidden;
+                    }
+                    .user-dropdown:hover .dropdown-content { display: block; }
+                    .dropdown-content a {
+                        color: var(--text-color, #333333); padding: 12px 16px;
+                        text-decoration: none; display: block;
+                    }
+                    .dropdown-content a:hover { background-color: var(--hover-color, #f1f1f1); }
+                    
+                    [data-theme="dark"] .dropdown-content { background-color: #383838; }
+                    [data-theme="dark"] .dropdown-content a { color: #ffffff; }
+                    [data-theme="dark"] .dropdown-content a:hover { background-color: #555555; }
+
+                    /* In-progress Dropdown Styles */
+                    .inprogress-dropdown { position: relative; display: inline-block; }
+                    .inprogress-dropdown-btn { 
+                        background: none; border: none; cursor: pointer; 
+                        display: flex; align-items: center; gap: 6px;
+                        font-family: inherit; font-size: inherit; color: inherit;
+                        outline: none;
+                    }
+                    .inprogress-badge {
+                        background: #ff9800;
+                        color: white;
+                        font-size: 10px;
+                        padding: 2px 6px;
+                        border-radius: 10px;
+                        font-weight: 600;
+                        min-width: 18px;
+                        text-align: center;
+                    }
+                    .inprogress-dropdown-content {
+                        display: none;
+                        position: absolute;
+                        left: 0;
+                        top: 100%;
+                        background-color: var(--card-bg, #ffffff);
+                        min-width: 320px;
+                        max-width: 400px;
+                        max-height: 400px;
+                        overflow-y: auto;
+                        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+                        z-index: 1000;
+                        border-radius: 8px;
+                        padding: 8px 0;
+                    }
+                    .inprogress-dropdown.show .inprogress-dropdown-content { display: block; }
+                    .inprogress-item {
+                        display: block;
+                        padding: 12px 16px;
+                        text-decoration: none;
+                        color: var(--text-color, #333);
+                        border-bottom: 1px solid var(--border-color, #eee);
+                        transition: background 0.2s;
+                    }
+                    .inprogress-item:hover { background-color: var(--hover-color, #f5f5f5); }
+                    .inprogress-item:last-child { border-bottom: none; }
+                    .inprogress-lesson-title {
+                        font-weight: 500;
+                        font-size: 14px;
+                        margin-bottom: 6px;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+                    .inprogress-lesson-meta {
+                        font-size: 12px;
+                        color: var(--text-secondary, #666);
+                        margin-bottom: 6px;
+                    }
+                    .inprogress-bar-container {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+                    .inprogress-bar {
+                        flex: 1;
+                        height: 6px;
+                        background: #e0e0e0;
+                        border-radius: 3px;
+                        overflow: hidden;
+                    }
+                    .inprogress-bar-fill {
+                        height: 100%;
+                        background: linear-gradient(90deg, #4caf50, #8bc34a);
+                        border-radius: 3px;
+                        transition: width 0.3s;
+                    }
+                    .inprogress-percent {
+                        font-size: 11px;
+                        font-weight: 600;
+                        color: #4caf50;
+                        min-width: 30px;
+                        text-align: right;
+                    }
+                    .inprogress-empty {
+                        padding: 20px;
+                        text-align: center;
+                        color: var(--text-secondary, #666);
+                        font-size: 14px;
+                    }
+                    .inprogress-loading {
+                        padding: 20px;
+                        text-align: center;
+                        color: var(--text-secondary, #666);
+                    }
+                    [data-theme="dark"] .inprogress-dropdown-content { background-color: #383838; }
+                    [data-theme="dark"] .inprogress-item { color: #ffffff; border-color: #555; }
+                    [data-theme="dark"] .inprogress-item:hover { background-color: #555555; }
+                    [data-theme="dark"] .inprogress-bar { background: #555; }
+                </style>
+            </th:block>
+        </div>
+
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="/exercises" class="mobile-link">Listening exercises</a>
+        <a href="/speaking-exercises" class="mobile-link">Speaking exercises</a>
+        <a href="/top-users" class="mobile-link">Top users</a>
+        
+        <div class="mobile-auth" th:if="${session.loggedInUser == null}">
+            <a href="/login" class="mobile-link">Login</a>
+            <a th:if="${registrationEnabled}" href="/register" class="mobile-link">Register</a>
+        </div>
+        <div class="mobile-auth" th:unless="${session.loggedInUser == null}">
+            <a href="/profile" class="mobile-link">My Profile</a>
+            <a href="/my-comments" class="mobile-link">My Comments</a>
+            <a href="/logout" class="mobile-link" style="color: #f44336;">Logout</a>
+        </div>
+    </div>
+
+    <!-- In-Progress Dropdown Script -->
+    <script th:if="${session.loggedInUser != null}" th:inline="javascript">
+        window.CURRENT_USER_ID = /*[[${session.loggedInUser.id}]]*/ null;
+    </script>
+    <script th:if="${session.loggedInUser != null}" src="/js/inprogress-dropdown.js" defer></script>
+</nav>
+</body>
+</html>

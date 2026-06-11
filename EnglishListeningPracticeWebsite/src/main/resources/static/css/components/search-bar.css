@@ -1,0 +1,51 @@
+/* [CSS COMPONENT] TRANG TRÍ THANH TÌM KIẾM.
+ * - Khung text nhập từ khóa và Dropdown chọn Level mức độ khó của bài học 
+ */
+
+
+/* ===========================
+   Search & Filter
+   =========================== */
+.search-filter-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.search-input {
+    flex: 1;
+    max-width: 400px;
+    padding: 10px 14px;
+    border: 1px solid #dcdcdc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #1a73e8;
+}
+
+.level-select {
+    padding: 10px 32px 10px 14px;
+    border: 1px solid #dcdcdc;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: white;
+    cursor: pointer;
+}
+
+.search-btn {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.search-btn:hover {
+    background-color: #5a6268;
+}

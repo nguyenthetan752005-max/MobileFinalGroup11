@@ -1,0 +1,246 @@
+@startuml Class_Diagram_Learning
+title Class Diagram - Learning & Content Module
+
+skinparam classAttributeIconSize 0
+
+' ==========================================
+'   CONTROLLER LAYER
+' ==========================================
+package "Controller" {
+    class HomeController {
+        + home(session, model): String
+    }
+    class CategoryController {
+        + showCategoryList(session, model): String
+        + showSections(categoryId, session, model): String
+    }
+    class LessonController {
+        + showLesson(lessonId, session, model): String
+    }
+    class SpeakingExerciseController {
+        + showSpeakingLesson(lessonId, session, model): String
+    }
+}
+
+package "REST API" {
+    class DictationApiController {
+        + checkAnswer(request): ResponseEntity<DictationResultDTO>
+        + skipSentence(request): ResponseEntity<DictationResultDTO>
+    }
+    class SpeakingApiController {
+        + evaluateSpeaking(audio, ref, userId, sentenceId): ResponseEntity<SpeakingResultDTO>
+        + getSavedResults(userId, sentenceId): ResponseEntity<SpeakingResultDTO>
+    }
+}
+
+' ==========================================
+'   SERVICE LAYER
+' ==========================================
+package "Service" {
+    interface CategoryService <<interface>> {
+        + getAllCategories(): List<Category>
+        + getPublishedCategories(): List<Category>
+        + getPublishedCategoriesByPracticeType(type): List<Category>
+        + getCategoryById(id): Optional<Category>
+        + getSectionWithLessonsDTOs(catId, user, type): List<SectionWithLessonsDTO>
+        + createCategory(request): Category
+        + updateCategory(id, request): Category
+        + deleteCategory(id): void
+        + restoreCategory(id): void
+    }
+    interface SectionService <<interface>> {
+        + getSectionsByCategoryId(catId): List<Section>
+        + getPublishedSectionsByCategoryId(catId): List<Section>
+        + createSection(request): Section
+        + updateSection(id, request): Section
+        + deleteSection(id): void
+    }
+    interface LessonService <<interface>> {
+        + getLessonsBySectionId(secId): List<Lesson>
+        + getPublishedLessonById(id): Optional<Lesson>
+        + getLessonNavigation(lesson, type): LessonNavigationDTO
+        + createLesson(request): Lesson
+        + updateLesson(id, request): Lesson
+        + deleteLesson(id): void
+    }
+    interface SentenceService <<interface>> {
+        + getSentencesByLessonId(lessonId): List<Sentence>
+        + getPublishedSentencesByLessonId(lessonId): List<Sentence>
+        + getProperNounHints(lessonId): Map<Long, List<String>>
+        + createSentence(request): Sentence
+        + updateSentence(id, request): Sentence
+        + softDeleteSentence(id): void
+    }
+    interface DictationService <<interface>> {
+        + checkAnswer(sentenceId, userInput): DictationResultDTO
+        + skipSentence(sentenceId): DictationResultDTO
+    }
+    interface HintService <<interface>> {
+        + extractProperNouns(content): List<String>
+        + getHintsMap(sentences): Map<Long, List<String>>
+    }
+    interface SpeakingService <<interface>> {
+        + evaluateSpeaking(audio, refText, userId, sentenceId): SpeakingResultDTO
+        + getSavedResults(userId, sentenceId): SpeakingResultDTO
+    }
+    interface WitAIAudioService <<interface>> {
+        + transcribeAudio(audio): String
+    }
+    interface AiScoringService <<interface>> {
+        + scoreSpeaking(reference, recognized): SpeakingResult
+    }
+    class CloudinaryService {
+        + uploadImage(file): Map<String, String>
+        + uploadAudio(bytes, publicId): Map<String, String>
+        + deleteByPublicId(publicId): void
+    }
+}
+
+' ==========================================
+'   DTO LAYER
+' ==========================================
+package "DTO" {
+    class SectionWithLessonsDTO {
+        - section : SectionDTO
+        - lessons : List<LessonDTO>
+        - status : UserProgressStatus
+    }
+    class DictationResultDTO {
+        - words : List<WordResult>
+        - matchedCount : int
+        - totalWords : int
+        - isCorrect : boolean
+        - fullAnswer : String
+    }
+    class SpeakingResultDTO {
+        - score : Integer
+        - transcribedText : String
+        - feedback : String
+        - audioUrl : String
+        - bestResult : BestResult
+        - referenceText : String
+    }
+    class LessonNavigationDTO {
+        - prevLessonId : Long
+        - nextLessonId : Long
+    }
+    class InProgressLessonDTO {
+        - lessonId : Long
+        - lessonTitle : String
+        - categoryName : String
+        - sectionName : String
+        - practiceType : String
+        - totalSentences : int
+        - completedSentences : int
+        - progressPercent : int
+    }
+}
+
+' ==========================================
+'   REPOSITORY LAYER
+' ==========================================
+package "Repository" {
+    interface CategoryRepository <<Spring Data JPA>>
+    interface SectionRepository <<Spring Data JPA>>
+    interface LessonRepository <<Spring Data JPA>>
+    interface SentenceRepository <<Spring Data JPA>>
+    interface SpeakingResultRepository <<Spring Data JPA>>
+}
+
+' ==========================================
+'   ENTITY LAYER
+' ==========================================
+package "Entity" {
+    class Category {
+        - id : Long
+        - name : String
+        - type : LessonType
+        - practiceType : PracticeType
+        - status : ContentStatus
+    }
+    class Section {
+        - id : Long
+        - name : String
+        - status : ContentStatus
+    }
+    class Lesson {
+        - id : Long
+        - title : String
+        - level : String
+        - youtubeVideoId : String
+    }
+    class Sentence {
+        - id : Long
+        - content : String
+        - audioUrl : String
+        - startTime : Double
+        - endTime : Double
+    }
+    class SpeakingResult {
+        - id : Long
+        - score : Integer
+        - recognizedText : String
+        - resultType : SpeakingResultType
+    }
+    enum LessonType {
+        AUDIO
+        YOUTUBE
+    }
+    enum PracticeType {
+        LISTENING
+        SPEAKING
+    }
+    enum SpeakingResultType {
+        CURRENT
+        BEST
+    }
+}
+
+' ==========================================
+'   DEPENDENCIES
+' ==========================================
+HomeController --> CategoryService
+HomeController --> SlideshowService
+CategoryController --> CategoryService
+LessonController --> LessonService
+LessonController --> SentenceService
+LessonController --> HintService
+SpeakingExerciseController --> LessonService
+SpeakingExerciseController --> SentenceService
+SpeakingExerciseController --> SpeakingService
+
+DictationApiController --> DictationService
+SpeakingApiController --> SpeakingService
+
+SpeakingService --> WitAIAudioService
+SpeakingService --> AiScoringService
+SpeakingService --> CloudinaryService
+DictationService --> SentenceService
+
+CategoryService --> CategoryRepository
+CategoryService --> SectionService
+CategoryService --> LessonService
+SectionService --> SectionRepository
+LessonService --> LessonRepository
+SentenceService --> SentenceRepository
+SentenceService --> HintService
+SpeakingService --> SpeakingResultRepository
+
+CategoryRepository ..> Category
+SectionRepository ..> Section
+LessonRepository ..> Lesson
+SentenceRepository ..> Sentence
+SpeakingResultRepository ..> SpeakingResult
+
+Category "1" --o "many" Section
+Section "1" --o "many" Lesson
+Lesson "1" --o "many" Sentence
+Sentence "1" --o "many" SpeakingResult
+
+Category *-- LessonType
+Category *-- PracticeType
+SpeakingResult *-- SpeakingResultType
+
+interface SlideshowService <<interface>>
+
+@enduml

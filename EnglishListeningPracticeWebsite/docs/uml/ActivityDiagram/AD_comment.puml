@@ -1,0 +1,46 @@
+@startuml Activity_Comment
+title Activity Diagram - Bình luận(UC6)
+
+start
+
+:Truy cập trang Lesson;
+:Chọn một Sentence để bình luận;
+:Hệ thống tải danh sách Comment\ntheo sentence_id (JOIN users);
+:Hiển thị comments theo dạng thread\n(phân cấp bởi parent_id);
+
+if (User đã đăng nhập?) then (Chưa)
+  :Hiển thị thông báo\n"Đăng nhập để bình luận";
+  stop
+else (Rồi)
+endif
+
+if (Hành động?) then (Viết comment mới)
+  :Nhập nội dung comment;
+
+  if (Validate nội dung?) then (Rỗng)
+    :Hiển thị lỗi "Nội dung không được trống";
+    stop
+  else (Hợp lệ)
+  endif
+
+  :Tạo Comment\n(content, sentence_id, user_id,\nparent_id = NULL, created_at);
+  :Lưu Comment vào Database;
+  :Hiển thị comment mới trên trang;
+
+else (Reply comment)
+  :Chọn comment muốn reply;
+  :Nhập nội dung reply;
+
+  if (Validate nội dung?) then (Rỗng)
+    :Hiển thị lỗi;
+    stop
+  else (Hợp lệ)
+  endif
+
+  :Tạo Comment\n(content, sentence_id, user_id,\nparent_id = ID comment gốc);
+  :Lưu Comment vào Database;
+  :Hiển thị reply dưới comment gốc;
+endif
+
+stop
+@enduml

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<!-- GIAO DIỆN PLACEHOLDER CHO BÀI TẬP SPEAKING -->
+<!-- Trang tạm thời để trống, sẽ thiết kế sau -->
+
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head(${lesson.title})}"></head>
+
+<body style="display: flex; flex-direction: column; min-height: 100vh;">
+
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="container" style="flex: 1; padding-top: 30px; padding-bottom: 100px;">
+        <!-- Breadcrumbs -->
+        <div class="breadcrumb" style="margin-bottom: 20px; font-size: 0.95rem; color: var(--text-secondary);">
+            <a th:href="@{/speaking-exercises}" style="color: var(--primary); text-decoration: none;">Speaking exercises</a>
+            <span style="margin: 0 8px;">/</span>
+            <a th:href="@{'/speaking/category/' + ${category.id} + '/sections'}" th:text="${category.name}" style="color: var(--primary); text-decoration: none;">Category Name</a>
+            <span style="margin: 0 8px;">/</span>
+            <span th:text="${lesson.title}" style="color: var(--text-primary);">Lesson Title</span>
+        </div>
+
+        <!-- Lesson Header -->
+        <div class="lesson-header" style="margin-bottom: 30px;">
+            <h1 style="font-size: 1.6rem; font-weight: 700; color: var(--text-primary);">
+                <span th:text="${lesson.title}">Lesson Title</span>
+                <span class="lesson-badge" th:text="'Vocab level: ' + ${lesson.level}" style="font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; background: var(--primary); color: #fff; margin-left: 10px; font-weight: 500;">Vocab level: A1</span>
+            </h1>
+        </div>
+
+        <!-- Placeholder Card -->
+        <div class="speaking-placeholder-card">
+            <div class="speaking-placeholder-icon">🎤</div>
+            <h2 class="speaking-placeholder-title">Speaking exercise</h2>
+            <p class="speaking-placeholder-text">This speaking exercise is coming soon! We're working on an interactive speaking practice experience for this lesson.</p>
+            <a th:href="@{'/speaking/category/' + ${category.id} + '/sections'}" class="speaking-placeholder-btn">← Back to lessons</a>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+
+</html>

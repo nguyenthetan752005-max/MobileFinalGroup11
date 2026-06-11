@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<!-- GIAO DIỆN LỚN NHẤT CỦA PROJECT: PHÒNG LUYỆN NGHE CHÉP CHÍNH TẢ -->
+<!-- Hỗ trợ cả AUDIO và VIDEO (YouTube) lessons -->
+
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head(${lesson.title})}"></head>
+
+<body style="display: flex; flex-direction: column; min-height: 100vh;">
+
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="container" style="flex: 1; padding-top: 30px; padding-bottom: 100px;">
+        <!-- Breadcrumbs -->
+        <div class="breadcrumb">
+            <a th:href="@{/exercises}">All topics</a>
+            <span class="separator">/</span>
+            <a th:href="@{'/category/' + ${category.id} + '/sections'}" th:text="${category.name}">Category Name</a>
+            <span class="separator">/</span>
+            <span class="current" th:text="${lesson.title}">Lesson Title</span>
+        </div>
+
+        <!-- Lesson Header -->
+        <div class="lesson-header">
+            <h1 class="lesson-title">
+                <i class="far fa-star header-icon"></i>
+                <span th:text="${lesson.title}">1. First snowfall</span>
+                <span class="lesson-badge" th:text="'Vocab level: ' + ${lesson.level}">Vocab level: A1</span>
+            </h1>
+        </div>
+
+        <!-- Tabs Container -->
+        <div class="tabs-wrapper">
+            <button class="tab-btn active" data-tab="dictation-tab">Dictation</button>
+            <button class="tab-btn" data-tab="transcript-tab">Full transcript</button>
+        </div>
+
+        <!-- Tab Contents Wrapper -->
+        <div class="tab-content-container">
+
+            <!-- ======================== -->
+            <!--     DICTATION TAB        -->
+            <!-- ======================== -->
+            <div id="dictation-tab" class="tab-pane active">
+
+                <!-- Sử dụng layout chung, truyền vào isSpeakingMode=false -->
+                <div th:replace="~{fragments/lesson/player-ui :: player-layout (isSpeakingMode=false)}"></div>
+
+                <!-- Bình luận -->
+                <div th:replace="~{fragments/comments-section :: comments}"></div>
+            </div>
+
+            <!-- ======================== -->
+            <!--   FULL TRANSCRIPT TAB    -->
+            <!-- ======================== -->
+            <div id="transcript-tab" class="tab-pane">
+                <!-- Toolbar -->
+                <div class="transcript-toolbar">
+                    <label class="repeat-toggle">
+                        <input type="checkbox" id="repeatCheckbox"> Repeat
+                    </label>
+                </div>
+
+                <!-- Two-Column Layout -->
+                <div class="transcript-split">
+                    <!-- Left Panel -->
+                    <div class="transcript-left-panel">
+
+                        <!-- VIDEO: YouTube player container -->
+                        <div th:if="${lesson.section != null and lesson.section.category != null and lesson.section.category.type != null and lesson.section.category.type.name() == 'VIDEO'}"
+                            class="video-player-wrapper transcript-video-wrapper" id="transcriptVideoWrapper">
+                            <!-- Player sẽ được move vào đây bằng JS khi chuyển tab -->
+                        </div>
+
+                        <!-- AUDIO: Progress Bar only (No Play button as requested) -->
+                        <div th:if="${lesson.section == null or lesson.section.category == null or lesson.section.category.type == null or lesson.section.category.type.name() == 'AUDIO'}"
+                            class="player-bar transcript-player-bar">
+                            <span class="time-display" id="transcriptTimeDisplay">0:00 / 0:00</span>
+                            <div class="progress-bar-wrapper" id="transcriptProgressWrapper">
+                                <div class="progress-fill" id="transcriptProgressFill"></div>
+                            </div>
+                            <button class="volume-btn" id="transcriptVolumeBtn"><i
+                                    class="fas fa-volume-up"></i></button>
+                        </div>
+
+                        <!-- Current sentence text display -->
+                        <div class="sentence-display" id="sentenceDisplay">
+                            <p class="sentence-text" id="sentenceText">Click a sentence to see it here.</p>
+                        </div>
+
+                        <!-- Navigation -->
+                        <div class="transcript-nav">
+                            <button class="nav-arrow" id="transcriptPrevBtn">←</button>
+                            <span><span id="transcriptSentenceNum">1</span> / <span
+                                    th:text="${lesson.totalSentences}">21</span></span>
+                            <button class="nav-arrow" id="transcriptNextBtn">→</button>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel: Sentence List -->
+                    <div class="transcript-right-panel">
+                        <div class="transcript-list" id="transcriptList">
+                            <div class="transcript-item" th:each="sentence, iterStat : ${sentences}"
+                                th:data-index="${iterStat.index}" th:data-audio="${sentenceAudioUrls[sentence.id]}"
+                                th:data-start="${sentence.startTime}" th:data-end="${sentence.endTime}">
+                                <button class="play-small-btn">
+                                    <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                                        <polygon points="5,3 19,12 5,21"></polygon>
+                                    </svg>
+                                </button>
+                                <div class="transcript-text" th:text="${sentence.content}">
+                                    Sentence content here.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="transcript-footer">
+                    <label class="auto-scroll-toggle">
+                        <input type="checkbox" id="autoScrollCheckbox" checked> Auto scroll
+                    </label>
+                    <div class="keyboard-shortcuts">
+                        Press "Space" to Play/Pause<br>
+                        Press ← and → to move between sentences.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        </div>
+
+    </main>
+
+    <!-- LESSON COMPLETION SCREEN OVERLAY -->
+    <div th:replace="~{fragments/lesson/completion-screen :: completionScreen}"></div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <!-- Pass sentence data and lesson type from Thymeleaf to JavaScript -->
+    <script th:inline="javascript">
+        const SENTENCES = /*[[${sentences}]]*/[];
+        const SENTENCE_AUDIO_URLS = /*[[${sentenceAudioUrls}]]*/ {};
+        const HINTS_MAP = /*[[${hintsMap}]]*/{};
+        const LESSON_TYPE = /*[[${lesson.section != null and lesson.section.category != null and lesson.section.category.type != null ? lesson.section.category.type.name() : 'AUDIO'}]]*/ 'AUDIO';
+        const YOUTUBE_VIDEO_ID = /*[[${lesson.youtubeVideoId}]]*/ '';
+        const LESSON_ID = /*[[${lesson.id}]]*/ 0;
+
+        // Gộp Proper Nouns vào SENTENCES vì trường @Transient không tự serialize
+        if (SENTENCES && HINTS_MAP) {
+            SENTENCES.forEach(s => {
+                if (HINTS_MAP[s.id]) {
+                    s.properNouns = HINTS_MAP[s.id];
+                }
+            });
+        }
+
+        // --- LESSON NAVIGATION DATA ---
+        const NEXT_LESSON_ID = /*[[${nextLesson != null ? nextLesson.id : null}]]*/ null;
+        const NEXT_LESSON_TITLE = /*[[${nextLesson != null ? nextLesson.title : null}]]*/ null;
+        const IS_LAST_LESSON_IN_SECTION = /*[[${isLastLessonInSection}]]*/ false;
+        const SECTION_ID = /*[[${section != null ? section.id : null}]]*/ null;
+        const INITIAL_SENTENCE_INDEX = /*[[${initialSentenceIndex}]]*/ 0;
+    </script>
+    <script th:inline="javascript">
+        window.CURRENT_USER_ID = /*[[${session.loggedInUser != null ? session.loggedInUser.id : null}]]*/ null;
+        window.USER_PROGRESS_MAP = /*[[${userProgressMap}]]*/ {};
+    </script>
+    <script src="/js/page/lesson-detail/state.js?v=9.0"></script>
+    <script src="/js/page/lesson-detail/lesson-common-ui.js?v=9.0"></script>
+    <script src="/js/page/lesson-detail/tabs.js?v=9.0"></script>
+    <script src="/js/page/lesson-detail/player-controls.js?v=9.0"></script>
+    <script src="/js/page/lesson-detail/comments.js?v=9.0"></script>
+    <script src="/js/page/lesson-detail/dictation-ui.js?v=9.0"></script>
+    <script src="/js/page/lesson-detail/transcript-ui.js?v=9.0"></script>
+    <script src="/js/page/lesson-detail/keyboard.js?v=9.0"></script>
+    <!-- YouTube IFrame API + Video Engine -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="/js/page/lesson-detail/video-engine.js?v=9.0"></script>
+    <script src="/js/page/lesson-detail/video-layout-ui.js?v=9.0"></script>
+</body>
+
+</html>

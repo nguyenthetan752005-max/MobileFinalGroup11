@@ -1,0 +1,42 @@
+/* [CSS COMPONENT] TRANG TRÍ HIỆU ỨNG ĐÓNG/MỞ.
+ * - Định dạng cho danh sách Sections (ẩn/hiện bài học khi click)
+ * - Hình ảnh mũi tên xoay ngang/xuống mượt mà 
+ */
+
+
+/* ===========================
+   Sections & Lessons
+   =========================== */
+.section-group { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 24px; overflow: hidden; }
+.section-header { background: var(--bg-section); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; transition: background 0.2s; border-bottom: 1px solid var(--border-color); }
+.section-header:hover { background: var(--border-color); }
+.section-title { margin: 0; font-size: 1.15rem; font-weight: 600; color: var(--text-primary); }
+
+.lesson-count {
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-left: 6px;
+}
+.section-desc { color: var(--text-secondary); font-size: 0.95rem; }
+.toggle-icon {
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.section-header .toggle-icon svg {
+    transition: transform 0.3s ease;
+    transform: rotate(180deg);
+}
+
+.section-header.collapsed .toggle-icon svg {
+    transform: rotate(0deg);
+}
+.lessons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; padding: 24px; background: var(--bg-body); }
+.lesson-card { border: 1px solid var(--border-color); border-radius: 6px; padding: 16px; text-decoration: none; transition: box-shadow 0.2s, border-color 0.2s; }
+.lesson-card:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.lesson-title { color: var(--primary); font-size: 1.05rem; font-weight: 500; margin: 0 0 8px 0; }
+.lesson-card:hover .lesson-title { text-decoration: underline; }
+.lesson-meta { color: var(--text-muted); font-size: 0.85rem; margin: 0; }

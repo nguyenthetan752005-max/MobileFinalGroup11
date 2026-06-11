@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="slideshow" th:if="${slideshows != null and not #lists.isEmpty(slideshows)}" class="slideshow-container">
+    
+    <div class="slideshow-wrapper" id="homeSlideshow">
+        <div th:each="slide, stat : ${slideshows}" class="slide fade" th:classappend="${stat.index == 0} ? 'slide-active' : ''">
+            <a th:href="${slide.linkUrl != null and !slide.linkUrl.isEmpty()} ? ${slide.linkUrl} : '#'">
+                <img th:src="${slide.imageUrl}" th:alt="${slide.title != null ? slide.title : 'Slideshow Image'}" style="width:100%">
+            </a>
+            <div th:if="${slide.title != null and !slide.title.isEmpty()}" class="slide-text" th:text="${slide.title}"></div>
+        </div>
+        
+        <!-- Navigation Buttons -->
+        <a class="slide-prev" onclick="changeSlide(-1)">&#10094;</a>
+        <a class="slide-next" onclick="changeSlide(1)">&#10095;</a>
+    </div>
+
+    <!-- Dots -->
+    <div style="text-align:center; padding: 10px 0;">
+        <span th:each="slide, stat : ${slideshows}" class="slide-dot" th:classappend="${stat.index == 0} ? 'dot-active' : ''" th:onclick="'currentSlide(' + ${stat.index} + ')'"></span>
+    </div>
+
+    <style>
+        .slideshow-container {
+            max-width: 1200px;
+            position: relative;
+            margin: 20px auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+        }
+
+        .slide-active {
+            display: block;
+        }
+
+        .slide img {
+            border-radius: 12px;
+            object-fit: cover;
+            max-height: 400px;
+            width: 100%;
+        }
+
+        .slide-prev, .slide-next {
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            width: auto;
+            margin-top: -22px;
+            padding: 16px;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            transition: 0.6s ease;
+            border-radius: 0 3px 3px 0;
+            user-select: none;
+            background-color: rgba(0,0,0,0.3);
+            text-decoration: none;
+        }
+
+        .slide-next {
+            right: 0;
+            border-radius: 3px 0 0 3px;
+        }
+
+        .slide-prev:hover, .slide-next:hover {
+            background-color: rgba(0,0,0,0.8);
+        }
+
+        .slide-text {
+            color: #f2f2f2;
+            font-size: 15px;
+            padding: 8px 12px;
+            position: absolute;
+            bottom: 8px;
+            width: 100%;
+            text-align: center;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            font-weight: 500;
+        }
+
+        .slide-dot {
+            cursor: pointer;
+            height: 10px;
+            width: 10px;
+            margin: 0 5px;
+            background-color: #bbb;
+            border-radius: 50%;
+            display: inline-block;
+            transition: background-color 0.6s ease;
+        }
+
+        .dot-active, .slide-dot:hover {
+            background-color: #717171;
+        }
+
+        /* Fading animation */
+        .fade {
+            animation-name: slideFade;
+            animation-duration: 1.5s;
+        }
+
+        @keyframes slideFade {
+            from {opacity: .4}
+            to {opacity: 1}
+        }
+    </style>
+
+    <script>
+        let slideIndex = 0;
+        let slideTimer;
+        
+        function showSlides(n) {
+            let i;
+            let slides = document.getElementsByClassName("slide");
+            let dots = document.getElementsByClassName("slide-dot");
+            
+            if (!slides || slides.length === 0) return;
+            
+            if (n >= slides.length) {slideIndex = 0}
+            if (n < 0) {slideIndex = slides.length - 1}
+            
+            for (i = 0; i < slides.length; i++) {
+                slides[i].className = slides[i].className.replace(" slide-active", "");
+                slides[i].style.display = "none";
+            }
+            
+            for (i = 0; i < dots.length; i++) {
+                dots[i].className = dots[i].className.replace(" dot-active", "");
+            }
+            
+            slides[slideIndex].style.display = "block";
+            slides[slideIndex].className += " slide-active";
+            
+            if(dots.length > slideIndex) {
+                dots[slideIndex].className += " dot-active";
+            }
+        }
+
+        function changeSlide(n) {
+            clearTimeout(slideTimer);
+            slideIndex += n;
+            showSlides(slideIndex);
+            
+            // Resume auto-play
+            startAutoPlay();
+        }
+
+        function currentSlide(n) {
+            clearTimeout(slideTimer);
+            slideIndex = n;
+            showSlides(slideIndex);
+            
+            // Resume auto-play
+            startAutoPlay();
+        }
+        
+        function startAutoPlay() {
+            slideTimer = setTimeout(function() {
+                slideIndex++;
+                showSlides(slideIndex);
+                startAutoPlay();
+            }, 5000); // Change image every 5 seconds
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            showSlides(slideIndex);
+            startAutoPlay();
+        });
+    </script>
+</div>
+</html>

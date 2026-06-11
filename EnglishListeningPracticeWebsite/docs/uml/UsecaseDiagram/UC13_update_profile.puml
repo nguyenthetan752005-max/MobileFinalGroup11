@@ -1,0 +1,21 @@
+@startuml UC_UpdateProfile
+title Use Case Diagram - Cập nhật hồ sơ (UC13)
+
+left to right direction
+
+actor User
+actor "Cloudinary" as Cloud
+
+rectangle "UC13 - Update Profile" {
+  User --> (Xem trang Profile)
+  User --> (Đổi Username)
+  User --> (Đổi Avatar)
+  User --> (Đổi mật khẩu)
+  User --> (Xem lịch sử bình luận)
+
+  (Đổi Avatar) ..> (Upload ảnh lên Cloudinary) : <<include>>
+  (Upload ảnh lên Cloudinary) --> Cloud
+  (Đổi mật khẩu) ..> (Gửi email xác nhận) : <<include>>
+  (Đổi mật khẩu) ..> (Tạo PasswordResetToken) : <<include>>
+}
+@enduml

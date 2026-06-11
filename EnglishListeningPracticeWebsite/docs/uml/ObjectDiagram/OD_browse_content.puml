@@ -1,0 +1,56 @@
+@startuml
+title Object Diagram - Browse Content Snapshot
+
+skinparam shadowing false
+skinparam objectAttributeIconSize 0
+
+object "guestSession : HttpSession" as guestSession {
+  loggedInUser = null
+}
+
+object "listeningCategory : Category" as listeningCategory {
+  id = 1
+  name = "Daily Conversation"
+  practiceType = LISTENING
+  status = PUBLISHED
+  levelRange = "A2-B1"
+}
+
+object "section1 : Section" as section1 {
+  id = 101
+  name = "Travel"
+  status = PUBLISHED
+  orderIndex = 1
+}
+
+object "lesson1 : Lesson" as lesson1 {
+  id = 1001
+  title = "At The Airport"
+  youtubeVideoId = "abc123xyz"
+  totalSentences = 12
+  status = PUBLISHED
+}
+
+object "sentence1 : Sentence" as sentence1 {
+  id = 5001
+  orderIndex = 1
+  content = "Where is the check-in counter?"
+  audioUrl = "https://..."
+  status = PUBLISHED
+}
+
+object "sentence2 : Sentence" as sentence2 {
+  id = 5002
+  orderIndex = 2
+  content = "Your flight boards at gate six."
+  audioUrl = "https://..."
+  status = PUBLISHED
+}
+
+guestSession ..> listeningCategory : browses
+listeningCategory -- section1 : contains
+section1 -- lesson1 : contains
+lesson1 -- sentence1 : includes
+lesson1 -- sentence2 : includes
+
+@enduml

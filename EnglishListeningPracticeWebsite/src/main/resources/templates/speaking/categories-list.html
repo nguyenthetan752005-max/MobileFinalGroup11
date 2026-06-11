@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<!-- GIAO DIỆN DANH MỤC CHỦ ĐỀ - SPEAKING EXERCISES -->
+<!-- Tương tự exercises/categories-list.html nhưng dành cho phần Speaking -->
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head('Speaking Exercises')}"></head>
+
+<body style="display: flex; flex-direction: column; min-height: 100vh;">
+
+    <!-- Nạp Navbar Dùng Chung -->
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="container" style="flex: 1; padding-top: 60px; padding-bottom: 100px;">
+        <h2 class="page-title">All topics</h2>
+
+        <div class="grid-container">
+            <!-- Loop over categories -->
+            <a th:href="@{'/speaking/category/' + ${cat.id} + '/sections'}" class="category-card" th:each="cat : ${categories}">
+                <!-- Avatar + Status Wrapper -->
+                <div class="category-avatar-wrapper">
+                    <img th:src="${cat.imageUrl}" alt="Cover Image" class="category-image">
+
+                    <!-- Status Badge under avatar -->
+                    <div th:if="${categoryStatuses != null and categoryStatuses.get(cat.id) != null}" 
+                         th:class="'category-status-badge status-' + ${categoryStatuses.get(cat.id).name().toLowerCase()}"
+                         th:text="${categoryStatuses.get(cat.id).name() == 'COMPLETED' ? 'Completed' : 'In Progress'}">
+                    </div>
+                </div>
+
+                <div class="category-info">
+                    <!-- Title -->
+                    <h3 class="category-name">
+                        <span th:text="${cat.name}">Category Name</span>
+                        <span class="category-video-badge" th:if="${cat.type != null and cat.type.name() == 'VIDEO'}">Video</span>
+                    </h3>
+
+                    <!-- Level -->
+                    <p class="category-level" th:text="'Levels: ' + ${cat.levelRange}">Levels: A1</p>
+
+                    <!-- Lessons count & menu dots -->
+                    <div class="category-bottom">
+                        <span class="category-lessons" th:text="${cat.totalLessons} + ' lessons'">0 lessons</span>
+                        <span class="card-menu-dots">...</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </main>
+
+    <!-- Nạp Footer Dùng Chung -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+
+</html>

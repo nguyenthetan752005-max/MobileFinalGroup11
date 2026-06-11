@@ -1,0 +1,45 @@
+@startuml Sequence_Comment_Vote
+title Sequence Diagram - Bình luận & Vote (UC6 + UC7)
+
+actor User as U
+participant "Lesson Page" as V
+participant "CommentController" as CMC
+database "Database" as DB
+
+== Xem Comments ==
+U -> V : Xem comments của Sentence
+V -> CMC : GET /sentence/{id}/comments
+CMC -> DB : SELECT FROM comments\nWHERE sentence_id = ?\nJOIN users ON user_id
+DB --> CMC : List<Comment> with User info
+CMC --> V : Render comments\n(threaded by parent_id)
+V --> U : Hiển thị danh sách comments
+
+== Viết Comment ==
+U -> V : Viết comment mới
+V -> CMC : POST /comment\n(content, sentence_id, parent_id)
+CMC -> DB : INSERT INTO comments\n(content, sentence_id, user_id, parent_id, created_at)
+DB --> CMC : OK
+CMC --> V : Refresh danh sách comments
+V --> U : Cập nhật hiển thị
+
+== Vote Comment ==
+U -> V : Nhấn Like/Dislike
+V -> CMC : POST /comment/{id}/vote\n(is_like)
+CMC -> DB : SELECT FROM comment_votes\nWHERE comment_id = ? AND user_id = ?
+DB --> CMC : CommentVote / null
+
+alt Chưa vote trước đó
+    CMC -> DB : INSERT INTO comment_votes\n(is_like, comment_id, user_id)
+    DB --> CMC : OK
+else Đã vote cùng loại (toggle off)
+    CMC -> DB : DELETE FROM comment_votes\nWHERE id = ?
+    DB --> CMC : OK
+else Đã vote khác loại (switch)
+    CMC -> DB : UPDATE comment_votes\nSET is_like = ?\nWHERE id = ?
+    DB --> CMC : OK
+end
+
+CMC --> V : Cập nhật vote count
+V --> U : Hiển thị vote mới
+
+@enduml

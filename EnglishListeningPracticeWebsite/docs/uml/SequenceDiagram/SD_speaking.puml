@@ -1,0 +1,52 @@
+@startuml Sequence_Speaking
+title Sequence Diagram - Luyện nói Speaking (UC5)
+
+actor User as U
+participant "Lesson Page" as V
+participant "SpeakingController" as SC
+participant "SpeakingService" as SS
+participant "Wit.AI API" as STT
+participant "Groq API" as AI
+participant "Cloudinary" as Cloud
+database "Database" as DB
+
+U -> V : Chọn Sentence để luyện nói
+V -> SC : GET /speaking/lesson/{lessonId}
+SC -> DB : SELECT FROM sentences\nWHERE lesson_id = ?
+DB --> SC : List<Sentence>
+SC --> V : Render UI
+V --> U : Hiển thị câu cần đọc
+
+U -> V : Dừng ghi âm
+V -> V : Tạo audio blob
+
+V -> SC : POST /api/speaking/evaluate\n(audio, referenceText, sentenceId)
+SC -> SS : evaluateSpeaking()
+
+SS -> STT : transcribeAudio(audio)
+STT --> SS : transcribedText
+
+SS -> AI : scoreSpeaking(referenceText, transcribedText)
+AI --> SS : SpeakingResult (score, feedback)
+
+opt Nếu User đã đăng nhập
+    SS -> Cloud : uploadAudio(audio)
+    Cloud --> SS : audioUrl, publicId
+    
+    SS -> DB : SELECT * FROM speaking_results\nWHERE user_id=? AND sentence_id=?
+    DB --> SS : currentResult, bestResult
+    
+    SS -> DB : Cập nhật currentResult (score, text, feedback, audioUrl)
+    
+    opt Nếu score mới > best score
+        SS -> Cloud : uploadAudio(audio, bestPublicId)
+        Cloud --> SS : bestAudioUrl
+        SS -> DB : Tạo/Cập nhật bestResult
+    end
+end
+
+SS --> SC : SpeakingResultDTO (score, feedback, bestScore...)
+SC --> V : JSON SpeakingResultDTO
+V --> U : Hiển thị:\n- Câu gốc\n- Câu nhận dạng\n- Điểm số & Nhận xét
+
+@enduml

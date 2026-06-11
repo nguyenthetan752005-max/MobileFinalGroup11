@@ -1,0 +1,21 @@
+@startuml UC_Leaderboard
+title Use Case Diagram - Bảng xếp hạng (UC11)
+
+left to right direction
+
+actor User
+
+rectangle "UC11 - View Leaderboard" {
+  User --> (Xem bảng xếp hạng 7 ngày)
+  User --> (Xem bảng xếp hạng 30 ngày)
+
+  (Xem bảng xếp hạng 7 ngày) ..> (Truy vấn activeTime7d từ cache) : <<include>>
+  (Xem bảng xếp hạng 30 ngày) ..> (Truy vấn activeTime30d từ cache) : <<include>>
+}
+
+note right of User
+  Dữ liệu leaderboard được
+  refresh bởi Cron Job mỗi giờ
+  (AdminCleanupJobService)
+end note
+@enduml

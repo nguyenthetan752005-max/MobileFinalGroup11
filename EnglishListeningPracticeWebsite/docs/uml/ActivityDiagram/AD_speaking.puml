@@ -1,0 +1,59 @@
+@startuml Activity_Speaking
+title Activity Diagram - Luyện nói Speaking (UC5)
+
+start
+
+:Chọn Lesson;
+:Tải danh sách Sentence;
+:Chọn Sentence để luyện nói;
+
+:Hiển thị nội dung câu (sentence.content);
+:Phát audio mẫu (sentence.audioUrl);
+
+repeat
+  :User nhấn nút Ghi âm;
+  :Bắt đầu ghi âm giọng nói;
+  :User đọc câu;
+  :User nhấn Dừng ghi âm;
+
+  :Gửi audio blob lên xử lý;
+  
+  fork
+    :Gửi audio đến Wit.AI STT API;
+    :Nhận kết quả recognizedText;
+  fork again
+    :Upload audio qua Cloudinary;
+    :Nhận audioUrl (userAudioUrl);
+  end fork
+
+  :Gửi recognizedText và câu gốc vào AI Scoring (Groq);
+  :AI nhận xét và tính toán score (0-100);
+
+  if (Đã đăng nhập?) then (Có)
+    :Lưu/Cập nhật SpeakingResult loại CURRENT;
+    
+    if (Score > BEST score hiện tại?) then (Có)
+      :Lưu/Cập nhật SpeakingResult loại BEST;
+    else (Không)
+    endif
+  else (Không)
+  endif
+
+  :Hiển thị kết quả:\n- Câu gốc: sentence.content\n- Câu nhận dạng: recognizedText\n- Điểm số: score\n- Feedback từ AI;
+
+  if (User muốn thử lại?) then (Có)
+    :Cho phép nghe lại audio mẫu;
+  else (Không)
+  endif
+repeat while (Thử lại?) is (Có)
+->Không;
+
+if (Chuyển sang câu khác?) then (Có)
+  :Chọn Sentence tiếp theo;
+  stop
+else (Không)
+  :Quay lại danh sách bài học;
+  stop
+endif
+
+@enduml

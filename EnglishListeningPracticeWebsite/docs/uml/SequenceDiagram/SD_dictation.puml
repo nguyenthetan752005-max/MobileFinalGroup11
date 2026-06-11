@@ -1,0 +1,46 @@
+@startuml Sequence_Dictation
+title Sequence Diagram - Luyện nghe Dictation (UC4)
+
+actor User as U
+participant "Lesson Page" as V
+participant "LessonController" as LC
+participant "LessonService" as LS
+participant "SentenceService" as SS
+participant "UserProgressController" as UPC
+database "Database" as DB
+
+U -> V : Chọn Lesson
+V -> LC : GET /lesson/{id}
+LC -> LS : getPublishedLessonById(id)
+LS -> DB : SELECT FROM lessons WHERE id = ? AND is_deleted=false
+DB --> LS : Lesson
+LS --> LC : Lesson
+
+LC -> SS : getPublishedSentencesByLessonId(id)
+SS -> DB : SELECT FROM sentences WHERE lesson_id = ? AND is_deleted=false ORDER BY order_index
+DB --> SS : List<Sentence>
+SS --> LC : List<Sentence>
+
+LC --> V : Render bài dictation
+V --> U : Hiển thị giao diện luyện nghe
+
+loop Mỗi Sentence
+    V --> U : Phát audio (audioUrl)
+    U -> V : Gõ câu trả lời
+    V -> V : So sánh với sentence.content
+
+    alt Đúng
+        V -> UPC : POST /progress/complete (userId, sentenceId)
+        UPC -> DB : Cập nhật UserProgress (status='COMPLETED') cho sentence_id
+        DB --> UPC : OK
+        UPC --> V : UserProgress
+        V --> U : Đúng! Chuyển câu tiếp
+    else Sai
+        V --> U : Highlight lỗi, cho phép nghe lại
+    end
+end
+
+V -> V : Hoàn thành bài học
+V --> U : Hiển thị kết quả tổng kết (hoạt ảnh bắn pháo hoa)
+
+@enduml

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- LESSON COMPLETION SCREEN OVERLAY -->
+    <div th:fragment="completionScreen" id="lessonCompletionScreen" class="lesson-completion-overlay" style="display: none;">
+        <div class="completion-content">
+            <h2 class="completion-title">You have completed this lesson,<br>good job!</h2>
+            <div class="completion-icon">
+                <svg viewBox="0 0 24 24" width="64" height="64" fill="#22c55e">
+                    <circle cx="12" cy="12" r="10" fill="#22c55e"/>
+                    <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="completion-buttons">
+                <!-- nextLessonUrl and backToSectionUrl should be set by the caller or derived from nextLesson/section -->
+                <a th:if="${nextLesson != null}" 
+                   th:href="${lesson.section.category.practiceType.name() == 'SPEAKING' ? '/speaking/lesson/' + nextLesson.id : '/lesson/' + nextLesson.id}" 
+                   id="nextLessonBtn" class="btn btn-primary">
+                    Next Lesson
+                </a>
+                <a th:if="${isLastLessonInSection and section != null}" 
+                   th:href="${lesson.section.category.practiceType.name() == 'SPEAKING' ? '/speaking/category/' + category.id + '/sections' : '/category/' + category.id + '/sections'}" 
+                   id="backToSectionBtn" class="btn btn-primary">
+                    Back to Section
+                </a>
+                <button id="repeatLessonBtn" class="btn btn-secondary">Repeat this lesson</button>
+            </div>
+            <p th:if="${nextLesson != null}" class="next-lesson-title" th:text="'Next: ' + ${nextLesson.title}">Next: Lesson Title</p>
+        </div>
+    </div>
+</body>
+</html>

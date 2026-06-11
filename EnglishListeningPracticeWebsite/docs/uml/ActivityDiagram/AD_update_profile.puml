@@ -1,0 +1,42 @@
+@startuml Activity_UpdateProfile
+title Activity Diagram - Cập nhật hồ sơ (UC13)
+
+start
+
+:User truy cập trang Profile (/profile);
+:Tải thông tin User từ Session;
+:Hiển thị trang Profile:
+- Username
+- Email (readonly)
+- Avatar
+- Thống kê thời gian học
+- Lịch sử bình luận;
+
+if (Hành động?) then (Đổi Username)
+  :Nhập username mới;
+  if (Username đã tồn tại?) then (Có)
+    :Hiển thị lỗi "Username đã tồn tại";
+    stop
+  else (Không)
+    :Cập nhật username trong DB;
+    :Cập nhật Session;
+    :Hiển thị thành công;
+  endif
+
+elseif (Đổi Avatar) then
+  :Chọn file ảnh;
+  :Upload ảnh lên Cloudinary;
+  :Nhận avatarUrl và avatarPublicId;
+  :Cập nhật User trong DB;
+  :Cập nhật Session;
+  :Hiển thị avatar mới;
+
+else (Đổi mật khẩu)
+  :Gọi API đổi mật khẩu;
+  :Tạo PasswordResetToken;
+  :Gửi email xác nhận đổi mật khẩu;
+  :Hiển thị thông báo "Kiểm tra email";
+endif
+
+stop
+@enduml

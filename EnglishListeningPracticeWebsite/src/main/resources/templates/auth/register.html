@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<!-- GIAO DIỆN TRANG ĐĂNG KÝ -->
+<!-- Cung cấp Form tạo tài khoản mới -->
+
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head('Create an account')}"></head>
+
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="auth-container">
+        <div class="auth-card">
+            <h1>Create an account</h1>
+
+            <a th:href="@{/oauth2/authorization/google}" class="btn-google"
+                style="text-decoration:none; display:flex; align-items:center; justify-content:center;">
+                <img th:src="@{/images/social_media/Googe.png}" alt="Google Logo" width="16" height="16"
+                    style="margin-right:8px;">
+                Đăng ký bằng Google
+            </a>
+
+            <div class="auth-divider">Or enter your information</div>
+
+            <div th:if="${error}" style="color: red; text-align: center; margin-bottom: 15px;" th:text="${error}"></div>
+
+            <form th:action="@{/register}" th:object="${user}" method="post">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" th:field="*{username}" class="form-control" autofocus required>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" th:field="*{email}" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" th:field="*{password}" class="form-control" required>
+                </div>
+                <button type="submit" class="btn-submit">Submit</button>
+            </form>
+
+            <div class="auth-links">
+                <p>Had an account already? <a th:href="@{/login}">Login here</a></p>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+
+</html>

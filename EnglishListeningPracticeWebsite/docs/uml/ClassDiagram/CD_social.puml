@@ -1,0 +1,101 @@
+@startuml Class_Diagram_Social
+title Class Diagram - Social (Comment & Vote) Module
+
+skinparam classAttributeIconSize 0
+
+' ==========================================
+'   CONTROLLER LAYER
+' ==========================================
+package "Controller" {
+    class CommentController {
+        + getTopLevelComments(sentenceId): ResponseEntity
+        + getReplies(parentId): ResponseEntity
+        + getUserComments(userId): ResponseEntity
+        + addComment(sentenceId, content, parentId, session): ResponseEntity
+        + editComment(commentId, content, session): ResponseEntity
+        + deleteComment(commentId, session): ResponseEntity
+        + voteComment(commentId, isLike, session): ResponseEntity
+    }
+}
+
+' ==========================================
+'   SERVICE LAYER
+' ==========================================
+package "Service" {
+    interface CommentService <<interface>> {
+        + getCommentsBySentenceId(sentenceId): List<Comment>
+        + getTopLevelCommentsWithVotes(sentenceId): List<Comment>
+        + getRepliesWithVotes(parentId): List<Comment>
+        + getCommentsByUserId(userId): List<Comment>
+        + addComment(sentenceId, userId, content, parentId): Comment
+        + editComment(commentId, userId, newContent): Comment
+        + deleteComment(commentId, userId): void
+        + voteComment(commentId, userId, isLike): CommentVote
+    }
+    class CommentServiceImpl {
+        - populateVoteCounts(comment): void
+    }
+}
+
+' ==========================================
+'   REPOSITORY LAYER
+' ==========================================
+package "Repository" {
+    interface CommentRepository <<Spring Data JPA>> {
+        + findBySentence_IdAndIsHiddenFalseAndParentIsNullOrderByCreatedAtDesc(sentenceId): List<Comment>
+        + findByParent_IdAndIsHiddenFalseOrderByCreatedAtAsc(parentId): List<Comment>
+        + findByUser_IdAndIsHiddenFalseOrderByCreatedAtDesc(userId): List<Comment>
+        + findByParent_IdOrderByCreatedAtAsc(parentId): List<Comment>
+    }
+    interface CommentVoteRepository <<Spring Data JPA>> {
+        + findByComment_IdAndUser_Id(commentId, userId): Optional<CommentVote>
+        + countVotes(commentId, isLike): long
+    }
+}
+
+' ==========================================
+'   ENTITY LAYER
+' ==========================================
+package "Entity" {
+    class Comment {
+        - id : Long
+        - isDeleted : Boolean
+        - isHidden : Boolean
+        - content : String
+        - createdAt : LocalDateTime
+        - likeCount : long
+        - dislikeCount : long
+        - sentence : Sentence
+        - user : User
+        - parent : Comment
+    }
+    class CommentVote {
+        - id : Long
+        - isLike : Boolean
+        - createdAt : LocalDateTime
+        - comment : Comment
+        - user : User
+    }
+}
+
+' ==========================================
+'   DEPENDENCIES
+' ==========================================
+CommentController --> CommentService
+CommentServiceImpl ..|> CommentService
+
+CommentServiceImpl --> CommentRepository
+CommentServiceImpl --> CommentVoteRepository
+CommentServiceImpl --> SentenceRepository
+CommentServiceImpl --> UserRepository
+
+CommentRepository ..> Comment
+CommentVoteRepository ..> CommentVote
+
+Comment "0..1" --o "many" Comment : parent_id
+Comment "1" --o "many" CommentVote : comment_id
+
+interface SentenceRepository <<external>>
+interface UserRepository <<external>>
+
+@enduml

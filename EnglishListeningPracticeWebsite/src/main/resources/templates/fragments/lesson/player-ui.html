@@ -1,0 +1,188 @@
+<!-- FRAGMENT DÙNG CHUNG CHO GIAO DIỆN PLAYER -->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+    <!-- =================================================================== -->
+    <!-- 1. LAYOUT CHUNG (VIDEO + AUDIO) -->
+    <!-- =================================================================== -->
+    <div th:fragment="player-layout (isSpeakingMode)">
+
+        <!-- ======= VIDEO LESSON: 2-column layout ======= -->
+        <div th:if="${lesson.section != null and lesson.section.category != null and lesson.section.category.type != null and lesson.section.category.type.name() == 'VIDEO'}" class="video-dictation-split">
+            <!-- LEFT: YouTube Video -->
+            <div class="video-left-column">
+                <div class="video-player-wrapper" id="dictationVideoWrapper">
+                    <div id="youtubePlayer"></div>
+                </div>
+                <div class="video-controls-bar">
+                    <div class="video-size-control">
+                        <label>Video size:</label>
+                        <select id="videoSizeSelect">
+                            <option value="small">Small</option>
+                            <option value="normal" selected>Normal</option>
+                            <option value="large">Large</option>
+                        </select>
+                    </div>
+                    <button class="hide-video-btn" id="hideVideoBtn">Hide video</button>
+                </div>
+            </div>
+
+            <!-- RIGHT: Start Button / Active Panel -->
+            <div class="dictation-right-column">
+                <!-- State 1: Start button -->
+                <div class="start-dictation-panel" id="startDictationPanel">
+                    <button class="start-dictation-btn" id="startDictationBtn" th:text="${isSpeakingMode} ? 'Start Speaking' : 'Start Dictation'">Start Dictation</button>
+                </div>
+
+                <!-- State 2: Active controls (hidden initially) -->
+                <div class="dictation-active-panel" id="dictationActivePanel" style="display:none;">
+                    <!-- Play + Counter -->
+                    <div th:replace="~{:: player-controls}"></div>
+
+                    <!-- Proper Noun Hint -->
+                    <div th:replace="~{:: hint-area}"></div>
+
+                    <!-- CONTENT SLOT: Chỗ này sẽ được điền bởi trang cha -->
+                    <div th:replace="${isSpeakingMode} ? ~{:: speaking-content} : ~{:: dictation-content}"></div>
+
+                    <!-- Action Buttons -->
+                    <div th:replace="~{:: action-buttons}"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======= AUDIO LESSON: original stacked layout ======= -->
+        <div th:if="${lesson.section == null or lesson.section.category == null or lesson.section.category.type == null or lesson.section.category.type.name() == 'AUDIO'}">
+            <audio id="mainAudio" preload="auto"></audio>
+
+            <!-- Player Controls -->
+            <div th:replace="~{:: player-controls}"></div>
+
+            <!-- Audio Player Bar -->
+            <div th:replace="~{:: audio-player-bar}"></div>
+
+            <!-- Proper Noun Hint -->
+            <div th:replace="~{:: hint-area}"></div>
+
+            <!-- CONTENT SLOT: Chỗ này sẽ được điền bởi trang cha -->
+            <div th:replace="${isSpeakingMode} ? ~{:: speaking-content} : ~{:: dictation-content}"></div>
+
+            <!-- Action Buttons -->
+            <div th:replace="~{:: action-buttons}"></div>
+        </div>
+
+    </div>
+
+
+    <!-- =================================================================== -->
+    <!-- 2. CÁC MẢNH COMPONENT NHỎ -->
+    <!-- =================================================================== -->
+
+    <!-- Player Controls (Counter, Nav Arrows) -->
+    <div th:fragment="player-controls" class="video-dictation-controls">
+        <!-- Chỉ hiển thị nút play này ở chế độ VIDEO, chế độ AUDIO đã có nút ở thanh player bar -->
+        <button th:if="${lesson.section != null and lesson.section.category != null and lesson.section.category.type != null and lesson.section.category.type.name() == 'VIDEO'}" class="play-btn" id="videoDictPlayBtn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><polygon points="5,3 19,12 5,21"></polygon></svg>
+        </button>
+        <div class="sentence-counter">
+            <button class="nav-arrow" id="prevBtn">←</button>
+            <span><span id="currentSentenceNum">1</span> / <span id="totalSentences" th:text="${lesson.totalSentences}">21</span></span>
+            <button class="nav-arrow" id="nextBtn">→</button>
+        </div>
+        <!-- Status Badge: hiển thị COMPLETED / IN_PROGRESS / SKIPPED ở góc trên phải -->
+        <span id="sentenceStatusBadge" class="sentence-status-badge" style="display:none;"></span>
+    </div>
+
+    <!-- Audio Player Bar -->
+    <div th:fragment="audio-player-bar" class="player-bar" id="dictationPlayer">
+        <button class="play-btn" id="dictPlayBtn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><polygon points="5,3 19,12 5,21"></polygon></svg>
+        </button>
+        <span class="time-display" id="dictTimeDisplay">0:00 / 0:00</span>
+        <div class="progress-bar-wrapper" id="dictProgressWrapper">
+            <div class="progress-fill" id="dictProgressFill"></div>
+        </div>
+        <button class="volume-btn" id="dictVolumeBtn"><i class="fas fa-volume-up"></i></button>
+        <select class="speed-select" id="dictSpeedSelect">
+            <option value="0.5">0.5x</option>
+            <option value="0.75">0.75x</option>
+            <option value="1" selected>1x</option>
+            <option value="1.25">1.25x</option>
+            <option value="1.5">1.5x</option>
+        </select>
+    </div>
+
+    <!-- Hint Area -->
+    <div th:fragment="hint-area" id="hintArea" class="hint-area" 
+         th:style="${(hintsMap != null and not #maps.isEmpty(hintsMap) and hintsMap[sentences[0].id] != null) ? '' : 'display:none;'}">
+         <th:block th:if="${(hintsMap != null and not #maps.isEmpty(hintsMap) and hintsMap[sentences[0].id] != null)}">
+            💡 <strong>Hint:</strong> 
+            <span th:each="noun, iterStat : ${hintsMap[sentences[0].id]}" class="hint-proper-noun">
+                <span th:text="${noun}"></span><span th:if="${!iterStat.last}">, </span>
+            </span>
+        </th:block>
+    </div>
+
+    <!-- Action Buttons -->
+    <div th:fragment="action-buttons" class="action-buttons">
+        <button class="btn-check" id="checkBtn">Check</button>
+        <button class="btn-skip" id="skipBtn">Skip</button>
+        <button class="btn-next" id="nextBtn2" style="display:none;">Next</button>
+        <button class="btn-replay" id="replayBtn" style="display:none;"><i class="fas fa-redo"></i> Replay</button>
+    </div>
+
+    <!-- SLOT for Dictation page -->
+    <div th:fragment="dictation-content">
+        <!-- Input box -->
+        <div class="input-wrapper">
+            <textarea class="dictation-input" id="dictationInput" placeholder="Type what you hear..."></textarea>
+            <button class="mic-btn" title="Microphone not active"><i class="fas fa-microphone"></i></button>
+        </div>
+        <!-- Feedback -->
+        <div id="feedbackArea" class="feedback-area" style="display:none;"></div>
+        <!-- Pronunciation -->
+        <div id="pronunciationArea" class="pronunciation-area" style="display:none;">
+            <div class="pronunciation-label">Pronunciation</div>
+            <div id="pronunciationText" class="pronunciation-text"></div>
+        </div>
+    </div>
+
+    <!-- SLOT for Speaking page -->
+    <div th:fragment="speaking-content">
+        <!-- Reference Sentence -->
+        <div class="speaking-reference-box">
+            <div class="speaking-reference-label">Read this sentence aloud</div>
+            <div class="speaking-reference-text" id="speakingRefText" th:text="${not #lists.isEmpty(sentences) ? sentences[0].content : 'Loading...'}">The sentence will appear here.</div>
+        </div>
+        <!-- Record Button -->
+        <div class="speaking-record-wrapper">
+            <button class="speaking-record-btn" id="recordBtn" title="Record your voice">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <span class="speaking-record-label">Tap to speak</span>
+        </div>
+        <!-- Results: Best + Current -->
+        <div class="speaking-results-container" id="speakingResultsContainer">
+            <!-- Best Result -->
+            <div class="speaking-result-card speaking-result-best" id="bestResultArea" style="display:none;">
+                <div class="speaking-result-card-header">
+                    <i class="fas fa-trophy"></i> Best Result
+                </div>
+                <div class="speaking-result-card-body" id="bestResultBody"></div>
+            </div>
+            <!-- Current Result -->
+            <div class="speaking-result-card speaking-result-current" id="currentResultArea">
+                <div class="speaking-result-card-header">
+                    <i class="fas fa-microphone-alt"></i> Current Result
+                </div>
+                <div class="speaking-result-card-body speaking-result-placeholder" id="currentResultBody">
+                    Your results will appear here
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

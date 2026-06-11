@@ -1,0 +1,40 @@
+@startuml Activity_TrackProgress
+title Activity Diagram - Theo dõi tiến độ (UC8)
+
+start
+
+:User truy cập trang Tiến độ học tập;
+
+:Api gọi getInProgressLessons;
+:Truy vấn tất cả các tiến trình học tập của user;
+:Gom nhóm theo lesson, section, category;
+
+if (Có dữ liệu tiến độ?) then (Không)
+  :Hiển thị thông báo\n"Bạn chưa bắt đầu bài học nào";
+  stop
+else (Có)
+endif
+
+:Hiển thị danh sách bài đã học:
+- Tên Lesson (title)
+- Tên Section, Category
+- practiceType (LISTENING/SPEAKING)
+- completedSentences / totalSentences
+- status;
+
+:Hiển thị thống kê tổng quan:
+- Thống kê 7 ngày, 30 ngày
+- totalActiveTime;
+
+if (User chọn một bài?) then (Có)
+  if (status?) then (IN_PROGRESS)
+    :Chuyển đến Lesson\n(tiếp tục từ câu chưa hoàn thành);
+  else (COMPLETED)
+    :Chuyển đến Lesson\n(cho phép làm lại);
+  endif
+else (Không)
+  :Tiếp tục xem trang tiến độ;
+endif
+
+stop
+@enduml

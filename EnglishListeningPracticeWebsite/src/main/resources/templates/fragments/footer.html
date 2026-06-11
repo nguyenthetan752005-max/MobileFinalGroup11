@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<!-- FRAGMENT CẮT RỜI: CHÂN TRANG (FOOTER) -->
+<!-- Cục HTML này được các trang khác nhúng vào qua cú pháp `th:replace` -->
+
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<footer th:fragment="footer" class="footer">
+    <div class="footer-container">
+        <div class="footer-grid">
+            <!-- Brand -->
+            <div class="footer-brand">
+                <a href="/" class="footer-logo">
+                    <span class="brand-icon">🎧</span>
+                    <span>EnglishListening</span>
+                </a>
+                <p class="footer-desc">Practice English listening with thousands of dictation exercises. Improve your skills for free!</p>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/exercises">All exercises</a></li>
+                    <li><a href="/top-users">Top users</a></li>
+                </ul>
+            </div>
+
+            <!-- Resources -->
+            <div class="footer-col">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="/expressions">English expressions</a></li>
+                    <li><a href="/pronunciation">English pronunciation</a></li>
+                </ul>
+            </div>
+
+            <!-- Legal -->
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="/contact">Contact</a></li>
+                    <li><a href="/terms">Terms &amp; rules</a></li>
+                    <li><a href="/privacy">Privacy policy</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 EnglishListening &middot; All rights reserved</p>
+        </div>
+    </div>
+    
+    <!-- Cài đặt script chung cho toàn bộ website -->
+    <script th:src="@{/js/main.js}"></script>
+</footer>
+</body>
+</html>

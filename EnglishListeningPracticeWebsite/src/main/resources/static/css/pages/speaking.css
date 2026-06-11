@@ -1,0 +1,57 @@
+/* ===== SPEAKING EXERCISE PLACEHOLDER ===== */
+
+.speaking-placeholder-card {
+    max-width: 520px;
+    margin: 60px auto;
+    text-align: center;
+    padding: 50px 40px;
+    background: var(--bg-card, #ffffff);
+    border: 1px solid var(--border-color, #e0e0e0);
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.speaking-placeholder-icon {
+    font-size: 4rem;
+    margin-bottom: 16px;
+    line-height: 1;
+}
+
+.speaking-placeholder-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary, #1a1a1a);
+    margin-bottom: 12px;
+}
+
+.speaking-placeholder-text {
+    font-size: 1rem;
+    color: var(--text-secondary, #666);
+    line-height: 1.6;
+    margin-bottom: 28px;
+}
+
+.speaking-placeholder-btn {
+    display: inline-block;
+    padding: 10px 24px;
+    background: var(--primary, #4361ee);
+    color: #fff;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.speaking-placeholder-btn:hover {
+    background: var(--primary-hover, #3a56d4);
+    transform: translateY(-1px);
+}
+
+/* Dark mode support */
+body.dark-mode .speaking-placeholder-card,
+[data-theme="dark"] .speaking-placeholder-card {
+    background: var(--bg-card, #2a2a2a);
+    border-color: var(--border-color, #444);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}

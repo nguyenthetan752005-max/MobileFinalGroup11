@@ -1,0 +1,217 @@
+@startuml Class_Diagram
+title Class Diagram - English Listening Practice Website (Full Architecture)
+
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "Entity Layer" {
+
+    class AppSetting {
+        - id : Long
+        - siteName : String
+        - seoMetaDescription : String
+        - maxRecentUsersOnDashboard : Integer
+        - speakingPassThreshold : Integer
+        - allowUserRegistration : Boolean
+    }
+
+    class Slideshow {
+        - id : Long
+        - isDeleted : Boolean
+        - title : String
+        - imageUrl : String
+        - cloudImageId : String
+        - linkUrl : String
+        - displayOrder : Integer
+        - isActive : Boolean
+        - position : SlideshowPosition
+        - createdAt : LocalDateTime
+        - updatedAt : LocalDateTime
+    }
+
+    class User {
+        - id : Long
+        - isDeleted : Boolean
+        - isActive : Boolean
+        - username : String
+        - email : String
+        - password : String
+        - role : Role
+        - avatarUrl : String
+        - avatarPublicId : String
+        - provider : String
+        - providerId : String
+        - totalActiveTime : Integer
+        - activeTime7d : Integer
+        - activeTime30d : Integer
+        - createdAt : LocalDateTime
+    }
+
+    class DailyStudyStatistic {
+        - id : Long
+        - studyDate : LocalDate
+        - activeTimeSeconds : Integer
+        - user : User
+    }
+
+    class Category {
+        - id : Long
+        - isDeleted : Boolean
+        - status : ContentStatus
+        - orderIndex : Integer
+        - name : String
+        - imageUrl : String
+        - cloudImageId : String
+        - levelRange : String
+        - type : LessonType
+        - practiceType : PracticeType
+        - totalLessons : Integer
+        - description : String
+    }
+
+    class Section {
+        - id : Long
+        - isDeleted : Boolean
+        - status : ContentStatus
+        - orderIndex : Integer
+        - name : String
+        - description : String
+        - category : Category
+    }
+
+    class Lesson {
+        - id : Long
+        - isDeleted : Boolean
+        - status : ContentStatus
+        - orderIndex : Integer
+        - title : String
+        - level : String
+        - youtubeVideoId : String
+        - totalSentences : Integer
+        - section : Section
+    }
+
+    class Sentence {
+        - id : Long
+        - isDeleted : Boolean
+        - status : ContentStatus
+        - orderIndex : Integer
+        - audioUrl : String
+        - cloudAudioId : String
+        - content : String
+        - startTime : Double
+        - endTime : Double
+        - lesson : Lesson
+    }
+
+    class UserProgress {
+        - id : Long
+        - status : UserProgressStatus
+        - lastAccessed : LocalDateTime
+        - user : User
+        - sentence : Sentence
+    }
+
+    class Comment {
+        - id : Long
+        - isDeleted : Boolean
+        - isHidden : Boolean
+        - content : String
+        - createdAt : LocalDateTime
+        - sentence : Sentence
+        - user : User
+        - parent : Comment
+        - likeCount : long
+        - dislikeCount : long
+    }
+
+    class CommentVote {
+        - id : Long
+        - isLike : Boolean
+        - createdAt : LocalDateTime
+        - comment : Comment
+        - user : User
+    }
+
+    class SpeakingResult {
+        - id : Long
+        - score : Integer
+        - recognizedText : String
+        - userAudioUrl : String
+        - userAudioPublicId : String
+        - feedback : String
+        - resultType : SpeakingResultType
+        - updatedAt : LocalDateTime
+        - sentence : Sentence
+        - user : User
+    }
+
+    class PasswordResetToken {
+        - id : Long
+        - token : String
+        - expiryDate : LocalDateTime
+        - createdAt : LocalDateTime
+        - user : User
+    }
+}
+
+
+package "Enums" {
+    enum Role {
+        ADMIN
+        USER
+    }
+    enum ContentStatus {
+        DRAFT
+        PUBLISHED
+        ARCHIVED
+    }
+    enum LessonType {
+        AUDIO
+        YOUTUBE
+    }
+    enum PracticeType {
+        LISTENING
+        SPEAKING
+    }
+    enum UserProgressStatus {
+        IN_PROGRESS
+        COMPLETED
+        SKIPPED
+    }
+    enum SpeakingResultType {
+        CURRENT
+        BEST
+    }
+    enum SlideshowPosition {
+        HOME
+    }
+}
+
+' ==========================================
+'   ENTITY RELATIONSHIPS
+' ==========================================
+Category "1" --o "many" Section : category_id
+Section "1" --o "many" Lesson : section_id
+Lesson "1" --o "many" Sentence : lesson_id
+User "1" --o "many" UserProgress : user_id
+Sentence "1" --o "many" UserProgress : sentence_id
+Sentence "1" --o "many" Comment : sentence_id
+User "1" --o "many" Comment : user_id
+Comment "0..1" --o "many" Comment : parent_id
+Comment "1" --o "many" CommentVote : comment_id
+User "1" --o "many" CommentVote : user_id
+Sentence "1" --o "many" SpeakingResult : sentence_id
+User "1" --o "many" SpeakingResult : user_id
+User "1" --o "many" PasswordResetToken : user_id
+User "1" --o "many" DailyStudyStatistic : user_id
+
+User *-- Role
+Category *-- LessonType
+Category *-- PracticeType
+Category *-- ContentStatus
+Slideshow *-- SlideshowPosition
+UserProgress *-- UserProgressStatus
+SpeakingResult *-- SpeakingResultType
+
+@enduml

@@ -1,0 +1,20 @@
+@startuml UC_Login
+title Use Case Diagram - Đăng nhập (UC2)
+
+left to right direction
+
+actor Guest
+actor Admin
+
+rectangle "UC2 - Login" {
+  Guest --> (Đăng nhập User)
+  Admin --> (Đăng nhập Admin)
+
+  (Đăng nhập User) ..> (Xác thực tài khoản) : <<include>>
+  (Đăng nhập User) <.. (Đăng nhập bằng Google OAuth) : <<extend>>
+  (Đăng nhập Admin) ..> (Xác thực tài khoản) : <<include>>
+  (Đăng nhập Admin) ..> (Kiểm tra Role ADMIN) : <<include>>
+
+  (Xác thực tài khoản) ..> (Tạo Session) : <<include>>
+}
+@enduml

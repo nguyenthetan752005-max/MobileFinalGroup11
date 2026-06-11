@@ -1,0 +1,26 @@
+@startuml UC_Speaking
+title Use Case Diagram - Luyện nói Speaking (UC5)
+
+left to right direction
+
+actor User
+actor "Wit.AI API" as WitAI
+actor "Groq AI API" as Groq
+actor "Cloudinary" as Cloud
+
+rectangle "UC5 - Practice Speaking" {
+  User --> (Chọn bài học Speaking)
+  User --> (Ghi âm giọng nói)
+  User --> (Gửi đánh giá Speaking)
+  User --> (Xem kết quả BEST & CURRENT)
+
+  (Gửi đánh giá Speaking) ..> (Nhận dạng giọng nói STT) : <<include>>
+  (Gửi đánh giá Speaking) ..> (Chấm điểm AI) : <<include>>
+  (Gửi đánh giá Speaking) ..> (Upload audio lên Cloud) : <<include>>
+  (Gửi đánh giá Speaking) ..> (Lưu SpeakingResult) : <<include>>
+
+  (Nhận dạng giọng nói STT) --> WitAI
+  (Chấm điểm AI) --> Groq
+  (Upload audio lên Cloud) --> Cloud
+}
+@enduml

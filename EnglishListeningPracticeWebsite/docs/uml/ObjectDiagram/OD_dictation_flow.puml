@@ -1,0 +1,56 @@
+@startuml
+title Object Diagram - Dictation Attempt Snapshot
+
+skinparam shadowing false
+skinparam objectAttributeIconSize 0
+
+object "user1 : User" as user1 {
+  id = 7
+  username = "studentA"
+  role = USER
+  isActive = true
+}
+
+object "session1 : HttpSession" as session1 {
+  loggedInUser = user1
+}
+
+object "lesson1 : Lesson" as lesson1 {
+  id = 1001
+  title = "At The Airport"
+  totalSentences = 12
+}
+
+object "sentence3 : Sentence" as sentence3 {
+  id = 5003
+  orderIndex = 3
+  content = "Please show me your boarding pass."
+}
+
+object "dictationRequest : CheckDictationRequest" as dictationRequest {
+  sentenceId = 5003
+  userInput = "please show me your ..."
+}
+
+object "dictationResult : DictationResultDTO" as dictationResult {
+  isCorrect = false
+  matchedCount = 4
+  totalWords = 6
+  newHintIndex = 4
+  correctSentence = null
+}
+
+object "progress1 : UserProgress" as progress1 {
+  id = 901
+  status = IN_PROGRESS
+  lastAccessed = "2026-04-03T10:15"
+}
+
+session1 -- user1
+lesson1 -- sentence3
+dictationRequest ..> sentence3 : checks against
+dictationResult ..> sentence3 : generated from
+progress1 -- user1
+progress1 -- sentence3
+
+@enduml

@@ -1,0 +1,79 @@
+@startuml
+title Object Diagram - Admin Content Management Snapshot
+
+skinparam shadowing false
+skinparam objectAttributeIconSize 0
+
+object "admin1 : User" as admin1 {
+  id = 1
+  username = "admin"
+  role = ADMIN
+}
+
+object "categoryReq : AdminCategoryRequest" as categoryReq {
+  name = "Basic Speaking"
+  practiceType = SPEAKING
+  levelRange = "A1-A2"
+  status = PUBLISHED
+}
+
+object "sectionReq : AdminSectionRequest" as sectionReq {
+  categoryId = 20
+  name = "Ordering Food"
+  status = PUBLISHED
+}
+
+object "lessonReq : AdminLessonRequest" as lessonReq {
+  sectionId = 200
+  title = "In A Restaurant"
+  totalSentences = 10
+  status = PUBLISHED
+}
+
+object "sentenceReq : AdminSentenceRequest" as sentenceReq {
+  lessonId = 2000
+  content = "I would like to order a bowl of noodles."
+  orderIndex = 1
+  status = PUBLISHED
+}
+
+object "category20 : Category" as category20 {
+  id = 20
+  name = "Basic Speaking"
+  practiceType = SPEAKING
+  status = PUBLISHED
+}
+
+object "section200 : Section" as section200 {
+  id = 200
+  name = "Ordering Food"
+  status = PUBLISHED
+}
+
+object "lesson2000 : Lesson" as lesson2000 {
+  id = 2000
+  title = "In A Restaurant"
+  totalSentences = 10
+  status = PUBLISHED
+}
+
+object "sentence20001 : Sentence" as sentence20001 {
+  id = 20001
+  content = "I would like to order a bowl of noodles."
+  orderIndex = 1
+  status = PUBLISHED
+}
+
+admin1 ..> categoryReq : submits
+admin1 ..> sectionReq : submits
+admin1 ..> lessonReq : submits
+admin1 ..> sentenceReq : submits
+categoryReq ..> category20 : creates
+sectionReq ..> section200 : creates
+lessonReq ..> lesson2000 : creates
+sentenceReq ..> sentence20001 : creates
+category20 -- section200 : contains
+section200 -- lesson2000 : contains
+lesson2000 -- sentence20001 : contains
+
+@enduml

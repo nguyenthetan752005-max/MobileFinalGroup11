@@ -1,0 +1,225 @@
+@startuml Class_Diagram_Admin
+title Class Diagram - Admin Dashboard & Management Module
+
+skinparam classAttributeIconSize 0
+
+' ==========================================
+'   CONTROLLER LAYER
+' ==========================================
+package "Controller" {
+    class AdminAuthController {
+        + showAdminLogin(): String
+        + adminLogin(username, password, session): String
+        + adminDashboard(session, model): String
+        + createCategory(request): ResponseEntity
+        + updateCategory(id, request): ResponseEntity
+        + deleteCategory(id): ResponseEntity
+        + createSection(request): ResponseEntity
+        + updateSection(id, request): ResponseEntity
+        + deleteSection(id): ResponseEntity
+        + createLesson(request): ResponseEntity
+        + updateLesson(id, request): ResponseEntity
+        + deleteLesson(id): ResponseEntity
+        + createSentence(request): ResponseEntity
+        + updateSentence(id, request): ResponseEntity
+        + deleteSentence(id): ResponseEntity
+        + updateSettings(form): ResponseEntity
+        + createSlideshow(request): ResponseEntity
+        + updateSlideshow(id, request): ResponseEntity
+        + deleteSlideshow(id): ResponseEntity
+        + moderateComment(id, action): ResponseEntity
+    }
+    class AdminApiController {
+        + restoreItem(type, id): ResponseEntity
+        + hardDeleteItem(type, id): ResponseEntity
+    }
+}
+
+' ==========================================
+'   SERVICE LAYER
+' ==========================================
+package "Service" {
+    interface AdminDashboardService <<interface>> {
+        + getDashboardData(): AdminDashboardDTO
+    }
+    class AdminDashboardServiceImpl
+
+    interface AppSettingService <<interface>> {
+        + getSettings(): AppSetting
+        + getSettingForm(): AppSettingForm
+        + updateSettings(form): AppSetting
+        + isUserRegistrationAllowed(): boolean
+        + getSpeakingPassThreshold(): int
+    }
+    class AppSettingServiceImpl
+
+    interface SlideshowService <<interface>> {
+        + getActiveSlideshowsByPosition(pos): List<Slideshow>
+        + createSlideshow(request): Slideshow
+        + updateSlideshow(id, request): Slideshow
+        + softDeleteSlideshow(id): void
+        + restoreSlideshow(id): void
+        + hardDeleteSlideshow(id): void
+        + toggleActive(id): void
+    }
+    class SlideshowServiceImpl
+
+    class AdminCleanupJobService <<@Scheduled>> {
+        + refreshLeaderboardCaches(): void
+        + resetDailyActiveStatuses(): void
+    }
+
+    class CloudinaryService {
+        + uploadImage(file): Map<String, String>
+        + uploadAudio(bytes, publicId): Map<String, String>
+        + deleteByPublicId(publicId): void
+    }
+}
+
+' ==========================================
+'   DTO LAYER
+' ==========================================
+package "DTO" {
+    class AdminDashboardDTO {
+        - totalUsers : long
+        - totalAdmins : long
+        - totalLessons : long
+        - formattedTotalTime : String
+        - recentUsers : List<User>
+        - regularUsers : List<User>
+        - adminUsers : List<User>
+        - categories : List<Category>
+        - sections : List<Section>
+        - allLessons : List<Lesson>
+        - allSentences : List<Sentence>
+        - deletedUsers : List<User>
+        - deletedCategories : List<Category>
+        - deletedSections : List<Section>
+        - deletedLessons : List<Lesson>
+        - deletedSentences : List<Sentence>
+        - deletedComments : List<Comment>
+        - deletedSlideshows : List<Slideshow>
+        - recentComments : List<Comment>
+        - slideshows : List<Slideshow>
+    }
+    class AdminCategoryRequest {
+        - name : String
+        - imageFile : MultipartFile
+        - levelRange : String
+        - type : LessonType
+        - practiceType : PracticeType
+        - description : String
+    }
+    class AdminSectionRequest {
+        - name : String
+        - description : String
+        - categoryId : Long
+    }
+    class AdminLessonRequest {
+        - title : String
+        - level : String
+        - youtubeVideoId : String
+        - sectionId : Long
+    }
+    class AdminSentenceRequest {
+        - content : String
+        - audioFile : MultipartFile
+        - startTime : Double
+        - endTime : Double
+        - lessonId : Long
+    }
+    class AdminSlideshowRequest {
+        - title : String
+        - imageFile : MultipartFile
+        - linkUrl : String
+        - position : SlideshowPosition
+        - displayOrder : Integer
+    }
+    class AppSettingForm {
+        - siteName : String
+        - seoMetaDescription : String
+        - maxRecentUsersOnDashboard : Integer
+        - speakingPassThreshold : Integer
+        - allowUserRegistration : Boolean
+    }
+}
+
+' ==========================================
+'   REPOSITORY LAYER
+' ==========================================
+package "Repository" {
+    interface AppSettingRepository <<Spring Data JPA>>
+    interface SlideshowRepository <<Spring Data JPA>> {
+        + findByIsDeletedFalseAndIsActiveTrueAndPositionOrderByDisplayOrder(pos): List<Slideshow>
+    }
+}
+
+' ==========================================
+'   ENTITY LAYER
+' ==========================================
+package "Entity" {
+    class AppSetting {
+        - id : Long
+        - siteName : String
+        - seoMetaDescription : String
+        - maxRecentUsersOnDashboard : Integer
+        - speakingPassThreshold : Integer
+        - allowUserRegistration : Boolean
+    }
+    class Slideshow {
+        - id : Long
+        - isDeleted : Boolean
+        - title : String
+        - imageUrl : String
+        - cloudImageId : String
+        - linkUrl : String
+        - displayOrder : Integer
+        - isActive : Boolean
+        - position : SlideshowPosition
+    }
+    enum SlideshowPosition {
+        HOME
+    }
+}
+
+' ==========================================
+'   DEPENDENCIES
+' ==========================================
+AdminAuthController --> AdminDashboardService
+AdminAuthController --> CategoryService
+AdminAuthController --> SectionService
+AdminAuthController --> LessonService
+AdminAuthController --> SentenceService
+AdminAuthController --> AppSettingService
+AdminAuthController --> SlideshowService
+AdminAuthController --> UserService
+AdminAuthController --> CommentService
+AdminApiController --> UserService
+AdminApiController --> CategoryService
+AdminApiController --> SectionService
+AdminApiController --> LessonService
+AdminApiController --> SentenceService
+AdminApiController --> SlideshowService
+
+AdminDashboardServiceImpl ..|> AdminDashboardService
+AppSettingServiceImpl ..|> AppSettingService
+SlideshowServiceImpl ..|> SlideshowService
+
+AppSettingService --> AppSettingRepository
+SlideshowService --> SlideshowRepository
+SlideshowService --> CloudinaryService
+
+AppSettingRepository ..> AppSetting
+SlideshowRepository ..> Slideshow
+
+Slideshow *-- SlideshowPosition
+
+' External service references
+interface CategoryService <<external>>
+interface SectionService <<external>>
+interface LessonService <<external>>
+interface SentenceService <<external>>
+interface UserService <<external>>
+interface CommentService <<external>>
+
+@enduml

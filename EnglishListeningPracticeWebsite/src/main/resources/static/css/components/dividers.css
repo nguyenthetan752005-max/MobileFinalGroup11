@@ -1,0 +1,20 @@
+/* [CSS COMPONENT] CÁC ĐƯỜNG KẺ PHÂN CÁCH.
+ * - Dùng để vẽ các vạch ngang mờ (border) chia cắt các khu vực nội dung cho dễ nhìn 
+ */
+
+
+/* ===========================
+   Section Divider
+   =========================== */
+.section-divider {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.section-divider::after {
+    content: '';
+    display: block;
+    height: 1px;
+    background: var(--border-color);
+}

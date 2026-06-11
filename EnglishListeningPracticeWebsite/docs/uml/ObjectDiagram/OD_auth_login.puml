@@ -1,0 +1,44 @@
+@startuml
+title Object Diagram - Authentication Login Snapshot
+
+skinparam shadowing false
+skinparam objectAttributeIconSize 0
+
+object "loginForm : LoginRequest" as loginForm {
+  username = "studentA"
+  password = "******"
+}
+
+object "session1 : HttpSession" as session1 {
+  loggedInUser = user1
+}
+
+object "user1 : User" as user1 {
+  id = 7
+  username = "studentA"
+  email = "studentA@gmail.com"
+  role = USER
+  provider = LOCAL
+  isActive = true
+}
+
+object "googleToken : OAuth2AuthenticationToken" as googleToken {
+  email = "studentA@gmail.com"
+  picture = "https://lh3.googleusercontent.com/..."
+}
+
+object "oauthUser : User" as oauthUser {
+  id = 7
+  username = "studentA"
+  email = "studentA@gmail.com"
+  role = USER
+  provider = GOOGLE
+  isActive = true
+}
+
+loginForm ..> user1 : authenticate against
+session1 -- user1 : stores
+googleToken ..> oauthUser : maps to
+session1 ..> oauthUser : stores after OAuth2 login
+
+@enduml
